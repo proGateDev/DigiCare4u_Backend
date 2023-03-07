@@ -31,7 +31,6 @@ app.use("/user", require("./routes/user"));
 
 
 //===================================================
-const PORT = 8080
-app.listen(PORT, () => {
-  console.log(`Server started on PORT : ${PORT} `);
+app.listen(process.env.PORT, () => {
+  console.log(`Server started on PORT : ${process.env.PORT} `);
 });

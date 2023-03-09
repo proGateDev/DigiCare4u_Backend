@@ -5,27 +5,30 @@ module.exports = {
   //===========================================
   getTransit: async (req, res) => {
     const data = await model.find({ planet: req.query.tab });
-    const filteredYearData = data.filter((x) => {
-      if (dayjs(x.date).year() === parseInt(req.query.year)) {
+    console.log("================================= ======", req.query.tab);
+
+    const filteredYearData = data[0]?.transit?.filter((x) => {
+      if (dayjs(x.date).year() == req.query.year) {
         return x;
       }
     });
 
-    console.log("----------->", filteredYearData);
-
-    // if (filteredYearData.length === 0) {
-    //   res.status(404).json("Not Found");
-    // } else {
-    //   res.status(200).json(filteredYearData);
-    // }
     res.status(200).json(filteredYearData);
   },
-
+  //===============  POST_NEW ====================================
+  postFirstTransit: async (req, res) => {
+    const transits =  new model(req.body);
+    try {
+      
+      await transits.save();
+      res.status(201).json(transits);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  },
   //===============  POST ====================================
   postTransit: async (req, res) => {
     const transits = await model.find({ planet: req.body.planet });
-    // const planet = transits.find((x) => x.planet === "sun");
-
     try {
       const data = transits[0].transit.push({
         date: req.body.date,

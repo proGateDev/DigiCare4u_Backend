@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema({
   lagna: String,
   sun: String,
   moon: String,
+  userSignsHouse: Array,
 });
 
 const model = mongoose.model("user", userSchema);

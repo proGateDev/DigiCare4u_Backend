@@ -1,10 +1,10 @@
 const dayjs = require("dayjs");
-const model = require("../models/transit");
+const transitModel = require("../models/transit");
 //==================================================
 module.exports = {
   //===========================================
   getTransit: async (req, res) => {
-    const data = await model.find({ planet: req.query.tab });
+    const data = await transitModel.find({ planet: req.query.tab });
     console.log("================================= ======", req.query.tab);
 
     const filteredYearData = data[0]?.transit?.filter((x) => {
@@ -17,7 +17,7 @@ module.exports = {
   },
   //===============  POST_NEW ====================================
   postFirstTransit: async (req, res) => {
-    const transits =  new model(req.body);
+    const transits =  new transitModel(req.body);
     try {
       
       await transits.save();
@@ -28,7 +28,7 @@ module.exports = {
   },
   //===============  POST ====================================
   postTransit: async (req, res) => {
-    const transits = await model.find({ planet: req.body.planet });
+    const transits = await transitModel.find({ planet: req.body.planet });
     try {
       const data = transits[0].transit.push({
         date: req.body.date,

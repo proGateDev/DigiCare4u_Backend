@@ -14,6 +14,6 @@ const transitSchema = new mongoose.Schema({
   ],
 });
 
-const model = mongoose.model("transit", transitSchema);
+const transitModel = mongoose.model("transit", transitSchema);
 
-module.exports = model;
+module.exports = transitModel;

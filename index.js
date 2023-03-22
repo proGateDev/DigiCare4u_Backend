@@ -27,9 +27,8 @@ app.get("/", (req, res) => {
 //===================================================
 app.use("/transit", require("./routes/transit"));
 app.use("/user", require("./routes/user"));
-// app.use("/auth", require("./routes/auth"));
-
-
+app.use("/aspect", require("./routes/aspect"));
+app.use("/chartData", require("./routes/chartData"));
 //===================================================
 app.listen(process.env.PORT, () => {
   console.log(`Server started on PORT : ${process.env.PORT} `);

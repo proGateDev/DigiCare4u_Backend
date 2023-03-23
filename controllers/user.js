@@ -45,6 +45,11 @@ module.exports = {
     const data = await model.find({});
     res.status(200).json(data);
   },
+  //===============  GET ====================================
+  getUserById: async (req, res) => {
+    const data = await model.findById(req.query.id);
+    res.status(200).json(data);
+  },
   //===============  POST ====================================
   postUser: async (req, res) => {
     const user = new model(req.body);

@@ -5,7 +5,6 @@ module.exports = {
   //===========================================
   getTransit: async (req, res) => {
     const data = await transitModel.find({ planet: req.query.tab });
-    console.log("================================= ======", req.query.tab);
 
     const filteredYearData = data[0]?.transit?.filter((x) => {
       if (dayjs(x.date).year() == req.query.year) {

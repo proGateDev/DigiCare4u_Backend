@@ -5,6 +5,16 @@ const model = require("../models/transit");
 module.exports = {
   //================ GET_CURRENT_TRANSIT ===========================
   getCurrent: async (req, res) => {
+    // const planet = await model.find({ planet: req.query.planet });
+
+    // const now = dayjs();
+    // const month = now.month();
+
+    // const planetTransit = planet[0].transit;
+    // const data = planetTransit.find((w) => {
+    //   if (dayjs(w.date).month() == month) return w;
+    // });
+    // res.status(200).json(data?.zodiac);
     const planet = await model.find({ planet: req.query.planet });
 
     const now = dayjs();

@@ -47,26 +47,21 @@ module.exports = {
   },
   //===============  GET ====================================
   getUserById: async (req, res) => {
-    const data = await model.findById(req.query.id);
+    const data = await model.find({ _id: req.body._id });
     res.status(200).json(data);
   },
   //===============  POST ====================================
   postUser: async (req, res) => {
     const user = new model(req.body);
-
     user.save();
     res.status(201).json(user);
   },
   //===============  GET_USER_HOUSE_SIGNS ====================================
   getUserHouseSigns: async (req, res) => {
-    const userId = req.query.id;
-    const user = await model.findById(req.query.id);
+    const user = await model.findById(req.body.id);
 
     const userSigns = generateZodiacCycle(user.lagna);
-    // console.log('cccccccccccc ',userSigns);
-
     user.userSignsHouse.push(userSigns);
-    // console.log(data);
     await user.save();
 
     res.status(200).json(user);

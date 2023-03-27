@@ -22,7 +22,7 @@ module.exports = {
 
       // Append the user input to the conversation history
       //   conversationHistory += userInput + "\n";
-      let newPrompt = `Planet ${req.body.planet} in the ${req.body.house} house in the sign of ${req.body.sign}, in short as possible`;
+      let newPrompt = `Give the prediction of planet ${req.body.planet} in the ${req.body.house} house in the sign of ${req.body.sign}, in short as possible`;
 
       // Call the OpenAI API with the conversation history as the prompt
       const response = await openai.createCompletion({

@@ -29,6 +29,8 @@ app.use("/transit", require("./routes/transit"));
 app.use("/user", require("./routes/user"));
 app.use("/aspect", require("./routes/aspect"));
 app.use("/chartData", require("./routes/chartData"));
+app.use("/prediction", require("./routes/prediction"));
+
 //===================================================
 app.listen(process.env.PORT, () => {
   console.log(`Server started on PORT : ${process.env.PORT} `);

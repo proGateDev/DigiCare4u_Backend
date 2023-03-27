@@ -8,15 +8,14 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-
 export const firebaseAuthMiddleware = (req, res, next) => {
-    if (req.user) {
-      admin
-        .auth()
-        .verifyIdToken(req.user.tokenId)
-        .then(() => next())
-        .catch(() => res.redirect("/login"));
-    } else {
-      res.redirect("/login");
-    }
-  };
+  if (req.user) {
+    admin
+      .auth()
+      .verifyIdToken(req.user.tokenId)
+      .then(() => next())
+      .catch(() => res.redirect("/login"));
+  } else {
+    res.redirect("/login");
+  }
+};

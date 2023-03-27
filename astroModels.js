@@ -454,3 +454,5 @@ const sudarshanChakra = {
     nature: "Condition of the fullfilment of the concept/event", // RASHI-EFFECTS
   },
 };
+
+module.exports = { houses, signs, planet };

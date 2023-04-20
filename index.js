@@ -30,6 +30,9 @@ app.use("/user", require("./routes/user"));
 app.use("/aspect", require("./routes/aspect"));
 app.use("/chartData", require("./routes/chartData"));
 app.use("/prediction", require("./routes/prediction"));
+app.use("/natal", require("./routes/natal"));
+app.use("/transit", require("./routes/transitData"));
+
 
 //===================================================
 app.listen(process.env.PORT, () => {

@@ -3,9 +3,10 @@ const houses = {
   first: {
     signs: ["leo"],
     element: "fire",
-    exaltation: "aries",
-    debilitation: "libra",
+    exaltation: "sun",
+    debilitation: "saturn",
     gender: "male",
+    keyword: ["ego", "consciousness", "oneself"],
   },
 };
 //============= SIGNS =================================
@@ -34,6 +35,9 @@ const signs = {
         degree: "26-10 degree aries tauraus",
       },
     ],
+    square: ["cancer", "capricorn"],
+    trine: ["leo", "sagittarius"],
+    opp: "libra",
   },
 
   taurus: {
@@ -454,5 +458,76 @@ const sudarshanChakra = {
     nature: "Condition of the fullfilment of the concept/event", // RASHI-EFFECTS
   },
 };
+
+const concepts = [
+  {
+    name: "Chara karakas",
+    description:
+      "Planets assigned specific karakas based on their natural significations to determine important areas of life.",
+    karakas: [
+      {
+        name: "Atmakaraka",
+        description:
+          "The planet with the highest degree in the natal chart, considered a significator of the soul or essence of the individual.",
+      },
+      {
+        name: "Amatyakaraka",
+        description:
+          "The planet with the second highest degree in the natal chart, considered a significator of the career and profession.",
+      },
+      {
+        name: "Bhratrukaraka",
+        description:
+          "The planet with the third highest degree in the natal chart, considered a significator of siblings and communication.",
+      },
+      {
+        name: "Matrukaraka",
+        description:
+          "The planet with the fourth highest degree in the natal chart, considered a significator of the mother and emotional well-being.",
+      },
+      {
+        name: "Putrakaraka",
+        description:
+          "The planet with the fifth highest degree in the natal chart, considered a significator of children and creativity.",
+      },
+      {
+        name: "Pitrakaraka",
+        description:
+          "The blessings of the ancestors; the karamas of ones past ",
+      },
+      {
+        name: "Gnatikaraka",
+        description:
+          "The planet with the sixth highest degree in the natal chart, considered a significator of enemies and obstacles.",
+      },
+      {
+        name: "Darakaraka",
+        description:
+          "The planet with the seventh highest degree in the natal chart, considered a significator of spouse and partnerships.",
+      },
+    ],
+  },
+
+  {
+    name: "Upapada",
+    description:
+      "A point calculated based on the position of the 12th house from the Ascendant, considered a significator of relationships and marital happiness.",
+  },
+  {
+    name: "Jaimini Sutras",
+    description:
+      "A set of aphorisms dealing with deeper aspects of astrology such as spirituality and karma.",
+  },
+  {
+    name: "Special aspects",
+    description:
+      "Unique planetary aspects used in Jaimini astrology to provide additional insights into the individual's life.",
+  },
+  {
+    name: "Dashas",
+    description:
+      "Planetary cycles used for predictive purposes in Jaimini astrology. The dasha system used in Jaimini astrology is based on the position of the Atmakaraka planet in the natal chart. Some important dashas in Jaimini astrology include: \n\n- Chara dasha: This dasha system uses a fixed sequence of signs to determine the timing of events in an individual's life. \n- Karakamsa dasha: This dasha system is based on the position of the Atmakaraka planet in the Navamsa chart. \n- Mandooka dasha: This dasha system uses the position of the Moon and the Ascendant in the natal chart to determine the timing of events.",
+  },
+];
 
 module.exports = { houses, signs, planet };

@@ -1,18 +1,23 @@
-getUser: async (req, res) => {
+const { createCanvas } = require("canvas");
+const fs = require("fs");
+//=========================================================
+module.exports = {
+  getNatalChart: async (req, res) => {
+    console.log("=============================>");
+    // return;
     const canvas = createCanvas(200, 200);
     const ctx = canvas.getContext("2d");
-   
 
     // Set the canvas width and height
     canvas.width = 500;
     canvas.height = 350;
-  
+
     // Get the canvas context
-  
+
     // Draw the background
     ctx.fillStyle = "wheat";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
+
     // Define the positions of the planets
     const positions = [
       { name: "Sun", x: 250, y: 80 },
@@ -26,7 +31,7 @@ getUser: async (req, res) => {
       { name: "Neptune", x: 50, y: 200 },
       { name: "Pluto", x: 200, y: 100 },
     ];
-  
+
     // Define the colors of the signs
     const signColors = {
       Aries: "#FF0000",
@@ -42,7 +47,7 @@ getUser: async (req, res) => {
       Aquarius: "#7CFC00",
       Pisces: "#FF4500",
     };
-  
+
     // Define the sign of each planet
     const planetSigns = {
       Sun: "Leo",
@@ -57,43 +62,43 @@ getUser: async (req, res) => {
       Pluto: "Scorpio",
     };
     ctx.beginPath();
-  
+
     ctx.moveTo(0, 0); // starting point at (50, 50)
     ctx.lineTo(canvas.width, canvas.height); // ending point at (150, 150)
     ctx.strokeStyle = "gray";
     ctx.lineWidth = 5; // set line thickness to 5 pixels
     ctx.stroke();
-  
+
     ctx.moveTo(canvas.width, 0);
     ctx.lineTo(0, canvas.height);
     ctx.strokeStyle = "gray";
     ctx.lineWidth = 5;
     ctx.stroke();
-  
+
     ctx.moveTo(canvas.width / 2, 0);
     ctx.lineTo(0, canvas.height / 2);
     ctx.strokeStyle = "gray";
     ctx.lineWidth = 5;
     ctx.stroke();
-  
+
     ctx.moveTo(0, canvas.height / 2);
     ctx.lineTo(canvas.width / 2, canvas.height);
     ctx.strokeStyle = "gray";
     ctx.lineWidth = 5;
     ctx.stroke();
-  
+
     ctx.moveTo(canvas.width / 2, canvas.height);
     ctx.lineTo(canvas.width, canvas.height / 2);
     ctx.strokeStyle = "gray";
     ctx.lineWidth = 5;
     ctx.stroke();
-  
+
     ctx.moveTo(canvas.width, canvas.height / 2);
     ctx.lineTo(canvas.width / 2, 0);
     ctx.strokeStyle = "gray";
     ctx.lineWidth = 5;
     ctx.stroke();
-  
+
     //-- HOUSES----------------------------
     ctx.moveTo(canvas.width / 2, 0);
     ctx.lineTo(0, 0);
@@ -105,14 +110,12 @@ getUser: async (req, res) => {
     ctx.strokeStyle = "gray";
     ctx.lineWidth = 5;
     ctx.stroke();
-  
 
-
-
-    const out = fs.createWriteStream(__dirname + "/line1.png");
+    const out = fs.createWriteStream(__dirname + "../../charts/natalChart.png");
     const stream = canvas.createPNGStream();
     stream.pipe(out);
     out.on("finish", () => console.log("The PNG file was created."));
-    const data = await model.find({});
-    res.status(200).json(data);
-  }
+    // const data = await model.find({});
+    res.status(200).json("Ho gaya bhai !");
+  },
+};

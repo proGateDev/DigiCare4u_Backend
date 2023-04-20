@@ -17,3 +17,5 @@ const transitSchema = new mongoose.Schema({
 const transitModel = mongoose.model("transit", transitSchema);
 
 module.exports = transitModel;
+
+

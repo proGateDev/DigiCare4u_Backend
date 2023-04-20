@@ -45,7 +45,7 @@ module.exports = {
     const data = await model.find({});
     res.status(200).json(data);
   },
-  //===============  GET ====================================
+  //===============  GET_BY_ID ====================================
   getUserById: async (req, res) => {
     const data = await model.find({ _id: req.body._id });
     res.status(200).json(data);
@@ -59,11 +59,9 @@ module.exports = {
   //===============  GET_USER_HOUSE_SIGNS ====================================
   getUserHouseSigns: async (req, res) => {
     const user = await model.findById(req.body.id);
-
     const userSigns = generateZodiacCycle(user.lagna);
     user.userSignsHouse.push(userSigns);
     await user.save();
-
     res.status(200).json(user);
   },
   //===============  GET_USER_HOUSE_SIGNS ====================================

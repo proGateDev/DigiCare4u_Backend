@@ -77,7 +77,7 @@ const generateZodiacCycle = (lagnaSign) => {
   return zodiacCycle;
 };
 //=====================================================
-const wherePlanetIsDeposited = (
+const whereHouseLordIsDeposited = (
   planet,
   currentPlanetsPositions,
   newZodiacCycle
@@ -104,10 +104,8 @@ const wherePlanetIsDeposited = (
 const anyPlanetInTheHouse = (
   house,
   currentPlanetsPositions,
-  newZodiacCycle,
-  planet
+  newZodiacCycle
 ) => {
-
   let planetDeposited = [];
   planetDeposited = currentPlanetsPositions.filter(
     (x) =>
@@ -129,10 +127,10 @@ module.exports = {
     const newZodiacCycle = generateZodiacCycle(ascSymbolData.sign);
     //----------------------------------
     let natal = [];
-    
+
     for (let i = 0; i < 12; i++) {
       let lord = getZodiacData(null, newZodiacCycle[i].name);
-      let deposited = wherePlanetIsDeposited(
+      let deposited = whereHouseLordIsDeposited(
         getZodiacData(null, newZodiacCycle[i].name).lord,
         currentPlanetsPositions,
         newZodiacCycle
@@ -140,8 +138,7 @@ module.exports = {
       let anyPlanet = anyPlanetInTheHouse(
         i,
         currentPlanetsPositions,
-        newZodiacCycle,
-        lord.lord
+        newZodiacCycle
       );
       natal.push({
         house: i + 1,

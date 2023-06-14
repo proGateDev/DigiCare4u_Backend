@@ -27,8 +27,8 @@ module.exports = {
     const now = dayjs();
     const month = now.month();
 
-    const planetTransit = planet[0].transit;
-    const data = planetTransit.find((w) => {
+    const planetTransit = planet[0]?.transit;
+    const data = planetTransit?.find((w) => {
       if (w.zodiac === planetSign) return w;
     });
 

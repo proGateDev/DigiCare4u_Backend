@@ -1,43 +1,9 @@
 const model = require("../models/user");
 const transitModel = require("../models/transit");
-//==================================================
-function generateZodiacCycle(lagnaSign) {
-  const zodiacSigns = [
-    "aries",
-    "taurus",
-    "gemini",
-    "cancer",
-    "leo",
-    "virgo",
-    "libra",
-    "scorpio",
-    "sagittarius",
-    "capricorn",
-    "aquarius",
-    "pisces",
-  ];
+const userCreationValidation = require("../admin/validation/user");
+const { default: axios } = require("axios");
+const astroUtils = require("../utils/astro");
 
-  // Get the index of the lagna sign in the zodiac cycle
-  const lagnaIndex = zodiacSigns.indexOf(lagnaSign);
-  console.log("---->", lagnaIndex);
-
-  // Rotate the zodiac cycle array so that the lagna sign is in the first position
-  const rotatedZodiacSigns = [
-    ...zodiacSigns.slice(lagnaIndex),
-    ...zodiacSigns.slice(0, lagnaIndex),
-  ];
-  console.log("---->", rotatedZodiacSigns);
-  // Generate an array of objects representing each house in the zodiac cycle
-  const zodiacCycle = [];
-  for (let i = 0; i < 12; i++) {
-    zodiacCycle.push({
-      name: rotatedZodiacSigns[i],
-      house: i + 1,
-    });
-  }
-
-  return zodiacCycle;
-}
 //==================================================
 module.exports = {
   //===============  GET ====================================
@@ -51,15 +17,37 @@ module.exports = {
     res.status(200).json(data);
   },
   //===============  POST ====================================
-  postUser: async (req, res) => {
-    const user = new model(req.body);
-    user.save();
-    res.status(201).json(user);
+  createUser: async (req, res) => {
+    try {
+      // =========== VALIDATION ==================
+      const { error, value } = userCreationValidation.validate(req.body);
+
+      //================== REQUEST_HANDLING ==========================
+      if (error) {
+        return res.status(400).json({
+          response: error.details[0].message,
+        });
+      } else {
+        // =========== NATAL ==================
+
+        const data =await astroUtils.getNatal();
+        const user = new model(req.body);
+        user.natal = [...user.natal, ...data];
+        await user.save();
+        return res.status(201).json(user);
+      }
+    } catch (error) {
+      res.status(500).json({
+        message: "Error creating user",
+        error: error.message,
+      });
+    }
   },
-  //===============  GET_USER_HOUSE_SIGNS ====================================
+
+  //=============== GET_USER_HOUSE_SIGNS ====================================
   getUserHouseSigns: async (req, res) => {
     const user = await model.findById(req.body.id);
-    const userSigns = generateZodiacCycle(user.lagna);
+    const userSigns = astroUtils.generateZodiacCycle(user.lagna);
     user.userSignsHouse.push(userSigns);
     await user.save();
     res.status(200).json(user);

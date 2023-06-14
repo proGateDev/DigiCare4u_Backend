@@ -1,13 +1,19 @@
 const mongoose = require("mongoose");
 //===================================
-const userSchema = new mongoose.Schema({
+const schema = new mongoose.Schema({
   name: String,
-  lagna: String,
-  sun: String,
-  moon: String,
-  userSignsHouse: Array,
+  natal: [
+    {
+      _id: false,
+      house: Number,
+      sign: String,
+      lord: String,
+      deposited: Number,
+      anyPlanet: [{ _id: false, name: String, position: String }],
+    },
+  ],
 });
 
-const model = mongoose.model("user", userSchema);
+const model = mongoose.model("user", schema);
 
 module.exports = model;

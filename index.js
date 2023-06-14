@@ -3,7 +3,7 @@ const app = express();
 const cors = require("cors");
 require("dotenv").config();
 require("./database");
-
+const routes = require('./routes')
 //====================================================
 
 // Use the session middleware
@@ -25,13 +25,14 @@ app.get("/", (req, res) => {
   res.send("<h1> AstroLogics Server </h1>");
 });
 //===================================================
-app.use("/transit", require("./routes/transit"));
-app.use("/user", require("./routes/user"));
-app.use("/aspect", require("./routes/aspect"));
-app.use("/chartData", require("./routes/chartData"));
-app.use("/prediction", require("./routes/prediction"));
-app.use("/natal", require("./routes/natal"));
-app.use("/transit", require("./routes/transitData"));
+app.use(routes)
+// app.use("/transit", require("./routes/transit"));
+// app.use("/user", require("./routes/user"));
+// app.use("/aspect", require("./routes/aspect"));
+// app.use("/chartData", require("./routes/chartData"));
+// app.use("/prediction", require("./routes/prediction"));
+// app.use("/natal", require("./routes/natal"));
+// app.use("/transit", require("./routes/transitData"));
 
 
 //===================================================

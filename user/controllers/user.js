@@ -1,8 +1,8 @@
 const model = require("../models/user");
 const transitModel = require("../models/transit");
-const userCreationValidation = require("../admin/validation/user");
+const userCreationValidation = require("../../user/validation/user");
 const { default: axios } = require("axios");
-const astroUtils = require("../utils/astro");
+const astroUtils = require("../../utils/astro");
 
 //==================================================
 module.exports = {
@@ -19,7 +19,9 @@ module.exports = {
   //===============  POST ====================================
   createUser: async (req, res) => {
     try {
+      console.log("------------------------------>", req.body);
       // =========== VALIDATION ==================
+      // return;
       const { error, value } = userCreationValidation.validate(req.body);
 
       //================== REQUEST_HANDLING ==========================
@@ -30,7 +32,7 @@ module.exports = {
       } else {
         // =========== NATAL ==================
 
-        const data =await astroUtils.getNatal();
+        const data = await astroUtils.getNatal(value);
         const user = new model(req.body);
         user.natal = [...user.natal, ...data];
         await user.save();

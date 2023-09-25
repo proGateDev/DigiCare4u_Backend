@@ -80,6 +80,8 @@ const userSchema = new mongoose.Schema({
   dob: String,
   time: String,
   location: String,
+  planets: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Planet' }], // Reference to Planet(s)
+  houses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'House' }], // Reference to House(s)
 });
 
 const planetSchema = new mongoose.Schema({
@@ -90,11 +92,13 @@ const planetSchema = new mongoose.Schema({
   rulerOf: String,
   isIn: String,
   landLord: String,
+  event_id: { type: mongoose.Schema.Types.ObjectId, ref: 'PlanetEvent' },
+
   user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 });
 
 const planetEventSchema = new mongoose.Schema({
-  planet: String,
+  planet: { type: mongoose.Schema.Types.ObjectId, ref: 'Planet' }, // Reference to Planet
   eventName: String,
   ingressIn: String,
   date: Date,
@@ -115,12 +119,12 @@ const houseSchema = new mongoose.Schema({
 
 const houseAspectSchema = new mongoose.Schema({
   house_id: { type: mongoose.Schema.Types.ObjectId, ref: 'House' },
-  aspectedBy: [String],
+  aspectedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Planet' }], // Reference to Planet
 });
 
 const houseAgeSchema = new mongoose.Schema({
   house_id: { type: mongoose.Schema.Types.ObjectId, ref: 'House' },
-  age: String,
+  age: [Number], // Assuming multiple ages
 });
 
 // Create the models

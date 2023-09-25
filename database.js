@@ -6,6 +6,6 @@ mongoose.connect(process.env.DB, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }).then(()=>{
-    console.log("Database got connected ")
+    console.log("------------- Database got connected --------------")
 })
 mongoose.set('strictQuery',false)

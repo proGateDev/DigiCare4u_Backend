@@ -8,8 +8,14 @@ const astroUtils = require("../../utils/astro");
 module.exports = {
   //===============  GET ====================================
   getUser: async (req, res) => {
-    const data = await model.find({});
-    res.status(200).json(data);
+    try {
+      const data = await model.find({});
+      console.log('-------- data ----------', data);
+      res.status(200).json(data);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   },
   //===============  GET_BY_ID ====================================
   getUserById: async (req, res) => {

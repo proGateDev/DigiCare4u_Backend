@@ -18,20 +18,52 @@ user = {
             longitude: '25 degree',
             nakshatras: 'dhanista',
             nakshatrasLord: 'mars',
-            rulerOf: [5, 10],
+            // rulerOf: [5, 10],
+            rulerOf: 8,
             isIn: 6,
-            landLord: [5, 10],
-            event_id: [
+            // landLord: [5, 10],
+            events: [
                 {
-                    planet: 'sun',
-                    eventName: 'sun enters in aries',
-                    ingressIn: 'aries',
-                    date: '15-04-2023',
-                    userHouse: 4,
-                    prediction: 'new light on the roots',
-                    user_id: 'user_123'
+                    planetTransitingUserHouse: 1,
+                    eventsRelated: [
+                        {
+                            planet: 'sun',
+                            eventName: 'sun enters in capricorn',
+                            ingressIn: 'aries',
+                            date: '15-04-2023',
+                            prediction: 'new light on the roots',
+                            user_id: 'user_123',
+                        },
+                        
+                    ]
+                },
+                {
+                    planetTransitingUserHouse: 2,
+                    eventsRelated: [
+                        {
+                            planet: 'sun',
+                            eventName: 'sun enters in aquarius',
+                            ingressIn: 'aquarius',
+                            date: '15-04-2023',
+                            prediction: 'new light on the roots',
+                            user_id: 'user_123',
+                        },
+                    ]
+
                 }
             ],
+            // event_id: [
+            //     {
+            //         planet: 'sun',
+            //         eventName: 'sun enters in aries',
+            //         ingressIn: 'aries',
+            //         date: '15-04-2023',
+            //         userHouse: 4,
+            //         prediction: 'new light on the roots',
+            //         user_id: 'user_123'
+            //     }
+
+            // ],
             user_id: 'user_123'
         }
     ],

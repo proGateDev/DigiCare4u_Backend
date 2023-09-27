@@ -1,5 +1,4 @@
 const model = require("../models/user");
-const transitModel = require("../models/transit");
 const userCreationValidation = require("../../user/validation/user");
 const { default: axios } = require("axios");
 const astroUtils = require("../../utils/astro");
@@ -60,21 +59,5 @@ module.exports = {
     await user.save();
     res.status(200).json(user);
   },
-  //===============  GET_USER_HOUSE_SIGNS ====================================
-  getUserTransit: async (req, res) => {
-    const userId = req.query.id;
-    const user = await model.findById(req.query.id);
-    const transit = await transitModel.find({});
 
-    console.log(transit);
-    return;
-    const userSigns = generateZodiacCycle(user.lagna);
-    // console.log('cccccccccccc ',userSigns);
-
-    user.userSignsHouse.push(userSigns);
-    // console.log(data);
-    await user.save();
-
-    res.status(200).json(user);
-  },
 };

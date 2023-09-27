@@ -8,4 +8,3 @@ mongoose.connect(process.env.DB, {
 }).then(()=>{
     console.log("------------- Database got connected --------------")
 })
-mongoose.set('strictQuery',false)

@@ -7,5 +7,6 @@ router.get("/get", controller.getUser);
 router.post("/byId", controller.getUserById);
 router.post("/create", controller.createUser);
 router.post("/house-signs", controller.getUserHouseSigns);
+// router.post("/eph", controller.getEph);
 
 module.exports = router;

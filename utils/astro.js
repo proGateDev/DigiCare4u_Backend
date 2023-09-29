@@ -122,6 +122,7 @@ const anyPlanetInTheHouse = (
 //=====================================================
 module.exports = {
   getNatal: async (value) => {
+    
     const { houses, planets } = await getEphemeris(value);
 
     const ascSymbol = houses?.data?.data[0].name; //-------> only need the first house for Asc. calculation

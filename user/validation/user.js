@@ -2,7 +2,7 @@ const Joi = require("joi");
 
 const userCreationValidation = Joi.object({
   name: Joi.string().required(),
-  date: Joi.string().required(),
+  dob: Joi.string().required(),
   time: Joi.string().required(),
   gender: Joi.string().required(),
   location: Joi.object({

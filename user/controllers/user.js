@@ -8,8 +8,8 @@ module.exports = {
   //===============  GET ====================================
   getUser: async (req, res) => {
     try {
-      const data = await model.find({});
-      console.log('-------- data ----------', data);
+      console.log('-------- data ----------',model);
+      const data =  await model.find({});
       res.status(200).json(data);
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -24,7 +24,6 @@ module.exports = {
   //===============  POST ====================================
   createUser: async (req, res) => {
     try {
-      console.log("------------------------------>", req.body);
       // =========== VALIDATION ==================
       // return;
       const { error, value } = userCreationValidation.validate(req.body);
@@ -36,11 +35,13 @@ module.exports = {
         });
       } else {
         // =========== NATAL ==================
-
+        
         const data = await astroUtils.getNatal(value);
         const user = new model(req.body);
         user.natal = [...user.natal, ...data];
+        console.log("---------- BEFORE -------------------->",user);
         await user.save();
+        console.log("---------- AFTER -------------------->");
         return res.status(201).json(user);
       }
     } catch (error) {
@@ -58,6 +59,14 @@ module.exports = {
     user.userSignsHouse.push(userSigns);
     await user.save();
     res.status(200).json(user);
+  },
+  getEph: async (req, res) => {
+    var swisseph = require ('swisseph');
+
+    var date = {year: 2015, month: 1, day: 1, hour: 0};
+    
+    var julday = swisseph.swe_julday (date.year, date.month, date.day, date.hour, swisseph.SE_GREG_CAL);
+    res.status(200).json(julday);
   },
 
 };

@@ -1,28 +1,32 @@
 const mongoose = require("mongoose");
 //===================================
-// const schema = new mongoose.Schema({
-//   name: String,
-//   dob: String,
-//   time: String,
-//   location: String,
-//   natal: [
-//     {
-//       _id: false,
-//       house: Number,
-//       sign: String,
-//       lord: String,
-//       deposited: Number,
-//       anyPlanet: [
-//         {
-//            _id: false, 
-//            name: String,
-//            position: String
-//         }
-//       ],
+const userSchema = new mongoose.Schema({
+  name: String,
+  dob: String,
+  time: String,
+  location: {
+    name:String,
+    lat:Number,
+    long:Number,
+  },
+  natal: [
+    {
+      _id: false,
+      house: Number,
+      sign: String,
+      lord: String,
+      deposited: Number,
+      anyPlanet: [
+        {
+           _id: false, 
+           name: String,
+           position: String
+        }
+      ],
       
-//     },
-//   ],
-// });
+    },
+  ],
+});
 
 // const schema = new mongoose.Schema({
 //   name: String,
@@ -74,14 +78,14 @@ const mongoose = require("mongoose");
 
 // Define the Schema for each entity
 
-const userSchema = new mongoose.Schema({
-  name: String,
-  dob: String,
-  time: String,
-  location: String,
-  planets: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Planet' }], // Reference to Planet(s)
-  houses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'House' }], // Reference to House(s)
-});
+// const userSchema = new mongoose.Schema({
+//   name: String,
+//   dob: String,
+//   time: String,
+//   location: String,
+//   planets: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Planet' }], // Reference to Planet(s)
+//   houses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'House' }], // Reference to House(s)
+// });
 
 // const planetSchema = new mongoose.Schema({
 //   name: String,
@@ -128,7 +132,7 @@ const userSchema = new mongoose.Schema({
 
 // // Create the models
 
-const User = mongoose.model('User', userSchema);
+const model = mongoose.model('User', userSchema);
 // const Planet = mongoose.model('Planet', planetSchema);
 // const PlanetEvent = mongoose.model('PlanetEvent', planetEventSchema);
 // const House = mongoose.model('House', houseSchema);
@@ -137,11 +141,14 @@ const User = mongoose.model('User', userSchema);
 
 // Export the models for use in other parts of your application
 
-module.exports = {
-  User,
-  // Planet,
-  // PlanetEvent,
-  // House,
-  // HouseAspect,
-  // HouseAge,
-};
+// module.exports = {
+//   model,
+//   // Planet,
+//   // PlanetEvent,
+//   // House,
+//   // HouseAspect,
+//   // HouseAge,
+// };
+
+module.exports = model;
+

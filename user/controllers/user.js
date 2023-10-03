@@ -38,8 +38,8 @@ module.exports = {
         
         const data = await astroUtils.getNatal(value);
         const user = new model(req.body);
-        user.natal = [...user.natal, ...data];
-        console.log("---------- BEFORE -------------------->",user);
+        console.log("---------- data -------------------->",data);
+        user.planet = [...user.planet, ...data];
         await user.save();
         console.log("---------- AFTER -------------------->");
         return res.status(201).json(user);

@@ -22,6 +22,7 @@ user = {
             rulerOf: 8,
             isIn: 6,
             // landLord: [5, 10],
+            user_id: 'user_123',
             events: [
                 {
                     planetTransitingUserHouse: 1,
@@ -33,6 +34,7 @@ user = {
                             date: '15-04-2023',
                             prediction: 'new light on the roots',
                             user_id: 'user_123',
+                            planet_id: 'planet_123',
                         },
                         
                     ]
@@ -64,7 +66,6 @@ user = {
             //     }
 
             // ],
-            user_id: 'user_123'
         }
     ],
     houses: [

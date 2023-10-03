@@ -39,7 +39,7 @@ const getZodiacData = (icon, name) => {
 
 //=====================================================
 const getEphemeris = async (value) => {
-  const planets = await axios.post(ephemeris.ephemerisApi + "/planets",{
+  const planets = await axios.post(ephemeris.ephemerisApi + "/planets", {
     value,
   });
   const houses = await axios.post(ephemeris.ephemerisApi + "/houses", {
@@ -122,7 +122,7 @@ const anyPlanetInTheHouse = (
 //=====================================================
 module.exports = {
   getNatal: async (value) => {
-    
+
     const { houses, planets } = await getEphemeris(value);
 
     const ascSymbol = houses?.data?.data[0].name; //-------> only need the first house for Asc. calculation
@@ -145,14 +145,25 @@ module.exports = {
         currentPlanetsPositions,
         newZodiacCycle
       );
+      // natal.push({
+      //   house: i + 1,
+      //   sign: newZodiacCycle[i].name,
+      //   lord: lord.lord,
+      //   deposited: lord.lord,
+      //   anyPlanet: anyPlanet,
+      // });
+
       natal.push({
-        house: i + 1,
-        sign: newZodiacCycle[i].name,
-        lord: lord.lord,
-        deposited: deposited,
-        anyPlanet: anyPlanet,
+        name:'',
+        longitude:newZodiacCycle[i].name,
+        // nakshatras:'',
+        // nakshatrasLord:'',
+        rulerOf:anyPlanet,
+        isIn:lord.lord,
+        landLord:lord.lord
       });
     }
+    console.log(' ===================================================== ', natal);
     return natal;
   },
 };

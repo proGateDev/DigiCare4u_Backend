@@ -5,27 +5,28 @@ const userSchema = new mongoose.Schema({
   dob: String,
   time: String,
   location: {
-    name:String,
-    lat:Number,
-    long:Number,
+    name: String,
+    lat: Number,
+    long: Number,
   },
-  natal: [
-    {
-      _id: false,
-      house: Number,
-      sign: String,
-      lord: String,
-      deposited: Number,
-      anyPlanet: [
-        {
-           _id: false, 
-           name: String,
-           position: String
-        }
-      ],
-      
-    },
-  ],
+  // natal: [
+  //   {
+  //     _id: false,
+  //     house: Number,
+  //     sign: String,
+  //     lord: String,
+  //     deposited: Number,
+  //     anyPlanet: [
+  //       {
+  //          _id: false, 
+  //          name: String,
+  //          position: String
+  //       }
+  //     ],
+
+  //   },
+  // ],
+  planet: [{ type: mongoose.Schema.Types.ObjectId, ref: 'planet' }]
 });
 
 // const schema = new mongoose.Schema({

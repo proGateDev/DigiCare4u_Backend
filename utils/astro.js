@@ -65,7 +65,6 @@ const generateZodiacCycle = (lagnaSign) => {
   ];
 
   const lagnaIndex = zodiacSigns.indexOf(lagnaSign);
-
   const rotatedZodiacSigns = [
     ...zodiacSigns.slice(lagnaIndex),
     ...zodiacSigns.slice(0, lagnaIndex),
@@ -122,29 +121,42 @@ const anyPlanetInTheHouse = (
 //=====================================================
 module.exports = {
   getNatal: async (value) => {
-
     const { houses, planets } = await getEphemeris(value);
 
     const ascSymbol = houses?.data?.data[0].name; //-------> only need the first house for Asc. calculation
+    console.log('---------- ascSymbol -----------------', ascSymbol);
     const currentPlanetsPositions = planets?.data?.data;
+    console.log('----------- currentPlanetsPositions -------', currentPlanetsPositions)
 
-    const ascSymbolData = getZodiacData(ascSymbol);
-    const newZodiacCycle = generateZodiacCycle(ascSymbolData.sign);
+    const ascSymbolData = getZodiacData(ascSymbol, null);
+    console.log('----------- ascSymbolData -------', ascSymbolData)
+    const newZodiacCycle = generateZodiacCycle(ascSymbolData);
+    console.log('----------- newZodiacCycle -------', newZodiacCycle)
+
     //----------------------------------
-    let natal = [];
+    let userPlanets = [];
+    let userHouses = [];
 
     for (let i = 0; i < 12; i++) {
       let lord = getZodiacData(null, newZodiacCycle[i].name);
-      let deposited = whereHouseLordIsDeposited(
-        getZodiacData(null, newZodiacCycle[i].name).lord,
-        currentPlanetsPositions,
-        newZodiacCycle
-      );
+      // console.log('-----------lord -------', lord)
+      let deposited = whereHouseLordIsDeposited
+        (
+          getZodiacData
+            (
+              null,
+              newZodiacCycle[i].name
+            ).lord,
+          currentPlanetsPositions,
+          newZodiacCycle
+        );
+      // console.log('----------- deposited-------', deposited)
       let anyPlanet = anyPlanetInTheHouse(
         i,
         currentPlanetsPositions,
         newZodiacCycle
       );
+      // console.log('-----------anyPlanet -------', anyPlanet)
       // natal.push({
       //   house: i + 1,
       //   sign: newZodiacCycle[i].name,
@@ -153,17 +165,15 @@ module.exports = {
       //   anyPlanet: anyPlanet,
       // });
 
-      natal.push({
-        name:'',
-        longitude:newZodiacCycle[i].name,
-        // nakshatras:'',
-        // nakshatrasLord:'',
-        rulerOf:anyPlanet,
-        isIn:lord.lord,
-        landLord:lord.lord
+      userPlanets.push({
+        name: '',
+        longitude: newZodiacCycle[i].name,
+        rulerOf: anyPlanet,
+        isIn: lord.lord,
+        landLord: lord.lord
       });
     }
-    console.log(' ===================================================== ', natal);
+    console.log(' ===================================================== ', natal[1]);
     return natal;
   },
 };

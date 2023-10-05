@@ -1,15 +1,17 @@
 const model = require("../models/user");
+const planetModel = require("../models/planet");
 const userCreationValidation = require("../../user/validation/user");
 const { default: axios } = require("axios");
 const astroUtils = require("../../utils/astro");
+const ObjectId = require('mongodb').ObjectId;
 
 //==================================================
 module.exports = {
   //===============  GET ====================================
   getUser: async (req, res) => {
     try {
-      console.log('-------- data ----------',model);
-      const data =  await model.find({});
+      console.log('-------- data ----------', model);
+      const data = await model.findOne({})
       res.status(200).json(data);
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -27,7 +29,7 @@ module.exports = {
       // =========== VALIDATION ==================
       // return;
       const { error, value } = userCreationValidation.validate(req.body);
-
+      // error=null
       //================== REQUEST_HANDLING ==========================
       if (error) {
         return res.status(400).json({
@@ -35,12 +37,30 @@ module.exports = {
         });
       } else {
         // =========== NATAL ==================
-        
+
         const data = await astroUtils.getNatal(value);
         const user = new model(req.body);
-        user.planet = [...user.planet, ...data];
-        // await user.save();
-        // console.log("---------- AFTER -------------------->");
+        // user.planets = user.planets + data;
+        for (let index = 0; index < data.length; index++) {
+          const element = data[index];
+          const planet = new planetModel(element);
+          planet.save()
+          
+          console.log(' planet ------->', planet.id);
+          
+          user.planets = user.planets.concat(planet.id)
+          await user.save();
+        }
+
+        // for (let index = 0; index < 12; index++) {
+        //   const planetData = data[index];
+
+        //   let obj = planet.id
+
+        //   user.planets = user.planets.push(obj);
+        //   await user.save();
+
+        // }
         return res.status(201).json(user);
       }
     } catch (error) {
@@ -60,11 +80,11 @@ module.exports = {
     res.status(200).json(user);
   },
   getEph: async (req, res) => {
-    var swisseph = require ('swisseph');
+    var swisseph = require('swisseph');
 
-    var date = {year: 2015, month: 1, day: 1, hour: 0};
-    
-    var julday = swisseph.swe_julday (date.year, date.month, date.day, date.hour, swisseph.SE_GREG_CAL);
+    var date = { year: 2015, month: 1, day: 1, hour: 0 };
+
+    var julday = swisseph.swe_julday(date.year, date.month, date.day, date.hour, swisseph.SE_GREG_CAL);
     res.status(200).json(julday);
   },
 

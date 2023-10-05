@@ -120,26 +120,78 @@ const anyPlanetInTheHouse = (
 };
 //=====================================================
 module.exports = {
+  // getNatal: async (value) => {
+  //   const { houses, planets } = await getEphemeris(value);
+
+  //   const ascSymbol = houses?.data?.data[0].name; //-------> only need the first house for Asc. calculation
+  //   console.log('---------- ascSymbol -----------------', ascSymbol);
+  //   const currentPlanetsPositions = planets?.data?.data;
+  //   console.log('----------- currentPlanetsPositions -------', currentPlanetsPositions)
+
+  //   const ascSymbolData = getZodiacData(ascSymbol, null);
+  //   console.log('----------- ascSymbolData -------', ascSymbolData)
+  //   const newZodiacCycle = generateZodiacCycle(ascSymbolData);
+  //   console.log('----------- newZodiacCycle -------', newZodiacCycle)
+
+  //   //----------------------------------
+  //   let userPlanets = [];
+  //   let userHouses = [];
+
+  //   for (let i = 0; i < 12; i++) {
+  //     let lord = getZodiacData(null, newZodiacCycle[i].name);
+  //     // console.log('-----------lord -------', lord)
+  //     let deposited = whereHouseLordIsDeposited
+  //       (
+  //         getZodiacData
+  //           (
+  //             null,
+  //             newZodiacCycle[i].name
+  //           ).lord,
+  //         currentPlanetsPositions,
+  //         newZodiacCycle
+  //       );
+  //     // console.log('----------- deposited-------', deposited)
+  //     let anyPlanet = anyPlanetInTheHouse(
+  //       i,
+  //       currentPlanetsPositions,
+  //       newZodiacCycle
+  //     );
+  //     // console.log('-----------anyPlanet -------', anyPlanet)
+  //     // natal.push({
+  //     //   house: i + 1,
+  //     //   sign: newZodiacCycle[i].name,
+  //     //   lord: lord.lord,
+  //     //   deposited: lord.lord,
+  //     //   anyPlanet: anyPlanet,
+  //     // });
+
+  //     userPlanets.push({
+  //       name: '',
+  //       longitude: newZodiacCycle[i].name,
+  //       rulerOf: anyPlanet,
+  //       isIn: lord.lord,
+  //       landLord: lord.lord
+  //     });
+  //   }
+  //   console.log(' ===================================================== ', natal[1]);
+  //   return natal;
+  // },
+
   getNatal: async (value) => {
     const { houses, planets } = await getEphemeris(value);
 
-    const ascSymbol = houses?.data?.data[0].name; //-------> only need the first house for Asc. calculation
-    console.log('---------- ascSymbol -----------------', ascSymbol);
+    const ascSymbol = houses?.data?.data[0].name
+    const risingSign = houses?.data.data[0]
     const currentPlanetsPositions = planets?.data?.data;
-    console.log('----------- currentPlanetsPositions -------', currentPlanetsPositions)
 
     const ascSymbolData = getZodiacData(ascSymbol, null);
-    console.log('----------- ascSymbolData -------', ascSymbolData)
     const newZodiacCycle = generateZodiacCycle(ascSymbolData);
-    console.log('----------- newZodiacCycle -------', newZodiacCycle)
-
     //----------------------------------
     let userPlanets = [];
     let userHouses = [];
 
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 8; i++) {
       let lord = getZodiacData(null, newZodiacCycle[i].name);
-      // console.log('-----------lord -------', lord)
       let deposited = whereHouseLordIsDeposited
         (
           getZodiacData
@@ -150,30 +202,23 @@ module.exports = {
           currentPlanetsPositions,
           newZodiacCycle
         );
-      // console.log('----------- deposited-------', deposited)
+
+
       let anyPlanet = anyPlanetInTheHouse(
         i,
         currentPlanetsPositions,
         newZodiacCycle
       );
-      // console.log('-----------anyPlanet -------', anyPlanet)
-      // natal.push({
-      //   house: i + 1,
-      //   sign: newZodiacCycle[i].name,
-      //   lord: lord.lord,
-      //   deposited: lord.lord,
-      //   anyPlanet: anyPlanet,
-      // });
 
       userPlanets.push({
-        name: '',
-        longitude: newZodiacCycle[i].name,
-        rulerOf: anyPlanet,
+        name: currentPlanetsPositions[i]?.name,
+        longitude: currentPlanetsPositions[i]?.position,
+        // rulerOf: anyPlanet,
         isIn: lord.lord,
         landLord: lord.lord
       });
     }
-    console.log(' ===================================================== ', natal[1]);
-    return natal;
+
+    return userPlanets;
   },
 };

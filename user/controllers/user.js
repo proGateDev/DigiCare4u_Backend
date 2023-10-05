@@ -11,7 +11,7 @@ module.exports = {
   getUser: async (req, res) => {
     try {
       console.log('-------- data ----------', model);
-      const data = await model.findOne({})
+      const data = await model.find({});
       res.status(200).json(data);
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -79,13 +79,4 @@ module.exports = {
     await user.save();
     res.status(200).json(user);
   },
-  getEph: async (req, res) => {
-    var swisseph = require('swisseph');
-
-    var date = { year: 2015, month: 1, day: 1, hour: 0 };
-
-    var julday = swisseph.swe_julday(date.year, date.month, date.day, date.hour, swisseph.SE_GREG_CAL);
-    res.status(200).json(julday);
-  },
-
 };

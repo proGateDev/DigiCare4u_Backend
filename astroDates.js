@@ -1,10 +1,3 @@
-const dates = [
-    {
-        event_id: "sun in "
-    }
-]
-
-//=========================================
 
 user = {
     user_id: 'user_123',
@@ -35,8 +28,17 @@ user = {
                             prediction: 'new light on the roots',
                             user_id: 'user_123',
                             planet_id: 'planet_123',
+                            planet_id: 'planet',
                         },
-                        
+                        {
+                            planet: 'sun',
+                            eventName: 'sun enters in capricorn',
+                            ingressIn: 'aries',
+                            date: '15-04-2024',
+                            prediction: 'new light on the roots',
+                            planet_id: 'planet',
+                        },
+
                     ]
                 },
                 {
@@ -54,18 +56,6 @@ user = {
 
                 }
             ],
-            // event_id: [
-            //     {
-            //         planet: 'sun',
-            //         eventName: 'sun enters in aries',
-            //         ingressIn: 'aries',
-            //         date: '15-04-2023',
-            //         userHouse: 4,
-            //         prediction: 'new light on the roots',
-            //         user_id: 'user_123'
-            //     }
-
-            // ],
         }
     ],
     houses: [
@@ -76,7 +66,15 @@ user = {
             owner: 'saturn',
             rashiMode: 'cardinal',
             gender: 'feminine',
-            user_id: 'user_123'
+            user_id: 'user_123',
+            aspectedBy: {
+                user_id: 'user_123',
+                aspectedBy: ['mars', 'jupiter'],
+            },
+            houseAge: {
+                user_id: 'user_123',
+                age: [1, 13, 25, 38],
+            }
         }
     ]
 }

@@ -178,12 +178,16 @@ module.exports = {
   // },
 
   getNatal: async (value) => {
+    console.log('---------------- getNatal');
+    
     const { houses, planets } = await getEphemeris(value);// for a given location and time
-
+    
     const ascSymbol = houses?.data?.data[0].name; //-------> only need the first house for Asc. calculation
     const currentPlanetsPositions = planets?.data?.data;
+    console.log('---------------- currentPlanetsPositions',currentPlanetsPositions);
     const ascSymbolData = getZodiacData(ascSymbol, null);
     const newZodiacCycle = generateZodiacCycle(ascSymbolData);
+    console.log('---------------- getNatal2');
 
     //----------------------------------
     let userPlanets = [];

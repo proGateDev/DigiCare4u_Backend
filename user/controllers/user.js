@@ -9,26 +9,27 @@ const ObjectId = require('mongodb').ObjectId;
 module.exports = {
   getPlanet: async (req, res) => {
     try {
-      const data = await planetModel.find()
-      console.log('-------- data ----------', data);
-      res.status(200).json(data);
+        const data = await planetModel.find({})
+        console.log('-------- data ----------', data);
+        jsonResponse={
+          "message":"user found successfully",
+          "data":data,
+          "count":data.length
+          ,
+          
+        }
+        res.status(200).json(jsonResponse);
     } catch (error) {
-      console.error('Error fetching user data:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error fetching user data:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-  },
+},
   //===============  GET ====================================
   getUser: async (req, res) => {
     try {
-      const data = await model.find({}).populate('planets')
-        // .populate("planets")
-        .sort({ createdAt: 'desc' });
-      console.log('-------- data ----------', data);
-      responseData = {
-        count: data.length,
-        data
-      }
-      res.status(200).json(responseData);
+      console.log('-------- data ----------', model);
+      const data = await model.findOne({}).populate('planets')
+      res.status(200).json(data);
     } catch (error) {
       console.error('Error fetching user data:', error);
       res.status(500).json({ error: 'Internal Server Error' });
@@ -67,11 +68,12 @@ module.exports = {
         for (let index = 0; index < data.length; index++) {
           const element = data[index];
           const planet = new planetModel(element);
-          planet.save()
-
-
+          // planet.save()
+          
+          // console.log(' planet ------->', planet.id);
+          
           user.planets = user.planets.concat(planet.id)
-          await user.save();
+          // await user.save();
         }
 
         // for (let index = 0; index < 12; index++) {

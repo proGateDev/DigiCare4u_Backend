@@ -1,7 +1,5 @@
 const mongoose = require("mongoose");
 
-const moment = require('moment-timezone');
-const dateIST = moment.tz(Date.now(), "Asia/Kolkata");
 //===================================
 const userSchema = new mongoose.Schema({
   name: String,

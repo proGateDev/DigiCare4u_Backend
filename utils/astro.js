@@ -187,15 +187,15 @@ module.exports = {
 
 
       houseNumber = newZodiacCycle.find((item) => {
-        // console.log('sssssssssss', currentPlanetsPositions[i].position.toLowerCase());
-        console.log('qqqqqqqqqqqqqqq', planetRulership[i].planet);
-        if (item.name === planetRulership[i].houseRule.sign.toLowerCase()) {
-          console.log('V000', item);
+        let index = 0
+        // if (item.name === planetRulership[i].houseRule.sign.toLowerCase()) {
 
+        if (item.name === 'aquarius') {
+          index = newZodiacCycle.indexOf(item)
+          console.log(' xxxxxxxxxxxxxxxx----------', index);
         }
-        return 2
+        return index
       })
-      console.log(' xxxxxxxxxxxxxxxx----------', houseNumber);
 
       userPlanets.push({
         name: currentPlanetsPositions[i]?.name,

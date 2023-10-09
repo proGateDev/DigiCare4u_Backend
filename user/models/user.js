@@ -1,4 +1,7 @@
 const mongoose = require("mongoose");
+
+const moment = require('moment-timezone');
+const dateIST = moment.tz(Date.now(), "Asia/Kolkata");
 //===================================
 const userSchema = new mongoose.Schema({
   name: String,
@@ -10,9 +13,13 @@ const userSchema = new mongoose.Schema({
     long: Number,
   },
   planets: [{
-      type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Planet'
-  }]
+  }],
+  createdAt: String
+
+
+
 });
 
 

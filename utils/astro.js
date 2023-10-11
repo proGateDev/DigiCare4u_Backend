@@ -1,6 +1,6 @@
 const { default: axios } = require("axios");
 const ephemeris = require("../constants/urls");
-const planetRulership = require('../astroMeta')
+const { planetRulership, lagnaWisePlanetsRulership } = require('../astroMeta')
 //=====================================================
 kaalPurushaChartData = [
   { sign: "aries", icon: "♈", lord: "mars", house: 1 },
@@ -67,7 +67,7 @@ const generateZodiacCycle = (lagnaSign) => {
   ];
 
   const lagnaIndex = zodiacSigns.indexOf(lagnaSign.sign);
-  console.log(lagnaIndex)
+  // console.log(lagnaIndex)
   const rotatedZodiacSigns = [
     ...zodiacSigns.slice(lagnaIndex),
     ...zodiacSigns.slice(0, lagnaIndex),
@@ -186,26 +186,28 @@ module.exports = {
 
 
 
+      let index = 0
       houseNumber = newZodiacCycle.find((item) => {
-        let index = 0
         // if (item.name === planetRulership[i].houseRule.sign.toLowerCase()) {
 
         if (item.name === 'aquarius') {
           index = newZodiacCycle.indexOf(item)
-          console.log(' xxxxxxxxxxxxxxxx----------', index);
         }
-        return index
+        return index.house
       })
+
+      houseNumber = houseNumber
+      console.log('--------- houseNumber -------------------->', houseNumber);
+
 
       userPlanets.push({
         name: currentPlanetsPositions[i]?.name,
         longitude: longitude,
-        rulerOf: houseNumber,
+        rulerOf: index,
         isIn: lord.lord,
         landLord: lord.lord
       });
     }
-    // console.log('----------------------------->', userPlanets[0]);
     return userPlanets;
   },
 };

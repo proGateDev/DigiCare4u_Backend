@@ -182,23 +182,28 @@ module.exports = {
       longitude = currentPlanetsPositions[i]?.position.degree + " " + currentPlanetsPositions[i]?.position.sign + " " + currentPlanetsPositions[i]?.position.minute
 
 
-      // console.log('------ xxxx', newZodiacCycle)
+      // console.log('------ NameFromIcon', getZodiacData(currentPlanetsPositions[0].position.sign, null).sign)
 
 
 
       let index = 0
-      houseNumber = newZodiacCycle.find((item) => {
-        // if (item.name === planetRulership[i].houseRule.sign.toLowerCase()) {
+      houseNumber = lagnaWisePlanetsRulership.find((item) => {
+        // console.log('-------xxx', item.lagna)
+        if (item.lagna === getZodiacData(currentPlanetsPositions[0].position.sign, null).sign) {
+          item.planet.map((ele) => {
+            if (ele.name === currentPlanetsPositions[i].name){
+              return ele.rulingHouse
+            }
+          })
+          // console.log('------ sign', getZodiacData(currentPlanetsPositions[0].position.sign, null).sign)
+          // console.log('------ currentPlanetsPositions', currentPlanetsPositions)
 
-        if (item.name === 'aquarius') {
-          index = newZodiacCycle.indexOf(item)
         }
-        return index.house
+        return index
       })
 
-      houseNumber = houseNumber
-      console.log('--------- houseNumber -------------------->', houseNumber);
 
+      // console.log('------ houseNumber', houseNumber)
 
       userPlanets.push({
         name: currentPlanetsPositions[i]?.name,
@@ -208,6 +213,7 @@ module.exports = {
         landLord: lord.lord
       });
     }
+    // console.log('--------- userPlanets -------------------->', userPlanets[0]);
     return userPlanets;
   },
 };

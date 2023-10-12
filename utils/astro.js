@@ -149,7 +149,7 @@ module.exports = {
 
     const { houses, planets } = await getEphemeris(value);// for a given location and time
 
-    const ascSymbol = houses?.data?.data[0].name; //-------> only need the first house for Asc. calculation
+    const ascSymbol = houses?.data?.data[0]?.name; //-------> only need the first house for Asc. calculation
     const currentPlanetsPositions = planets?.data?.data;
 
     const ascSymbolData = getZodiacData(ascSymbol, null);
@@ -186,34 +186,38 @@ module.exports = {
 
 
 
-      let index = 0
-      houseNumber = lagnaWisePlanetsRulership.find((item) => {
-        // console.log('-------xxx', item.lagna)
-        if (item.lagna === getZodiacData(currentPlanetsPositions[0].position.sign, null).sign) {
-          item.planet.map((ele) => {
-            if (ele.name === currentPlanetsPositions[i].name){
-              return ele.rulingHouse
-            }
-          })
-          // console.log('------ sign', getZodiacData(currentPlanetsPositions[0].position.sign, null).sign)
-          // console.log('------ currentPlanetsPositions', currentPlanetsPositions)
+      let houseNumber = lagnaWisePlanetsRulership.find((item) => {
+        let s = getZodiacData(currentPlanetsPositions[i]?.position?.sign, null)?.sign;
+        if (item.lagna === s) {
+          // let foundHouse = item.planet.find((ele) => {
+          // console.log('--------- before -------------------->',ele);
+          // if(ele.name === currentPlanetsPositions[i].name){
+          return item
+          // }
+          // });
 
         }
-        return index
+      });
+
+
+
+      let a = houseNumber?.planet?.filter((x)=>{
+        console.log(currentPlanetsPositions[i]?.name);
+        console.log(x);
+        // if(x.rulingHouse == currentPlanetsPositions[i]?.name){
+          return x
+        // }
       })
-
-
-      // console.log('------ houseNumber', houseNumber)
-
+      console.log('------ rulerOf', a)
       userPlanets.push({
         name: currentPlanetsPositions[i]?.name,
         longitude: longitude,
-        rulerOf: index,
+        rulerOf: a,
         isIn: lord.lord,
         landLord: lord.lord
       });
     }
-    // console.log('--------- userPlanets -------------------->', userPlanets[0]);
+    console.log('--------- userPlanets -------------------->', userPlanets[0]);
     return userPlanets;
   },
 };

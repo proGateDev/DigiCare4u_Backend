@@ -186,15 +186,17 @@ module.exports = {
 
 
 
-      let houseNumber = lagnaWisePlanetsRulership.find((item) => {
-        let s = getZodiacData(currentPlanetsPositions[i]?.position?.sign, null)?.sign;
-        if (item.lagna === s) {
-          // let foundHouse = item.planet.find((ele) => {
-          // console.log('--------- before -------------------->',ele);
-          // if(ele.name === currentPlanetsPositions[i].name){
-          return item
-          // }
-          // });
+      let index = 0
+      houseNumber = lagnaWisePlanetsRulership.find((item) => {
+        // console.log('-------xxx', item.lagna)
+        if (item.lagna === getZodiacData(currentPlanetsPositions[0].position.sign, null).sign) {
+          item.planet.map((ele) => {
+            if (ele.name === currentPlanetsPositions[i].name) {
+              return ele.rulingHouse
+            }
+          })
+          // console.log('------ sign', getZodiacData(currentPlanetsPositions[0].position.sign, null).sign)
+          // console.log('------ currentPlanetsPositions', currentPlanetsPositions)
 
         }
       });

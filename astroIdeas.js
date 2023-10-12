@@ -119,3 +119,27 @@ houseAge = {
     user_id: 'user_123',
     age: [1, 13, 25, 38],
 }
+
+// ====================================================
+// -------------- Marketing Posts Ideas ----------------------
+// ====================================================
+
+const videos_clips_memes_ideas = [
+    {
+        link: "https://www.youtube.com/watch?v=f2rOCdHjqes&t=2s&ab_channel=FlyingBeast",
+        timestamp: "23:33",
+        description: "idea of how the idea of having an advantage of knowing things beforehand or  advantage of having an overview of EVENTS "
+    }
+]
+
+
+const startupExpansionIdeas = [
+    {
+        idea: 'Astro Pedigree Social platform',
+        description: "platform like FB, where a user's family member's insight will be shared among themselves, providing inter-related insights"
+    },
+    {
+        idea: 'Tracking market story using the Atro + Blog out of it ',
+        description: "To track the sentiment/emotion/intent behind the price action's so and so behaviour; just juxtapositioning the participant actions to that of the planetary combination/stories, thus will be able to create daily + weelky + monthly blogs/postingContent "
+    }
+]

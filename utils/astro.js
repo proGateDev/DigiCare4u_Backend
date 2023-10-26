@@ -1,6 +1,6 @@
 const { default: axios } = require("axios");
 const ephemeris = require("../constants/urls");
-const { planetRulership, lagnaWisePlanetsRulership } = require('../astroMeta')
+const { planetRulership, lagnaWisePlanetsRulership } = require("../astroMeta");
 //=====================================================
 kaalPurushaChartData = [
   { sign: "aries", icon: "♈", lord: "mars", house: 1 },
@@ -43,14 +43,14 @@ const getEphemeris = async (value) => {
   const planets = await axios.post(ephemeris.ephemerisApi + "/planets", {
     value,
   });
+  // console.log(planets.data.data);
   const houses = await axios.post(ephemeris.ephemerisApi + "/houses", {
     value,
   });
   return { planets, houses };
 };
 //=====================================================
-const generateZodiacCycle = (lagnaSign) => {
-  // console.log(' lagnaSign --------------------------', lagnaSign)
+const generateZodiacCycle = (lagnaIndex) => {
   const zodiacSigns = [
     "aries",
     "taurus",
@@ -66,13 +66,10 @@ const generateZodiacCycle = (lagnaSign) => {
     "pisces",
   ];
 
-  const lagnaIndex = zodiacSigns.indexOf(lagnaSign.sign);
-  // console.log(lagnaIndex)
   const rotatedZodiacSigns = [
     ...zodiacSigns.slice(lagnaIndex),
     ...zodiacSigns.slice(0, lagnaIndex),
   ];
-  // console.log(' rotatedZodiacSigns --------------------------', rotatedZodiacSigns)
   const zodiacCycle = [];
   for (let i = 0; i < 12; i++) {
     zodiacCycle.push({
@@ -104,20 +101,30 @@ const whereHouseLordIsDeposited = (
     (x) => x.name === planetsCurrentTransitZodiacSign?.sign
   );
   // ============================
-  const getHouseLordDeposited = (planetName, currentPlanetsPositions, newZodiacCycle) => {
-    const planetCurrentPosition = currentPlanetsPositions.find(x => x.name.toLowerCase() === planetName.toLowerCase());
+  const getHouseLordDeposited = (
+    planetName,
+    currentPlanetsPositions,
+    newZodiacCycle
+  ) => {
+    const planetCurrentPosition = currentPlanetsPositions.find(
+      (x) => x.name.toLowerCase() === planetName.toLowerCase()
+    );
 
     if (!planetCurrentPosition) {
       return null; // Return null if the planet's position is not found
     }
 
-    const planetsCurrentTransitZodiacSign = getZodiacData(planetCurrentPosition.position.split(" ")[1]);
+    const planetsCurrentTransitZodiacSign = getZodiacData(
+      planetCurrentPosition.position.split(" ")[1]
+    );
 
     if (!planetsCurrentTransitZodiacSign) {
       return null; // Return null if the zodiac sign data is not found
     }
 
-    const houseNumber = newZodiacCycle.findIndex(x => x.name === planetsCurrentTransitZodiacSign.sign);
+    const houseNumber = newZodiacCycle.findIndex(
+      (x) => x.name === planetsCurrentTransitZodiacSign.sign
+    );
 
     return houseNumber + 1; // Adding 1 to match the house numbering (1-indexed)
   };
@@ -142,84 +149,53 @@ const anyPlanetInTheHouse = (
 };
 //=====================================================
 module.exports = {
-
-
   getNatal: async (value) => {
     // console.log('---------------- getNatal');
 
-    const { houses, planets } = await getEphemeris(value);// for a given location and time
+    const { houses, planets } = await getEphemeris(value); // for a given location and time
+    // console.log(houses.data.data);
+    const ascendant = houses?.data?.data[0]; //-------> only need the first house for Asc. calculation
+    const lagnaIndex = ascendant.houseNumber;
 
-    const ascSymbol = houses?.data?.data[0]?.name; //-------> only need the first house for Asc. calculation
     const currentPlanetsPositions = planets?.data?.data;
 
-    const ascSymbolData = getZodiacData(ascSymbol, null);
-    const newZodiacCycle = generateZodiacCycle(ascSymbolData);
+    // const ascSymbolData = getZodiacData(ascSymbol, null);
+    const newZodiacCycle = generateZodiacCycle(lagnaIndex);
 
     //----------------------------------
     let userPlanets = [];
-    let userHouses = [];
 
+    const lagnaPlanets = lagnaWisePlanetsRulership?.find((x) => {
+      if (x?.lagna === ascendant.name) {
+        return x;
+      }
+    });
     for (let i = 0; i < currentPlanetsPositions.length; i++) {
       let lord = getZodiacData(null, newZodiacCycle[i].name);
-      // let deposited = whereHouseLordIsDeposited
-      //   (
-      //     getZodiacData
-      //       (
-      //         null,
-      //         newZodiacCycle[i].name
-      //       ).lord,
-      //     currentPlanetsPositions,
-      //     newZodiacCycle
-      //   );
 
+      const { name, position, degree, sign, minute } =
+        currentPlanetsPositions[i];
+      // console.log("---  ascendant ----->", ascendant);
+      // console.log("--- the  lagnaPlanets ----->", lagnaPlanets);
 
-      // let anyPlanet = anyPlanetInTheHouse(
-      //   i,
-      //   currentPlanetsPositions,
-      //   newZodiacCycle
-      // );
-
-      longitude = currentPlanetsPositions[i]?.position.degree + " " + currentPlanetsPositions[i]?.position.sign + " " + currentPlanetsPositions[i]?.position.minute
-
-
-      // console.log('------ NameFromIcon', getZodiacData(currentPlanetsPositions[0].position.sign, null).sign)
-
-
-
-      let index = 0
-      houseNumber = lagnaWisePlanetsRulership.find((item) => {
-        // console.log('-------xxx', item.lagna)
-        if (item.lagna === getZodiacData(currentPlanetsPositions[0].position.sign, null).sign) {
-          item.planet.map((ele) => {
-            if (ele.name === currentPlanetsPositions[i].name) {
-              return ele.rulingHouse
-            }
-          })
-          // console.log('------ sign', getZodiacData(currentPlanetsPositions[0].position.sign, null).sign)
-          // console.log('------ currentPlanetsPositions', currentPlanetsPositions)
-
+      const rulerOf = lagnaPlanets?.planet?.find((x) => {
+        if (x.name === name) {
+          return x;
         }
       });
+      console.log("--- the  rulkerOf----->", rulerOf);
 
+      longitude = degree + " " + sign + " " + minute;
 
-
-      let a = houseNumber?.planet?.filter((x)=>{
-        console.log(currentPlanetsPositions[i]?.name);
-        console.log(x);
-        // if(x.rulingHouse == currentPlanetsPositions[i]?.name){
-          return x
-        // }
-      })
-      console.log('------ rulerOf', a)
       userPlanets.push({
         name: currentPlanetsPositions[i]?.name,
         longitude: longitude,
-        rulerOf: a,
+        rulerOf: rulerOf,
         isIn: lord.lord,
-        landLord: lord.lord
+        landLord: lord.lord,
       });
     }
-    console.log('--------- userPlanets -------------------->', userPlanets[0]);
+    // console.log("--------- userPlanets -------------------->", userPlanets);
     return userPlanets;
   },
 };

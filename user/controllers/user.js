@@ -68,12 +68,12 @@ module.exports = {
         for (let index = 0; index < data.length; index++) {
           const element = data[index];
           const planet = new planetModel(element);
-          // planet.save()
+          await planet.save()
           
           // console.log(' planet ------->', planet.id);
           
           user.planets = user.planets.concat(planet.id)
-          // await user.save();
+          await user.save();
         }
 
         // for (let index = 0; index < 12; index++) {

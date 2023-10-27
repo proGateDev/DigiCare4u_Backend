@@ -36,7 +36,12 @@ const lagnaWisePlanetsRulership = [
             {
                 name: "saturn",
                 rulingHouse: [1, 2]
-            }]
+            },
+            {
+                name: "mean node",
+                rulingHouse: [null]
+            },
+        ]
     },
     {
         lagna: 'aries',
@@ -75,7 +80,13 @@ const lagnaWisePlanetsRulership = [
             {
                 name: "saturn",
                 rulingHouse: [1, 2]
-            }]
+            },
+            {
+                name: "mean node",
+                rulingHouse: [0]
+            },
+
+        ]
     }
 ]
 module.exports = { lagnaWisePlanetsRulership }

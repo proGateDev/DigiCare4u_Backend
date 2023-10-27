@@ -158,7 +158,6 @@ module.exports = {
     const lagnaIndex = ascendant.houseNumber;
 
     const currentPlanetsPositions = planets?.data?.data;
-
     // const ascSymbolData = getZodiacData(ascSymbol, null);
     const newZodiacCycle = generateZodiacCycle(lagnaIndex);
 
@@ -176,18 +175,20 @@ module.exports = {
       const { name, position } = currentPlanetsPositions[i];
 
       const rulerOf = lagnaPlanets?.planet?.find((x) => {
+        console.log("--------- name -------------------->", name);
+        console.log("--------- x.name -------------------->", x.name);
         if (x.name === name) {
-          console.log("--------- x.name-------------------->", x);
-          return x;
+          return x?.rulingHouse;
         }
       });
+      console.log("--------- rulerOf -------------------->", rulerOf);
 
       longitude = position.degree + " " + position.sign + " " + position.minute;
 
       userPlanets.push({
         name: currentPlanetsPositions[i]?.name,
         longitude: longitude,
-        rulerOf: rulerOf,
+        rulerOf: rulerOf.rulingHouse,
         isIn: lord.lord,
         landLord: lord.lord,
       });

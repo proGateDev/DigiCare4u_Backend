@@ -173,19 +173,16 @@ module.exports = {
     for (let i = 0; i < currentPlanetsPositions.length; i++) {
       let lord = getZodiacData(null, newZodiacCycle[i].name);
 
-      const { name, position, degree, sign, minute } =
-        currentPlanetsPositions[i];
-      // console.log("---  ascendant ----->", ascendant);
-      // console.log("--- the  lagnaPlanets ----->", lagnaPlanets);
+      const { name, position } = currentPlanetsPositions[i];
 
       const rulerOf = lagnaPlanets?.planet?.find((x) => {
         if (x.name === name) {
+          console.log("--------- x.name-------------------->", x);
           return x;
         }
       });
-      console.log("--- the  rulkerOf----->", rulerOf);
 
-      longitude = degree + " " + sign + " " + minute;
+      longitude = position.degree + " " + position.sign + " " + position.minute;
 
       userPlanets.push({
         name: currentPlanetsPositions[i]?.name,
@@ -195,7 +192,7 @@ module.exports = {
         landLord: lord.lord,
       });
     }
-    // console.log("--------- userPlanets -------------------->", userPlanets);
+    console.log("--------- userPlanets -------------------->", userPlanets[0]);
     return userPlanets;
   },
 };

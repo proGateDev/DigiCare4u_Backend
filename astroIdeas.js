@@ -117,6 +117,7 @@ houseAspect = {
 }
 houseAge = {
     user_id: 'user_123',
+    house:1,
     age: [1, 13, 25, 38],
 }
 

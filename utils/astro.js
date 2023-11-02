@@ -100,6 +100,7 @@ const whereHouseLordIsDeposited = (
   let houseNumber = newZodiacCycle.findIndex(
     (x) => x.name === planetsCurrentTransitZodiacSign?.sign
   );
+  console.log(houseNumber);
   // ============================
   const getHouseLordDeposited = (
     planetName,
@@ -113,10 +114,9 @@ const whereHouseLordIsDeposited = (
     if (!planetCurrentPosition) {
       return null; // Return null if the planet's position is not found
     }
-
-    const planetsCurrentTransitZodiacSign = getZodiacData(
-      planetCurrentPosition.position.split(" ")[1]
-    );
+    console.log("planetCurrentPosition", planetCurrentPosition);
+    const planetsCurrentTransitZodiacSign =
+      planetCurrentPosition?.position?.name;
 
     if (!planetsCurrentTransitZodiacSign) {
       return null; // Return null if the zodiac sign data is not found
@@ -128,6 +128,45 @@ const whereHouseLordIsDeposited = (
 
     return houseNumber + 1; // Adding 1 to match the house numbering (1-indexed)
   };
+
+  // =============================
+  return houseNumber + 1;
+};
+
+const whereHouseLordIsDeposited1 = (
+  planet,
+  position,
+  currentPlanetsPositions,
+  newZodiacCycle
+) => {
+  console.log("newZodiacCycle ====================================================",newZodiacCycle);
+
+  console.log("------------------------------------------------", position);
+  let x = newZodiacCycle.findIndex((ele) => {
+    if(ele ===planet){
+      return newZodiacCycle.indexOf(ele)
+      console.log(
+        "--------------------------- ele            xxxxxxxxxxxxxxxxxxxxxx---------------------",
+        ele
+      );
+    }
+  });
+
+  let planetCurrentPosition = "";
+  if (currentPlanetsPositions) {
+    planetCurrentPosition =
+      currentPlanetsPositions?.find((x) => {
+        return x.name.toLowerCase() === planet.toLowerCase();
+      }) ?? null;
+  }
+
+  let planetsCurrentTransitZodiacSign = planetCurrentPosition?.position?.name;
+
+  let houseNumber = newZodiacCycle.findIndex(
+    (x) => x.name === planetsCurrentTransitZodiacSign?.sign
+  );
+  // ============================
+  // console.log("houseNumber",houseNumber);
 
   // =============================
   return houseNumber + 1;
@@ -170,18 +209,24 @@ module.exports = {
       }
     });
     for (let i = 0; i < currentPlanetsPositions.length; i++) {
-      let lord = getZodiacData(null, newZodiacCycle[i].name);
-
+      // let lord = getZodiacData(null, newZodiacCycle[i].name);
       const { name, position } = currentPlanetsPositions[i];
+      console.log(name);
+      let x = whereHouseLordIsDeposited1(
+        name,
+        position,
+        currentPlanetsPositions,
+        newZodiacCycle
+      );
 
       const rulerOf = lagnaPlanets?.planet?.find((x) => {
-        console.log("--------- name -------------------->", name);
-        console.log("--------- x.name -------------------->", x.name);
+        // console.log("--------- name -------------------->", name);
+        // console.log("--------- x.name -------------------->", x.name);
         if (x.name === name) {
           return x?.rulingHouse;
         }
       });
-      console.log("--------- rulerOf -------------------->", rulerOf);
+      // console.log("--------- rulerOf -------------------->", rulerOf);
 
       longitude = position.degree + " " + position.sign + " " + position.minute;
 
@@ -189,8 +234,8 @@ module.exports = {
         name: currentPlanetsPositions[i]?.name,
         longitude: longitude,
         rulerOf: rulerOf.rulingHouse,
-        isIn: lord.lord,
-        landLord: lord.lord,
+        isIn: "lord.lord",
+        landLord: "lord.lord",
       });
     }
     console.log("--------- userPlanets -------------------->", userPlanets[0]);

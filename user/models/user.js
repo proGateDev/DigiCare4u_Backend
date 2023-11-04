@@ -14,6 +14,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Planet'
   }],
+  houses: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'House'
+  }],
   createdAt: String
 
 

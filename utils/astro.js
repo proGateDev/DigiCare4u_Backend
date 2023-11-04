@@ -3,18 +3,102 @@ const ephemeris = require("../constants/urls");
 const { planetRulership, lagnaWisePlanetsRulership } = require("../astroMeta");
 //=====================================================
 kaalPurushaChartData = [
-  { sign: "aries", icon: "♈", lord: "mars", house: 1 },
-  { sign: "taurus", icon: "♉", lord: "venus", house: 2 },
-  { sign: "gemini", icon: "♊", lord: "mercury", house: 3 },
-  { sign: "cancer", icon: "♋", lord: "moon", house: 4 },
-  { sign: "leo", icon: "♌", lord: "sun", house: 5 },
-  { sign: "virgo", icon: "♍", lord: "mercury", house: 6 },
-  { sign: "libra", icon: "♎", lord: "venus", house: 7 },
-  { sign: "scorpio", icon: "♏", lord: "mars", house: 8 },
-  { sign: "sagittarius", icon: "♐", lord: "jupiter", house: 9 },
-  { sign: "capricorn", icon: "♑", lord: "saturn", house: 10 },
-  { sign: "aquarius", icon: "♒", lord: "saturn", house: 11 },
-  { sign: "pisces", icon: "♓", lord: "jupiter", house: 12 },
+  {
+    sign: "aries",
+    icon: "♈",
+    lord: "mars",
+    house: 1,
+    rashiMode: "cardinal",
+    gender: "male",
+  },
+  {
+    sign: "taurus",
+    icon: "♉",
+    lord: "venus",
+    house: 2,
+    rashiMode: "fixed",
+    gender: "female",
+  },
+  {
+    sign: "gemini",
+    icon: "♊",
+    lord: "mercury",
+    house: 3,
+    rashiMode: "mutable",
+    gender: "trans",
+  },
+  {
+    sign: "cancer",
+    icon: "♋",
+    lord: "moon",
+    house: 4,
+    rashiMode: "cardinal",
+    gender: "female",
+  },
+  {
+    sign: "leo",
+    icon: "♌",
+    lord: "sun",
+    house: 5,
+    rashiMode: "fixed",
+    gender: "male",
+  },
+  {
+    sign: "virgo",
+    icon: "♍",
+    lord: "mercury",
+    house: 6,
+    rashiMode: "mutable",
+    gender: "female",
+  },
+  {
+    sign: "libra",
+    icon: "♎",
+    lord: "venus",
+    house: 7,
+    rashiMode: "cardinal",
+    gender: "male",
+  },
+  {
+    sign: "scorpio",
+    icon: "♏",
+    lord: "mars",
+    house: 8,
+    rashiMode: "fixed",
+    gender: "female",
+  },
+  {
+    sign: "sagittarius",
+    icon: "♐",
+    lord: "jupiter",
+    house: 9,
+    rashiMode: "mutable",
+    gender: "trans",
+  },
+  {
+    sign: "capricorn",
+    icon: "♑",
+    lord: "saturn",
+    house: 10,
+    rashiMode: "cardinal",
+    gender: "trans",
+  },
+  {
+    sign: "aquarius",
+    icon: "♒",
+    lord: "saturn",
+    house: 11,
+    rashiMode: "fixed",
+    gender: "male",
+  },
+  {
+    sign: "pisces",
+    icon: "♓",
+    lord: "jupiter",
+    house: 12,
+    rashiMode: "mutable",
+    gender: "female",
+  },
 ];
 //=====================================================
 
@@ -72,104 +156,57 @@ const generateZodiacCycle = (lagnaIndex) => {
   ];
   const zodiacCycle = [];
   for (let i = 0; i < 12; i++) {
+    let rulingPlanet = kaalPurushaChartData.find((x) => {
+      if (x.sign === rotatedZodiacSigns[i]) {
+        return x;
+      }
+    });
+
     zodiacCycle.push({
       name: rotatedZodiacSigns[i],
       house: i + 1,
+      ruler: rulingPlanet.lord,
+      rashiMode: kaalPurushaChartData.find((x) => {
+        if (x.sign === rotatedZodiacSigns[i]) {
+          return x;
+        }
+      }).rashiMode,
+      gender: kaalPurushaChartData.find((x) => {
+        if (x.sign === rotatedZodiacSigns[i]) {
+          return x;
+        }
+      }).gender,
     });
   }
+  // console.log(" zodiacCycle", zodiacCycle);
   return zodiacCycle;
 };
-//=====================================================
-const whereHouseLordIsDeposited = (
-  planet,
-  currentPlanetsPositions,
-  newZodiacCycle
-) => {
-  let planetCurrentPosition = "";
-  if (currentPlanetsPositions) {
-    planetCurrentPosition =
-      currentPlanetsPositions?.find((x) => {
-        return x.name.toLowerCase() === planet.toLowerCase();
-      }) ?? null;
-  }
+//=================  IsIn  ====================================
 
-  let planetsCurrentTransitZodiacSign = getZodiacData(
-    planetCurrentPosition?.position?.split(" ")[1]
-  ); //--- extracting the symbol
+const whereHouseLordIsDeposited = (position, newZodiacCycle) => {
+  let planetSign = position.name;
 
-  let houseNumber = newZodiacCycle.findIndex(
-    (x) => x.name === planetsCurrentTransitZodiacSign?.sign
-  );
-  console.log(houseNumber);
-  // ============================
-  const getHouseLordDeposited = (
-    planetName,
-    currentPlanetsPositions,
-    newZodiacCycle
-  ) => {
-    const planetCurrentPosition = currentPlanetsPositions.find(
-      (x) => x.name.toLowerCase() === planetName.toLowerCase()
-    );
-
-    if (!planetCurrentPosition) {
-      return null; // Return null if the planet's position is not found
-    }
-    console.log("planetCurrentPosition", planetCurrentPosition);
-    const planetsCurrentTransitZodiacSign =
-      planetCurrentPosition?.position?.name;
-
-    if (!planetsCurrentTransitZodiacSign) {
-      return null; // Return null if the zodiac sign data is not found
-    }
-
-    const houseNumber = newZodiacCycle.findIndex(
-      (x) => x.name === planetsCurrentTransitZodiacSign.sign
-    );
-
-    return houseNumber + 1; // Adding 1 to match the house numbering (1-indexed)
-  };
-
-  // =============================
-  return houseNumber + 1;
-};
-
-const whereHouseLordIsDeposited1 = (
-  planet,
-  position,
-  currentPlanetsPositions,
-  newZodiacCycle
-) => {
-  console.log("newZodiacCycle ====================================================",newZodiacCycle);
-
-  console.log("------------------------------------------------", position);
-  let x = newZodiacCycle.findIndex((ele) => {
-    if(ele ===planet){
-      return newZodiacCycle.indexOf(ele)
-      console.log(
-        "--------------------------- ele            xxxxxxxxxxxxxxxxxxxxxx---------------------",
-        ele
-      );
+  let wherePlanetIsAt = newZodiacCycle.find((x) => {
+    if (x.name === planetSign) {
+      return x;
     }
   });
 
-  let planetCurrentPosition = "";
-  if (currentPlanetsPositions) {
-    planetCurrentPosition =
-      currentPlanetsPositions?.find((x) => {
-        return x.name.toLowerCase() === planet.toLowerCase();
-      }) ?? null;
-  }
+  return wherePlanetIsAt.house;
+};
 
-  let planetsCurrentTransitZodiacSign = planetCurrentPosition?.position?.name;
+//=================  landLord  ====================================
 
-  let houseNumber = newZodiacCycle.findIndex(
-    (x) => x.name === planetsCurrentTransitZodiacSign?.sign
-  );
-  // ============================
-  // console.log("houseNumber",houseNumber);
+const landLord = (position) => {
+  let planetSign = position.name;
+  let bhavOwner = kaalPurushaChartData.find((x) => {
+    // console.log('====================================', x);
+    if (x.sign === planetSign) {
+      return x;
+    }
+  });
 
-  // =============================
-  return houseNumber + 1;
+  return bhavOwner.lord;
 };
 //=====================================================
 const anyPlanetInTheHouse = (
@@ -177,56 +214,44 @@ const anyPlanetInTheHouse = (
   currentPlanetsPositions,
   newZodiacCycle
 ) => {
-  let planetDeposited = [];
-  planetDeposited = currentPlanetsPositions.filter(
-    (x) =>
-      x.position.split(" ")[1] ===
-      getZodiacData(null, newZodiacCycle[house].name).icon
-  );
-
-  return planetDeposited;
+  let planetDeposited = currentPlanetsPositions.filter((x) => {
+    if (x.position.name === newZodiacCycle[house].name) {
+      return x;
+    }
+  });
+  return planetDeposited.map((x) => x.name);
 };
 //=====================================================
 module.exports = {
   getNatal: async (value) => {
-    // console.log('---------------- getNatal');
-
     const { houses, planets } = await getEphemeris(value); // for a given location and time
-    // console.log(houses.data.data);
-    const ascendant = houses?.data?.data[0]; //-------> only need the first house for Asc. calculation
-    const lagnaIndex = ascendant.houseNumber;
+    const ascendant = houses?.data?.data[0];
+    const lagnaIndex = ascendant.houseNumber - 1;
 
     const currentPlanetsPositions = planets?.data?.data;
-    // const ascSymbolData = getZodiacData(ascSymbol, null);
     const newZodiacCycle = generateZodiacCycle(lagnaIndex);
 
     //----------------------------------
     let userPlanets = [];
+    let userHouses = [];
+    // console.log("---------  userHouses -------------------->", userHouses);
 
     const lagnaPlanets = lagnaWisePlanetsRulership?.find((x) => {
       if (x?.lagna === ascendant.name) {
         return x;
       }
     });
+
     for (let i = 0; i < currentPlanetsPositions.length; i++) {
-      // let lord = getZodiacData(null, newZodiacCycle[i].name);
       const { name, position } = currentPlanetsPositions[i];
-      console.log(name);
-      let x = whereHouseLordIsDeposited1(
-        name,
-        position,
-        currentPlanetsPositions,
-        newZodiacCycle
-      );
+      let wherePlanetIsIn = whereHouseLordIsDeposited(position, newZodiacCycle);
+      let bhavowner = landLord(position, newZodiacCycle);
 
       const rulerOf = lagnaPlanets?.planet?.find((x) => {
-        // console.log("--------- name -------------------->", name);
-        // console.log("--------- x.name -------------------->", x.name);
         if (x.name === name) {
           return x?.rulingHouse;
         }
       });
-      // console.log("--------- rulerOf -------------------->", rulerOf);
 
       longitude = position.degree + " " + position.sign + " " + position.minute;
 
@@ -234,11 +259,26 @@ module.exports = {
         name: currentPlanetsPositions[i]?.name,
         longitude: longitude,
         rulerOf: rulerOf.rulingHouse,
-        isIn: "lord.lord",
-        landLord: "lord.lord",
+        isIn: wherePlanetIsIn,
+        landLord: bhavowner,
       });
     }
-    console.log("--------- userPlanets -------------------->", userPlanets[0]);
-    return userPlanets;
+    for (let i = 0; i < newZodiacCycle.length; i++) {
+      let residents = anyPlanetInTheHouse(
+        i,
+        currentPlanetsPositions,
+        newZodiacCycle
+      );
+      userHouses.push({
+        bhava: i + 1,
+        residents: residents,
+        rashi: newZodiacCycle[i]["name"],
+        owner: newZodiacCycle[i]["ruler"],
+        rashiMode: newZodiacCycle[i]["rashiMode"],
+        gender: newZodiacCycle[i]["gender"],
+      });
+    }
+
+    return { userPlanets, userHouses };
   },
 };

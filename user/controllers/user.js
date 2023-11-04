@@ -1,5 +1,6 @@
 const model = require("../models/user");
 const planetModel = require("../models/planet");
+const houseModel = require("../models/house");
 const userCreationValidation = require("../../user/validation/user");
 const { default: axios } = require("axios");
 const astroUtils = require("../../utils/astro");
@@ -26,7 +27,7 @@ module.exports = {
   getUser: async (req, res) => {
     try {
       console.log("-------- data ----------", model);
-      const data = await model.findOne({}).populate("planets");
+      const data = await model.find({}).populate(['houses','planets']);
       res.status(200).json(data);
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -52,37 +53,39 @@ module.exports = {
         });
       } else {
         // =========== NATAL ==================
-        const data = await astroUtils.getNatal(value);
+        const natalData = await astroUtils.getNatal(value);
+
+
         let dateTime = new Date();
-        // x = dateTime.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
         let dateObj = {
           createdAt: dateTime,
         };
         const mergedObject = { ...req.body, ...dateObj };
-        console.log("fer---------------------");
+
         const user = new model(mergedObject);
-        console.log("er---------------------");
-        // user.planets = user.planets + data;
-        for (let index = 0; index < data.length; index++) {
-          const element = data[index];
+        console.log("user   =========", user );
+
+        for (let index = 0; index < natalData.userPlanets.length; index++) {
+          const element = natalData.userPlanets[index];
           const planet = new planetModel(element);
           await planet.save();
-
-          // console.log(' planet ------->', planet.id);
 
           user.planets = user.planets.concat(planet.id);
           await user.save();
         }
 
-        // for (let index = 0; index < 12; index++) {
-        //   const planetData = data[index];
+        // console.log("natalData.userHouses.length  =========", natalData.userHouses.length);
+        for (let index = 0; index < natalData.userHouses.length; index++) {
+          const houseElement = natalData.userHouses[index];
+          // console.log("houseElement  =========", houseElement);
+          const house = new houseModel(houseElement);
+          // console.log("house  =========", house);
+          await house.save();
 
-        //   let obj = planet.id
+          user.houses = user.houses.concat(house._id);
+          await user.save();
+        }
 
-        //   user.planets = user.planets.push(obj);
-        //   await user.save();
-
-        // }
         return res.status(201).json(user);
       }
     } catch (error) {

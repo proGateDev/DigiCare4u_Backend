@@ -2,11 +2,24 @@ const { default: axios } = require("axios");
 const ephemeris = require("../constants/urls");
 const { planetRulership, lagnaWisePlanetsRulership } = require("../astroMeta");
 //=====================================================
-kaalPurushaChartData = [
+const kaalPurushaChartData = [
   {
     sign: "aries",
     icon: "♈",
     lord: "mars",
+    // lord: {
+    //   name: "mars",
+    //   naturalRulership: [
+    //     {
+    //       house: 1,
+    //       the_Y: "it initates ; the first ray",
+    //     },
+    //     {
+    //       house: 8,
+    //       the_Y: "it concludes ; the departure",
+    //     },
+    //   ],
+    // },
     house: 1,
     rashiMode: "cardinal",
     gender: "male",
@@ -101,27 +114,7 @@ kaalPurushaChartData = [
   },
 ];
 //=====================================================
-
-/**
- * Retrieves zodiac sign data based on the provided icon or name.
- * @param {string} icon - The icon representing the zodiac sign.
- * @param {string} name - The name of the zodiac sign.
- * @returns {object|undefined} - The zodiac sign object if found, otherwise undefined.
- */
-const getZodiacData = (icon, name) => {
-  if (icon) {
-    const foundByIcon = kaalPurushaChartData.find((x) => x.icon === icon);
-    if (foundByIcon) {
-      return foundByIcon;
-    }
-  } else if (name) {
-    const foundByName = kaalPurushaChartData.find((x) => x.sign === name);
-    if (foundByName) {
-      return foundByName;
-    }
-  }
-};
-
+//====================== HELPER__FUNCTIONS( ) ===============================
 //=====================================================
 const getEphemeris = async (value) => {
   const planets = await axios.post(ephemeris.ephemerisApi + "/planets", {
@@ -162,20 +155,16 @@ const generateZodiacCycle = (lagnaIndex) => {
       }
     });
 
+    let signsMeta = kaalPurushaChartData.find(
+      (x) => x.sign === rotatedZodiacSigns[i]
+    );
+
     zodiacCycle.push({
       name: rotatedZodiacSigns[i],
       house: i + 1,
       ruler: rulingPlanet.lord,
-      rashiMode: kaalPurushaChartData.find((x) => {
-        if (x.sign === rotatedZodiacSigns[i]) {
-          return x;
-        }
-      }).rashiMode,
-      gender: kaalPurushaChartData.find((x) => {
-        if (x.sign === rotatedZodiacSigns[i]) {
-          return x;
-        }
-      }).gender,
+      rashiMode: signsMeta.rashiMode,
+      gender: signsMeta.gender,
     });
   }
   // console.log(" zodiacCycle", zodiacCycle);
@@ -221,6 +210,8 @@ const anyPlanetInTheHouse = (
   });
   return planetDeposited.map((x) => x.name);
 };
+//=====================================================
+//=====================================================
 //=====================================================
 module.exports = {
   getNatal: async (value) => {
@@ -281,4 +272,49 @@ module.exports = {
 
     return { userPlanets, userHouses };
   },
+
+
+  getNatal_Optimized: async (value) => {
+    const { houses, planets } = await getEphemeris(value);
+    const ascendant = houses?.data?.data[0];
+    const lagnaIndex = ascendant.houseNumber - 1;
+
+    const currentPlanetsPositions = planets?.data?.data;
+    const newZodiacCycle = generateZodiacCycle(lagnaIndex);
+
+    const lagnaPlanets = lagnaWisePlanetsRulership.find(x => x?.lagna === ascendant.name);
+
+    const userPlanets = currentPlanetsPositions.map(planet => {
+        const { name, position } = planet;
+        const wherePlanetIsIn = whereHouseLordIsDeposited(position, newZodiacCycle);
+        const bhavowner = landLord(position, newZodiacCycle);
+        const rulerOf = lagnaPlanets?.planet.find(x => x.name === name);
+
+        const longitude = `${position.degree} ${position.sign} ${position.minute}`;
+
+        return {
+            name,
+            longitude,
+            rulerOf: rulerOf?.rulingHouse,
+            isIn: wherePlanetIsIn,
+            landLord: bhavowner,
+        };
+    });
+
+    const userHouses = newZodiacCycle.map((rashi, index) => {
+        const residents = anyPlanetInTheHouse(index, currentPlanetsPositions, newZodiacCycle);
+
+        return {
+            bhava: index + 1,
+            residents,
+            rashi: rashi.name,
+            owner: rashi.ruler,
+            rashiMode: rashi.rashiMode,
+            gender: rashi.gender,
+        };
+    });
+
+    return { userPlanets, userHouses };
+},
+
 };

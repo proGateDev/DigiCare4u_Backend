@@ -33,6 +33,7 @@ const signs = {
       {
         name: "ashwini",
         degree: "0-13.2 degree aries",
+        kahani:""
       },
       {
         name: "krittika",

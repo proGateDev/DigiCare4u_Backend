@@ -317,4 +317,8 @@ module.exports = {
     return { userPlanets, userHouses };
 },
 
+almanacData : async ()=>{
+  return 369
+}
+
 };

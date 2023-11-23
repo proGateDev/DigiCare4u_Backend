@@ -116,15 +116,26 @@ const kaalPurushaChartData = [
 //=====================================================
 //====================== HELPER__FUNCTIONS( ) ===============================
 //=====================================================
-const getEphemeris = async (value) => {
+const getEphemeris = async (value, date) => {
   const planets = await axios.post(ephemeris.ephemerisApi + "/planets", {
     value,
   });
-  // console.log(planets.data.data);
   const houses = await axios.post(ephemeris.ephemerisApi + "/houses", {
     value,
   });
+
   return { planets, houses };
+};
+
+
+
+const getAlamanc = async (date, time) => {
+
+  const almanacData_ = await axios.post(ephemeris.ephemerisApi + "/get-planet-byDateTime", {
+    date, time
+  });
+
+  return { almanacData_ };
 };
 //=====================================================
 const generateZodiacCycle = (lagnaIndex) => {
@@ -285,40 +296,42 @@ module.exports = {
     const lagnaPlanets = lagnaWisePlanetsRulership.find(x => x?.lagna === ascendant.name);
 
     const userPlanets = currentPlanetsPositions.map(planet => {
-        const { name, position } = planet;
-        const wherePlanetIsIn = whereHouseLordIsDeposited(position, newZodiacCycle);
-        const bhavowner = landLord(position, newZodiacCycle);
-        const rulerOf = lagnaPlanets?.planet.find(x => x.name === name);
+      const { name, position } = planet;
+      const wherePlanetIsIn = whereHouseLordIsDeposited(position, newZodiacCycle);
+      const bhavowner = landLord(position, newZodiacCycle);
+      const rulerOf = lagnaPlanets?.planet.find(x => x.name === name);
 
-        const longitude = `${position.degree} ${position.sign} ${position.minute}`;
+      const longitude = `${position.degree} ${position.sign} ${position.minute}`;
 
-        return {
-            name,
-            longitude,
-            rulerOf: rulerOf?.rulingHouse,
-            isIn: wherePlanetIsIn,
-            landLord: bhavowner,
-        };
+      return {
+        name,
+        longitude,
+        rulerOf: rulerOf?.rulingHouse,
+        isIn: wherePlanetIsIn,
+        landLord: bhavowner,
+      };
     });
 
     const userHouses = newZodiacCycle.map((rashi, index) => {
-        const residents = anyPlanetInTheHouse(index, currentPlanetsPositions, newZodiacCycle);
+      const residents = anyPlanetInTheHouse(index, currentPlanetsPositions, newZodiacCycle);
 
-        return {
-            bhava: index + 1,
-            residents,
-            rashi: rashi.name,
-            owner: rashi.ruler,
-            rashiMode: rashi.rashiMode,
-            gender: rashi.gender,
-        };
+      return {
+        bhava: index + 1,
+        residents,
+        rashi: rashi.name,
+        owner: rashi.ruler,
+        rashiMode: rashi.rashiMode,
+        gender: rashi.gender,
+      };
     });
 
     return { userPlanets, userHouses };
-},
+  },
 
-almanacData : async ()=>{
-  return 369
-}
+  almanacData: async (date, time) => {
+
+    const { almanacData_ } = await getAlamanc(date, time);
+    return almanacData_.data.data
+  }
 
 };

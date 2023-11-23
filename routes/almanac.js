@@ -3,6 +3,6 @@ const router = express.Router();
 const controller = require("../controllers/almanac");
 //==========================================
 
-router.get("/get", controller.almanac);
+router.post("/get", controller.almanac);
 
 module.exports = router;

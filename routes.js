@@ -1,6 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const userRoutes = require("./user/routes/user");
-const almanac = require("./routes/almanac");
+const almanacRoutes = require("./routes/almanac");
+const chartRoutes = require("./routes/chartData");
 
-module.exports = router.use("/almanac", almanac);
+const almanacRoute = router.use("/almanac", almanacRoutes);
+const userRoute = router.use("/user", userRoutes);
+const chartRoute = router.use("/chart", chartRoutes);
+
+
+module.exports = userRoute, almanacRoute, chartRoute

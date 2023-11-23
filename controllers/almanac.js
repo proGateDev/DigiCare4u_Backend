@@ -9,10 +9,11 @@ module.exports = {
 
       const date = req.body.date
       const time = req.body.time
-      let ccc = almanacData(date,time)
+      let ccc = almanacData(date, time)
 
       jsonResponse = {
-        message: "user---------------",
+        status: 200,
+        message: "Planetary position for a given date & time",
         data: await ccc,
       };
 

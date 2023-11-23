@@ -13,7 +13,7 @@ module.exports = {
   //================ GET_CHART_DATA ===========================
   getChartData: async (req, res) => {
     let chartData = await axios.get(
-      "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=GBPUSD&apikey=MDFI1JR0I0S8DQSZ"
+      "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=GBPUSD&apikey=MDFI1JR0I0S8DQSZ"
     );
     let finedData = chartData?.data["Time Series (Daily)"];
 

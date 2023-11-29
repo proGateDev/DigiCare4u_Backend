@@ -33,7 +33,7 @@ const signs = {
       {
         name: "ashwini",
         degree: "0-13.2 degree aries",
-        kahani:""
+        kahani: ""
       },
       {
         name: "krittika",
@@ -50,6 +50,7 @@ const signs = {
     opp: "libra",
     words: ["me myself and I"],
     mode: ["changeable", "cardinal"],
+
   },
 
   taurus: {
@@ -343,6 +344,20 @@ const planet = {
     guna: "satvik",
     people: ["king", "father", "authority"],
     keyword: ["ego", "soul", "joy", "pride"],
+    planetBehavingInHouse: [
+      {
+        house: 1,
+        description: "exalted ; own"
+      },
+      {
+        house: 2,
+        description: "value of exaltation"
+      },
+      {
+        house: 3,
+        description: "self-expression of exaltation"
+      },
+    ]
   },
   moon: {
     signs: ["cancer"],
@@ -522,7 +537,8 @@ const planet = {
       "Resilience",
       "Transformation",
     ],
-    beneficalTo: ["taurus", "libra"],
+    functionalBeneficTo: ["taurus", "capricorn", "aquarius", "libra"],
+    functionalMaleficTo: ["cancer", "leo", "sagittarius"],
   },
   rahu: {
     signs: ["virgo"],
@@ -553,6 +569,196 @@ const planet = {
     keyword: ["flag", "achieved"],
   },
 };
+
+//============= kaal_purusha =================================
+const kaalPurushaChart = [
+  {
+    sign: "aries",
+    icon: "♈",
+    lord: "mars",
+
+    planetRulerships: [
+      {
+        planet: "moon",
+        rulingHouses: [4]
+      },
+      {
+        planet: "sun",
+        rulingHouses: [5]
+      },
+      {
+        planet: "mercury",
+        rulingHouses: [3, 6]
+      },
+      {
+        planet: "venus",
+        rulingHouses: [2, 7]
+      },
+      {
+        planet: "mars",
+        rulingHouses: [1, 8]
+      },
+      {
+        planet: "jupiter",
+        rulingHouses: [9, 12]
+      },
+      {
+        planet: "saturn",
+        rulingHouses: [10, 11]
+      },
+    ],
+
+    naturalRulership: [
+      {
+        maleAspectHousedIn: 1,
+        femaleAspectHousedIn: 8,
+      },
+      {
+        femaleAspectHousedIn: 1,
+        maleAspectHousedIn: 6,
+      },
+
+    ],
+
+    house: 1,
+    rashiMode: "cardinal",
+    gender: "male",
+  },
+  {
+    sign: "taurus",
+    icon: "♉",
+    lord: "venus",
+    house: 2,
+    rashiMode: "fixed",
+    gender: "female",
+  },
+  {
+    sign: "gemini",
+    icon: "♊",
+    lord: "mercury",
+    house: 3,
+    rashiMode: "mutable",
+    gender: "trans",
+  },
+  {
+    sign: "cancer",
+    icon: "♋",
+    lord: "moon",
+    house: 4,
+    rashiMode: "cardinal",
+    gender: "female",
+  },
+  {
+    sign: "leo",
+    icon: "♌",
+    lord: "sun",
+    house: 5,
+    rashiMode: "fixed",
+    gender: "male",
+  },
+  {
+    sign: "virgo",
+    icon: "♍",
+    lord: "mercury",
+    house: 6,
+    rashiMode: "mutable",
+    gender: "female",
+  },
+  {
+    sign: "libra",
+    icon: "♎",
+    lord: "venus",
+    house: 7,
+    rashiMode: "cardinal",
+    gender: "male",
+  },
+  {
+    sign: "scorpio",
+    icon: "♏",
+    lord: "mars",
+    house: 8,
+    rashiMode: "fixed",
+    gender: "female",
+  },
+  {
+    sign: "sagittarius",
+    icon: "♐",
+    lord: "jupiter",
+    house: 9,
+    rashiMode: "mutable",
+    gender: "trans",
+  },
+  {
+    sign: "capricorn",
+    icon: "♑",
+    lord: "saturn",
+    house: 10,
+    rashiMode: "cardinal",
+    gender: "trans",
+
+    planetRulerships: [
+      {
+        planet: "moon",
+        rulingHouses: [7]
+      },
+      {
+        planet: "sun",
+        rulingHouses: [8]
+      },
+      {
+        planet: "mercury",
+        rulingHouses: [6, 9]
+      },
+      {
+        planet: "venus",
+        rulingHouses: [5, 10]
+      },
+      {
+        planet: "mars",
+        rulingHouses: [4, 11]
+      },
+      {
+        planet: "jupiter",
+        rulingHouses: [12, 3]
+      },
+      {
+        planet: "saturn",
+        rulingHouses: [1, 2]
+      },
+    ],
+
+    naturalRulership: [
+      {
+        maleAspectHousedIn: 1,
+        femaleAspectHousedIn: 12,
+      },
+      {
+        femaleAspectHousedIn: 1,
+        maleAspectHousedIn: 2,
+      },
+
+    ],
+
+  },
+  {
+    sign: "aquarius",
+    icon: "♒",
+    lord: "saturn",
+    house: 11,
+    rashiMode: "fixed",
+    gender: "male",
+  },
+  {
+    sign: "pisces",
+    icon: "♓",
+    lord: "jupiter",
+    house: 12,
+    rashiMode: "mutable",
+    gender: "female",
+  },
+];
+
+
 //============= CONCEPTS =================================
 const sudarshanChakra = {
   lagna: {
@@ -638,3 +844,8 @@ const concepts = [
 ];
 
 module.exports = { houses, signs, planet };
+
+
+
+
+

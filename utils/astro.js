@@ -132,11 +132,12 @@ const getEphemeris = async (value, date) => {
 const getAlamanc = async (date, time) => {
 
   const almanacData_ = await axios.post(ephemeris.ephemerisApi + "/get-planet-byDateTime", {
-    date, time
+    date, time, 
   });
 
   return { almanacData_ };
 };
+
 //=====================================================
 const generateZodiacCycle = (lagnaIndex) => {
   const zodiacSigns = [
@@ -332,6 +333,13 @@ module.exports = {
 
     const { almanacData_ } = await getAlamanc(date, time);
     return almanacData_.data.data
-  }
+  },
 
+  almanacData_d: async (date, time, planet, rashi) => {
+
+    const almanacDataaa_ = await axios.post(ephemeris.ephemerisApi + "/get-planet-byDateTime_d", {
+      date, time, planet, rashi
+    });
+    return { almanacDataaa_ }
+  }
 };

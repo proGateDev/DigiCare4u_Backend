@@ -85,7 +85,7 @@ planet = {
     nakshatrasLord: 'mars',
     rulerOf: [5, 10],
     isIn: 6,
-    landLord: [5, 10],
+    landLord: 'mercury',
     event_id: 'event_1',
     user_id: 'user_123'
 }
@@ -136,6 +136,7 @@ const videos_clips_memes_ideas = [
 const startupExpansionIdeas = [
     {
         idea: 'Astro Pedigree Social platform',
+        requiredFeatures:'familial connections + dynamics +  shared astrological influences(Transits).',
         description: "platform like FB, where a user's family member's insight will be shared among themselves, providing inter-related insights"
     },
     {
@@ -143,3 +144,25 @@ const startupExpansionIdeas = [
         description: "To track the sentiment/emotion/intent behind the price action's so and so behaviour; just juxtapositioning the participant actions to that of the planetary combination/stories, thus will be able to create daily + weelky + monthly blogs/postingContent "
     }
 ]
+
+
+// ==========================================================
+user_natal --> house_relation --> elements in it['fire','earth','air','water'] --> influencing planet's mood  
+                                        |                                                    
+                                    specific_characteristic in specific_life_arena    
+
+user_natal --> kona_relation --> 4 elements --> 3 houses
+                                        |            |__________________________
+                                        |                                        |
+                                    specific_functionality/life_arena         the 3 Modality->Expression
+                                                                                    |
+                                                                                #eg: planet in specific mode affects their expressions
+                                                                                    |
+                                                                                planet compatibilty with signs->hence with its ruler
+
+user --> house_relation
+            |                                                                               
+        residing planet --> in specific modality --> with friends/enemies/neutrals(planets)
+user --> house --> ruler --> depositor
+
+

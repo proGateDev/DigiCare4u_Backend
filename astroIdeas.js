@@ -165,7 +165,7 @@ const startupExpansionIdeas = [
 //             |                                                                               
 //         residing planet --> in specific modality --> with friends/enemies/neutrals(planets)
 //             |
-//         planet changed behaviour 
+//         planet changed behaviour + specific life arena given 
 // user --> house --> ruler --> depositor
 
 

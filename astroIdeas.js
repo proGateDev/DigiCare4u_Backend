@@ -147,23 +147,25 @@ const startupExpansionIdeas = [
 
 
 // ==========================================================
-user_natal --> house_relation --> elements in it['fire','earth','air','water'] --> influencing planet's mood  
-                                        |                                                    
-                                    specific_characteristic in specific_life_arena    
+// user_natal --> house_relation --> elements in it['fire','earth','air','water'] --> influencing planet's mood  
+//                                         |                                                    
+//                                     specific_characteristic in specific_life_arena    
 
-user_natal --> kona_relation --> 4 elements --> 3 houses --> life_arena
-                                        |            |__________________________
-                                        |                                        |
-                                    specific_functionality         the 3 Modality->Expression
-                                                                                    |
-                                                                                #eg: planet in specific mode affects their expressions
-                                                                                    |
-                                                                                planet compatibilty with signs->hence with its ruler(friends/neutral/enemy)
 
-user --> house_relation
-            |                                                                               
-        residing planet --> in specific modality --> with friends/enemies/neutrals(planets)
-        
-user --> house --> ruler --> depositor
+// user_natal --> kona_relation --> 4 elements --> 3 houses --> life_arena
+//                                         |            |__________________________
+//                                         |                                        |
+//                                     specific_functionality         the 3 Modality->Expression
+//                                                                                     |
+//                                                                                 #eg: planet in specific mode affects their expressions
+//                                                                                     |
+//                                                                                 planet compatibilty with signs->hence with its ruler(friends/neutral/enemy)
+
+// user --> house_relation
+//             |                                                                               
+//         residing planet --> in specific modality --> with friends/enemies/neutrals(planets)
+//             |
+//         planet changed behaviour 
+// user --> house --> ruler --> depositor
 
 

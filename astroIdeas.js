@@ -146,26 +146,58 @@ const startupExpansionIdeas = [
 ]
 
 
-// ==========================================================
-// user_natal --> house_relation --> elements in it['fire','earth','air','water'] --> influencing planet's mood  
-//                                         |                                                    
-//                                     specific_characteristic in specific_life_arena    
+
+// =========================================================================
+//                          FLOW OF THE APP
+// =========================================================================
+// FLOW_OF_ENERGY ---> CHALLENGES ---> OPPORTUNITIES
+//     |                    |               |
+//    natural           obstructive       syncing
+// =========================================================================
 
 
-// user_natal --> kona_relation --> 4 elements --> 3 houses --> life_arena
-//                                         |            |__________________________
-//                                         |                                        |
-//                                     specific_functionality         the 3 Modality->Expression
-//                                                                                     |
-//                                                                                 #eg: planet in specific mode affects their expressions
-//                                                                                     |
-//                                                                                 planet compatibilty with signs->hence with its ruler(friends/neutral/enemy)
 
-// user --> house_relation
-//             |                                                                               
-//         residing planet --> in specific modality --> with friends/enemies/neutrals(planets)
-//             |
-//         planet changed behaviour + specific life arena given 
-// user --> house --> ruler --> depositor
+// 4 Elements ------------------------------> 3 modes for each elememts
+// =========================================================================
+// fire  : mars, sun, jupiter      [1,5,9]    ('cardinal','fixed','mutable')         
+// earth : venus, mercury, saturn  [2,6,10]   ('fixed','mutable','cardinal')
+// air   : mercury, venus, saturn  [3,7,11]   ('mutable','cardinal','fixed')
+// water : moon, mars, jupiter     [4,8,12]   ('cardinal','fixed','mutable')
+
+
+// =========================================================================
+// cardinals : ['mars','moon','venus','saturn']
+// fixed     : ['venus','sun','mars','saturn']
+// mutables  : ['mercury','mercury','jupiter','jupiter']
+// =========================================================================
+
+// sun       : 'fire + fixed',
+// moon      : 'water + cardinal',
+// mercury1  : 'air + mutable',
+// mercury2  : 'earth + mutable',
+// venus1    : 'earth + fixed',
+// venus2    : 'air + cardinal',
+// mars1     : 'fire + cardinal',
+// mars2     : 'water + fixed',
+// jupiter1  : 'fire + mutable',
+// jupiter2  : 'water + mutable',
+// saturn1   : 'earth + cardinal',
+// saturn2   : 'air + fixed'
+
+// =========================================================================
+
+
+//house---planet___Natural Rulership--->Ownership(comfortable + natural)
+//             |___Rulership Assigned Due To Transit(s)
+//                 |___enemity/neutral/friends (Dignitaries) with the given
+//                                                          |___house-->Directional Strength?
+//                                                          |       |___natural_elements['fire','earth','air','water']-->Energy balance
+//                                                          |       |___signs-->thus the planet partial involvement
+//                                                          |           |___modality_expressions ['cardinal','fixed','mutable]-->For different house/life_arena
+//                                                          |___sign-->Due_To_Ascendant
+//                                                          |       |___(Exaltation, Deblitation)
+//                                                          |       |___modes ['cardinal','fixed','mutable']
+//                                                          |___planet
+//                                                                  |___brings_in_house_rulership_effect ['male-sign-house-lord', 'female-sign-house-lord']
 
 

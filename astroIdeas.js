@@ -157,7 +157,7 @@ const startupExpansionIdeas = [
 
 
 
-// 4 Elements ------------------------------> 3 modes for each elememts
+// 4 Elements ------------------------------> 3 Modality Expression
 // =========================================================================
 // fire  : mars, sun, jupiter      [1,5,9]    ('cardinal','fixed','mutable')         
 // earth : venus, mercury, saturn  [2,6,10]   ('fixed','mutable','cardinal')
@@ -170,6 +170,8 @@ const startupExpansionIdeas = [
 // fixed     : ['venus','sun','mars','saturn']
 // mutables  : ['mercury','mercury','jupiter','jupiter']
 // =========================================================================
+
+// ------- Planet's Energy & Expressions ------------------------
 
 // sun       : 'fire + fixed',
 // moon      : 'water + cardinal',

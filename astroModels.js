@@ -337,6 +337,7 @@ const planet = {
     exaltation: "aries",
     debilitation: "libra",
     gender: "male",
+    complexion:"blood-red",
     incarnation: "raam",
     cabinet: "king",
     varna: "kshatriya",
@@ -845,7 +846,22 @@ const concepts = [
 
 module.exports = { houses, signs, planet };
 
+"Cancer, Capricorn and Pisces have fullwater content; Taurus, Sagittarius and Aquarius have half water
+content; Aries, Libra and Scorpio have quarter water content; and
+Gemini, Leo and Virgo have no water conten"
 
 
 
+
+**Planetary Comparisons:**
+- Sun: Blood-red
+- Moon: Tawny
+- Mars: Blood-red
+- Mercury: Grass-like
+- Jupiter, Venus, Saturn: Tawny, variegated, dark
+
+**Horoscope Notes:**
+- Complexion isn't determined by the Ascendant planet.
+- Skin color is influenced by the Sun's position or Saturn.
+- Darknesses are removable.
 

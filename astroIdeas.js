@@ -157,8 +157,9 @@ const startupExpansionIdeas = [
 
 
 
-// 4 Elements ------------------------------> 3 Modality Expression
-// =========================================================================
+// 4 Elements ------------------------------> 3 Modality Expression                 # eg : Fire --> Cardinal ==> Mars --> Aries(aka 1st )
+// =========================================================================                   
+// water : moon, venus, jupiter    [1,2,3]    ('cardinal','fixed','fixed')                                 
 // fire  : mars, sun, jupiter      [1,5,9]    ('cardinal','fixed','mutable')         
 // earth : venus, mercury, saturn  [2,6,10]   ('fixed','mutable','cardinal')
 // air   : mercury, venus, saturn  [3,7,11]   ('mutable','cardinal','fixed')

@@ -448,7 +448,7 @@ const details = [{
         {
             name: "mars",
 
-            rulingHouses: [1, 2],
+            rulingHouses: [4, 11],
             planetInDifferentHouses: [
                 {
                     house: 1,

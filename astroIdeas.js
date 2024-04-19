@@ -211,5 +211,5 @@ const startupExpansionIdeas = [
 
 //                                  ______ aries______
 //                                 |                  |
-//                (MARS)natal ---->|                  |----->(MARS)transit  
+//         (MARS)natal_static ---->|                  |----->(MARS)transit_dynamic  
 //                                 |_____ scorpio_____|

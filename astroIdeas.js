@@ -145,10 +145,13 @@ const startupExpansionIdeas = [
     }
 ]
 
-
+'House-Planet Relationships:',// lord coming in the arena
+'Significance of Signs and Planets:',
+'Planet-House Relationships:'//house ruled by the planet 
 
 // =========================================================================
-//                          FLOW OF THE APP
+//                          ASTRO_Logics
+//             ( Insights into future events and their nature:)
 // =========================================================================
 // FLOW_OF_ENERGY ---> CHALLENGES ---> OPPORTUNITIES
 //     |                    |               |
@@ -156,10 +159,13 @@ const startupExpansionIdeas = [
 // =========================================================================
 
 
+// Each Elements --> have all the modalities // THE_TRINE
+// Each Modality --> have all the elements  //  THE_CROSS
 
-// 4 Elements ------------------------------> 3 Modality Expression                 # eg : Fire --> Cardinal ==> Mars --> Aries(aka 1st )
+
+// 4 Elements ------------------------------> 3 Modality Expression                 # eg : Fire     --> Cardinal ==> Mars --> [[Aries(aka 1st) | Hence aries is the male aspect of the mars]] || Aries = "Cardinal Fire" == FIRST_HOUSE                                                   
+//                                                                                  # eg : Cardinal --> Fire     ==> Mars --> Aries(aka 1st)
 // =========================================================================                   
-// water : moon, venus, jupiter    [1,2,3]    ('cardinal','fixed','fixed')                                 
 // fire  : mars, sun, jupiter      [1,5,9]    ('cardinal','fixed','mutable')         
 // earth : venus, mercury, saturn  [2,6,10]   ('fixed','mutable','cardinal')
 // air   : mercury, venus, saturn  [3,7,11]   ('mutable','cardinal','fixed')
@@ -172,7 +178,7 @@ const startupExpansionIdeas = [
 // mutables  : ['mercury','mercury','jupiter','jupiter']
 // =========================================================================
 
-// ------- Planet's Energy & Expressions ------------------------
+// ------- Planet's Energy & Expression  ------------------------
 
 // sun       : 'fire + fixed',
 // moon      : 'water + cardinal',
@@ -185,7 +191,7 @@ const startupExpansionIdeas = [
 // jupiter1  : 'fire + mutable',
 // jupiter2  : 'water + mutable',
 // saturn1   : 'earth + cardinal',
-// saturn2   : 'air + fixed'
+// saturn2   : 'air + fixed'     
 
 // =========================================================================
 
@@ -194,13 +200,16 @@ const startupExpansionIdeas = [
 //             |___Rulership Assigned Due To Transit(s)
 //                 |___enemity/neutral/friends (Dignitaries) with the given
 //                                                          |___house-->Directional Strength?
-//                                                          |       |___natural_elements['fire','earth','air','water']-->Energy balance
-//                                                          |       |___signs-->thus the planet partial involvement
-//                                                          |           |___modality_expressions ['cardinal','fixed','mutable]-->For different house/life_arena
-//                                                          |___sign-->Due_To_Ascendant
-//                                                          |       |___(Exaltation, Deblitation)
-//                                                          |       |___modes ['cardinal','fixed','mutable']
-//                                                          |___planet
-//                                                                  |___brings_in_house_rulership_effect ['male-sign-house-lord', 'female-sign-house-lord']
+//                                                                  |___natural_elements_shifts['fire','earth','air','water'] --> due to :
+//                                                                                                                                       |___signs  --> Gendered Part [Element + Mode]
+//                                                                                                                                       |___planet --> brings the effect of their Gendered Part(s) [Element + Mode]
+//                                                         
+//                                              
+//                                                      
 
 
+
+//                                  ______ aries______
+//                                 |                  |
+//                (MARS)natal ---->|                  |----->(MARS)transit  
+//                                 |_____ scorpio_____|

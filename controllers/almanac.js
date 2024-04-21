@@ -37,7 +37,7 @@ module.exports = {
       const dateTime = {
         date: "2023-1-3",
         time: "12:20"
-      }
+      } 
 
       const date = dateTime.date
       const time = dateTime.time

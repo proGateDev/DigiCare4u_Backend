@@ -159,6 +159,10 @@ const startupExpansionIdeas = [
 // =========================================================================
 
 
+
+// HOUSE --> (ELEMENTS + MODALITIES) ---> SIGNS --> [PLANETS]
+
+
 // Each Elements --> have all the modalities // THE_TRINE
 // Each Modality --> have all the elements  //  THE_CROSS
 

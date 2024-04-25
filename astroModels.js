@@ -14,7 +14,7 @@ const houses = {
     exaltation: "sun",
     debilitation: "saturn",
     gender: "male",
-    keyword: ["ego", "consciousness", "oneself", "face structure"],
+    keyword: ["ego", "consciousness", "oneself", "face structure"]
   },
 };
 //============= SIGNS =================================
@@ -337,7 +337,7 @@ const planet = {
     exaltation: "aries",
     debilitation: "libra",
     gender: "male",
-    complexion:"blood-red",
+    complexion: "blood-red",
     incarnation: "raam",
     cabinet: "king",
     varna: "kshatriya",
@@ -853,15 +853,15 @@ Gemini, Leo and Virgo have no water conten"
 
 
 
-**Planetary Comparisons:**
-- Sun: Blood-red
-- Moon: Tawny
-- Mars: Blood-red
-- Mercury: Grass-like
-- Jupiter, Venus, Saturn: Tawny, variegated, dark
+  ** Planetary Comparisons:**
+    - Sun: Blood - red
+      - Moon: Tawny
+        - Mars: Blood - red
+          - Mercury: Grass - like
+            - Jupiter, Venus, Saturn: Tawny, variegated, dark
 
-**Horoscope Notes:**
-- Complexion isn't determined by the Ascendant planet.
-- Skin color is influenced by the Sun's position or Saturn.
-- Darknesses are removable.
+              ** Horoscope Notes:**
+                - Complexion isn't determined by the Ascendant planet.
+                  - Skin color is influenced by the Sun's position or Saturn.
+                    - Darknesses are removable.
 

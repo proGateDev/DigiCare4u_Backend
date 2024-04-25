@@ -8,7 +8,7 @@ user = {
     planets: [
         {
             name: 'sun',
-            longitude: '25 degree',
+            longitude: '25 degree',                
             nakshatras: 'dhanista',
             nakshatrasLord: 'mars',
             // rulerOf: [5, 10],
@@ -213,7 +213,15 @@ const startupExpansionIdeas = [
 
 
 
-//                                  ______ aries______
-//                                 |                  |
-//         (MARS)natal_static ---->|                  |----->(MARS)transit_dynamic  
-//                                 |_____ scorpio_____|
+//                                  ______aries______
+//                                 |                 |
+//         (MARS)natal_static ---->|                 |----->(MARS)transit_dynamic  
+//                                 |_____scorpio_____|
+
+
+// ==============================================================================================================
+// ==============================================================================================================
+
+// Elements --> intro
+// Elements Ruler thus for the given Kona house--> intro
+// Planet --> intro (which house rulership is assigned)

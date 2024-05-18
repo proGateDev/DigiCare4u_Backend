@@ -1,7 +1,7 @@
-// const express = require("express");
-// const router = express.Router();
-// const controller = require("../controllers/auth");
-// //==========================================
-// router.get("/", controller.authUser);
+const express = require("express");
+const router = express.Router();
+const controller = require("../controllers/auth");
+//==========================================
+router.post("/authenticate", controller.authUser);
 
-// module.exports = router;
+module.exports = router;

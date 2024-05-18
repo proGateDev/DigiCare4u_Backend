@@ -1,80 +1,38 @@
-// const admin = require("firebase-admin");
-// const passport = require("passport");
-// require("dotenv").config();
-// //============================================
-// const serviceAccount = require("../firebase/astrologics-92bd6-firebase-adminsdk-nckug-05411b91f7.json");
+// controllers/authController.js
 
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount),
-// });
+const User = require('../user/models/user');
+const { check, validationResult } = require('express-validator');
 
-// const GoogleStrategy = require("passport-google-oauth20").Strategy;
+module.exports = {
+  //===============  GET ====================================
+  authUser: async (req, res) => {
+    console.log('------ started ------')
+    // Validate request
+    await check('name', 'Please include a valid email').isString().run(req);
+    await check('password', 'Password is required').notEmpty().run(req);
 
-// passport.use(
-//   new GoogleStrategy(
-//     {
-//       clientID: process.env.GOOGLE_CLIENT_ID,
-//       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-//       callbackURL: "http://localhost:5000/auth/google/callback",
-//     },
-//     function (accessToken, refreshToken, profile, done) {
-//       // This function will be called when the user is authenticated successfully.
-//       // You can access the user's profile information using the `profile` parameter.
-//       console.log("USER_PROFILE ---->", profile);
-//       return done(null, profile);
-//     }
-//   )
-// );
-// //==================================================
-// module.exports = {
-//   //===============  GET ====================================`
-//   authUser: async (req, res) => {
-//     (req, res) => {
-//         const { email, password } = req.body;
-      
-//         firebase.auth().signInWithEmailAndPassword(email, password)
-//           .then((userCredential) => {
-//             // Signed in
-//             const user = userCredential.user;
-//             // Do something with the user
-//             res.status(200).send('Logged in successfully');
-//           })
-//           .catch((error) => {
-//             const errorCode = error.code;
-//             const errorMessage = error.message;
-//             // Handle errors
-//             res.status(401).send(errorMessage);
-//           });
-//       }
-//   },
-// };
-// //==========================================
-// // app.get(
-// //   "/auth/google",
-// //   passport.authenticate("google", { scope: ["profile"] })
-// // );
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
 
-// // app.get(
-// //   "/auth/google/callback",
-// //   passport.authenticate("google", { failureRedirect: "/login" }),
-// //   function (req, res) {
-// //     // Successful authentication, redirect home.
-// //     res.redirect("/");
-// //   }
-// // );
+    const { name, password } = req.body;
 
-// // const firebaseAuthMiddleware = (req, res, next) => {
-// //   if (req.user) {
-// //     admin
-// //       .auth()
-// //       .verifyIdToken(req.user.tokenId)
-// //       .then(() => next())
-// //       .catch(() => res.redirect("/login"));
-// //   } else {
-// //     res.redirect("/login");
-// //   }
-// // };
+    try {
+      // Find user by email
+      const user = await User.findOne({ name });
+      console.log(user);
+      if (!user) {
+        return res.status(401).json({ msg: 'Invalid credentials' });
+      }
 
-// // app.get("/profile", firebaseAuthMiddleware, function (req, res) {
-// //   // Render the user's profile page.
-// // });
+
+
+      // Authentication successful
+      res.status(200).json({ msg: 'Logged in successfully', userId:user.id });
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send('Server error');
+    }
+  }
+};

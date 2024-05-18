@@ -3,7 +3,8 @@ const app = express();
 const cors = require("cors");
 require("dotenv").config();
 require("./database");
-const routes = require('./routes')
+const routes = require('./routes');
+const { default: axios } = require("axios");
 //====================================================
 
 // Use the session middleware
@@ -21,9 +22,16 @@ app.use(
 );
 
 //====================================================
+const coldStartSolution = () => {
+  setTimeout(() => {
+    // axios.get
+    console.log("-------- Cold Start -------------")
+  }, 1000)
+}
 app.get("/", (req, res) => {
   res.send("<h1> AstroLogics Server </h1>");
 });
+coldStartSolution();
 //===================================================
 app.use(routes)
 // app.use("/transit", require("./routes/transit"));

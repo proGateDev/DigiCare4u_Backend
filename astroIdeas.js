@@ -1,82 +1,84 @@
 
-user = {
-    user_id: 'user_123',
-    name: 'user1',
-    dob: '25-09-2023',
-    time: '11:48',
-    location: 'location',
-    planets: [
-        {
-            name: 'sun',
-            longitude: '25 degree',                
-            nakshatras: 'dhanista',
-            nakshatrasLord: 'mars',
-            // rulerOf: [5, 10],
-            rulerOf: 8,
-            isIn: 6,
-            // landLord: [5, 10],
-            user_id: 'user_123',
-            events: [
-                {
-                    planetTransitingUserHouse: 1,
-                    eventsRelated: [
-                        {
-                            planet: 'sun',
-                            eventName: 'sun enters in capricorn',
-                            ingressIn: 'aries',
-                            date: '15-04-2023',
-                            prediction: 'new light on the roots',
-                            user_id: 'user_123',
-                            planet_id: 'planet_123',
-                        },
-                        {
-                            planet: 'venus',
-                            eventName: 'venus enters in capricorn',
-                            ingressIn: 'capricorn',
-                            date: '15-04-2024',
-                            prediction: 'new light on the roots',
-                            planet_id: 'planet',
-                        },
 
-                    ]
-                },
-                {
-                    planetTransitingUserHouse: 2,
-                    eventsRelated: [
-                        {
-                            planet: 'sun',
-                            eventName: 'sun enters in aquarius',
-                            ingressIn: 'aquarius',
-                            date: '15-04-2023',
-                            prediction: 'new light on the roots',
-                            user_id: 'user_123',
-                        },
-                    ]
 
-                }
-            ],
-        }
-    ],
-    houses: [
-        {
-            bhava: '1',
-            residents: ['moon'],
-            rashi: 'capricorn',
-            owner: 'saturn',
-            rashiMode: 'cardinal',
-            gender: 'feminine',
-            user_id: 'user_123',
-            aspectedBy: {
+    user = {
+        user_id: 'user_123',
+        name: 'user1',
+        dob: '25-09-2023',
+        time: '11:48',
+        location: 'location',
+        planets: [
+            {
+                name: 'sun',
+                longitude: '25 degree',
+                nakshatras: 'dhanista',
+                nakshatrasLord: 'mars',
+                // rulerOf: [5, 10],
+                rulerOf: 8,
+                isIn: 6,
+                // landLord: [5, 10],
                 user_id: 'user_123',
-                aspectedBy: ['mars', 'jupiter'],
-            },
-            houseAge: {
-                user_id: 'user_123',
-                age: [1, 13, 25, 38],
+                events: [
+                    {
+                        planetTransitingUserHouse: 1,
+                        eventsRelated: [
+                            {
+                                planet: 'sun',
+                                eventName: 'sun enters in capricorn',
+                                ingressIn: 'aries',
+                                date: '15-04-2023',
+                                prediction: 'new light on the roots',
+                                user_id: 'user_123',
+                                planet_id: 'planet_123',
+                            },
+                            {
+                                planet: 'venus',
+                                eventName: 'venus enters in capricorn',
+                                ingressIn: 'capricorn',
+                                date: '15-04-2024',
+                                prediction: 'new light on the roots',
+                                planet_id: 'planet',
+                            },
+
+                        ]
+                    },
+                    {
+                        planetTransitingUserHouse: 2,
+                        eventsRelated: [
+                            {
+                                planet: 'sun',
+                                eventName: 'sun enters in aquarius',
+                                ingressIn: 'aquarius',
+                                date: '15-04-2023',
+                                prediction: 'new light on the roots',
+                                user_id: 'user_123',
+                            },
+                        ]
+
+                    }
+                ],
             }
-        }
-    ]
-}
+        ],
+        houses: [
+            {
+                bhava: '1',
+                residents: ['moon'],
+                rashi: 'capricorn',
+                owner: 'saturn',
+                rashiMode: 'cardinal',
+                gender: 'feminine',
+                user_id: 'user_123',
+                aspectedBy: {
+                    user_id: 'user_123',
+                    aspectedBy: ['mars', 'jupiter'],
+                },
+                houseAge: {
+                    user_id: 'user_123',
+                    age: [1, 13, 25, 38],
+                }
+            }
+        ]
+    }
 //=======================================
 planet = {
     name: 'venus',
@@ -136,7 +138,7 @@ const videos_clips_memes_ideas = [
 const startupExpansionIdeas = [
     {
         idea: 'Astro Pedigree Social platform',
-        requiredFeatures:'familial connections + dynamics +  shared astrological influences(Transits).',
+        requiredFeatures: 'familial connections + dynamics +  shared astrological influences(Transits).',
         description: "platform like FB, where a user's family member's insight will be shared among themselves, providing inter-related insights"
     },
     {
@@ -146,8 +148,8 @@ const startupExpansionIdeas = [
 ]
 
 'House-Planet Relationships:',// lord coming in the arena
-'Significance of Signs and Planets:',
-'Planet-House Relationships:'//house ruled by the planet 
+    'Significance of Signs and Planets:',
+    'Planet-House Relationships:'//house ruled by the planet 
 
 // =========================================================================
 //                          ASTRO_Logics
@@ -167,10 +169,10 @@ const startupExpansionIdeas = [
 // Each Modality --> have all the elements  //  THE_CROSS
 
 
-// 4 Elements ------------------------------> 3 Modality Expression                 # eg : Fire     --> Cardinal ==> Mars --> [[Aries(aka 1st) | Hence aries is the male aspect of the mars]] || Aries = "Cardinal Fire" == FIRST_HOUSE                                                   
+// 4 Elements ------------------------------> 3 Modality Expression                 # eg : Fire     --> Cardinal ==> Mars --> [[Aries(aka 1st) | Hence aries is the male aspect of the mars]] || Aries = "Cardinal Fire" == FIRST_HOUSE
 //                                                                                  # eg : Cardinal --> Fire     ==> Mars --> Aries(aka 1st)
-// =========================================================================                   
-// fire  : mars, sun, jupiter      [1,5,9]    ('cardinal','fixed','mutable')         
+// =========================================================================
+// fire  : mars, sun, jupiter      [1,5,9]    ('cardinal','fixed','mutable')
 // earth : venus, mercury, saturn  [2,6,10]   ('fixed','mutable','cardinal')
 // air   : mercury, venus, saturn  [3,7,11]   ('mutable','cardinal','fixed')
 // water : moon, mars, jupiter     [4,8,12]   ('cardinal','fixed','mutable')
@@ -195,7 +197,7 @@ const startupExpansionIdeas = [
 // jupiter1  : 'fire + mutable',
 // jupiter2  : 'water + mutable',
 // saturn1   : 'earth + cardinal',
-// saturn2   : 'air + fixed'     
+// saturn2   : 'air + fixed'
 
 // =========================================================================
 
@@ -207,15 +209,15 @@ const startupExpansionIdeas = [
 //                                                                  |___natural_elements_shifts['fire','earth','air','water'] --> due to :
 //                                                                                                                                       |___signs  --> Gendered Part [Element + Mode]
 //                                                                                                                                       |___planet --> brings the effect of their Gendered Part(s) [Element + Mode]
-//                                                         
-//                                              
-//                                                      
+//
+//
+//
 
 
 
 //                                  ______aries______
 //                                 |                 |
-//         (MARS)natal_static ---->|                 |----->(MARS)transit_dynamic  
+//         (MARS)natal_static ---->|                 |----->(MARS)transit_dynamic
 //                                 |_____scorpio_____|
 
 

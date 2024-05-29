@@ -18,8 +18,19 @@ const userEventList = [
 ]
 
 
-let planetTransit = [
+let planetEvents = [
+// --------- Mundane ---------------
+{
+    'userId': null,
+    'planet': 'mars',
+    'rulerOf': [1, 8],
+    'originallyPlacedIn': null,
+    'transiting': 'taurus',
+    'transitingHouse': 2,
+    'transitingOn': '01-07-2024'
+},
 
+// --------- Personal ---------------
     {
         'userId': 369,
         'planet': 'mars',

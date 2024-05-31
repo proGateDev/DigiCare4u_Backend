@@ -1,5 +1,6 @@
 const { required } = require("../user/validation/user");
 const fs = require('fs');
+const { Worker, isMainThread, parentPort } = require('worker_threads');
 
 const { almanacData, almanacData_d } = require('../utils/astro')
 //==================================================
@@ -63,22 +64,58 @@ module.exports = {
 
 
 
+
   almanac_df: async (req, res) => {
     try {
+
+
+     async function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+      const getAlmanacData_d = async (
+        currentDate,
+        currentTime,
+        planet,
+        rashi
+      ) => {
+        let data = await almanacData_d(
+          currentDate.toISOString().split("T")[0],
+          currentTime,
+          planet,
+          rashi
+        );
+        return data
+      }
+
+
       const filePath = 'output.json';
       const planet = req.body.planet;
       const rashi = req.body.rashi;
+      const zodiacSigns = ["aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"];
+      // const zodiacSigns = ["pisces", "aries"];
 
       const transits = [];
       const startDate = new Date();
       const endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + 60);
+      endDate.setDate(endDate.getDate() + 365);
 
-      for (let currentDate = startDate; currentDate <= endDate; currentDate.setDate(currentDate.getDate() + 1)) {
+      // Initialize flags for each zodiac sign
+      const foundTransits = {};
+      zodiacSigns.forEach(sign => {
+        foundTransits[sign] = false;
+      });
+      // console.log('zodiacSigns =======', zodiacSigns);
+
+      let i = 0
+      const upToDegree = 0; // Adjust this degree if needed
+      for (let currentDate = new Date(2024, 0, 1); currentDate <= endDate; currentDate.setDate(currentDate.getDate() + 1)) {
+
         for (let hour = 0; hour < 24; hour++) {
+          // console.log('-------- after break -----------------');
+          // await sleep(2000);
+
           for (let minute = 0; minute < 60; minute++) {
             const currentTime = `${hour}:${minute}`;
-            console.log('date ------------', currentDate.toISOString().split("T")[0], currentTime);
 
             const result = await almanacData_d(
               currentDate.toISOString().split("T")[0],
@@ -86,39 +123,174 @@ module.exports = {
               planet,
               rashi
             );
-            const upTo = 0.5;
-
+            console.log(`date : ${currentDate.toISOString().split("T")[0]},${currentTime}\n position : ${result.almanacDataaa_.data.data.position.degree}:  ${result.almanacDataaa_.data.data.position.minute} `)
+            console.log('---- signddd --------', zodiacSigns[i]);
             if (
-              result.almanacDataaa_.data.data.position.degree <= upTo &&
-              result.almanacDataaa_.data.data.position.name === rashi
+              result.almanacDataaa_.data.data.position.degree == upToDegree &&
+              result.almanacDataaa_.data.data.position.name === zodiacSigns[i]
             ) {
+              console.log('---- FOUND --------', zodiacSigns[i]);
               transits.push({
                 date: currentDate.toISOString().split("T")[0],
                 time: currentTime,
-                position: result.almanacDataaa_.data.data.position
+                position: result.almanacDataaa_.data.data.position,
+                zodiacSign: zodiacSigns[i]
               });
 
-              const jsonData = JSON.stringify(transits, null, 2);
-              fs.writeFileSync(filePath, jsonData, 'utf-8');
-              console.log('Data has been written to', filePath);
-
-              // Return immediately after finding the first matching transit
-              return res.status(200).json(transits);
+              i = i + 1
+              if (i == zodiacSigns.length) {
+                i = 0
+              }
+              await sleep(1000);
+              // foundTransits[sign] = true; // Mark transit as found
+              break; // Stop checking further for this sign
             }
-            break
+            // if (foundTransits[sign]) break; // Stop checking further for this sign
           }
-          
+          // if (foundTransits[sign]) break; // Stop checking further for this sign
         }
-        
-      }
 
-      // If no transit is found within the date range
-      return res.status(200).json([]);
+        if (i == 0) break
+
+
+        // if (foundTransits[sign]) break; // Stop checking further for this sign
+      }
+      const jsonData = JSON.stringify(transits, null, 2);
+      fs.writeFileSync(filePath, jsonData, 'utf-8');
+      console.log('Data has been written to', filePath);
+      return res.status(200).json(transits);
     } catch (error) {
       console.error("Error:", error);
       return res.status(500).json({ error: "Internal Server Error" });
     }
+  },
+
+
+
+
+
+
+
+
+
+  almanac_df_1: async (req, res) => {
+
+    if (isMainThread) {
+      // This is the main thread
+      const worker = new Worker(__filename);
+      worker.postMessage({ planet, rashi });
+      worker.on('message', (transits) => {
+
+        try {
+
+
+          function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+          }
+
+
+
+          const filePath = 'output.json';
+          const planet = req.body.planet;
+          const rashi = req.body.rashi;
+          const zodiacSigns = ["aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"];
+          // const zodiacSigns = ["pisces", "aries"];
+
+          const transits = [];
+          const startDate = new Date();
+          const endDate = new Date(startDate);
+          endDate.setDate(endDate.getDate() + 365);
+
+          // Initialize flags for each zodiac sign
+          const foundTransits = {};
+          zodiacSigns.forEach(sign => {
+            foundTransits[sign] = false;
+          });
+          // console.log('zodiacSigns =======', zodiacSigns);
+
+          let i = 0
+          const upToDegree = 0; // Adjust this degree if needed
+          for (let currentDate = new Date(2024, 1, 1); currentDate <= endDate; currentDate.setDate(currentDate.getDate() + 1)) {
+
+            for (let hour = 0; hour < 24; hour++) {
+              // console.log('-------- after break -----------------');
+              // await sleep(2000);
+
+              for (let minute = 0; minute < 60; minute++) {
+                const currentTime = `${hour}:${minute}`;
+
+
+                let result = getAlmanacData_d(
+                  currentDate.toISOString().split("T")[0],
+                  currentTime,
+                  planet,
+                  rashi
+                )
+                console.log(`date : ${currentDate.toISOString().split("T")[0]},${currentTime}\n position : ${result.almanacDataaa_.data.data.position.degree}:  ${result.almanacDataaa_.data.data.position.minute} `)
+                console.log('---- signddd --------', zodiacSigns[i]);
+                if (
+                  result.almanacDataaa_.data.data.position.degree == upToDegree &&
+                  result.almanacDataaa_.data.data.position.name === zodiacSigns[i]
+                ) {
+                  console.log('---- FOUND --------', zodiacSigns[i]);
+                  transits.push({
+                    date: currentDate.toISOString().split("T")[0],
+                    time: currentTime,
+                    position: result.almanacDataaa_.data.data.position,
+                    zodiacSign: zodiacSigns[i]
+                  });
+
+                  i = i + 1
+                  if (i == zodiacSigns.length) {
+                    i = 0
+                  }
+                  // await sleep(1000);
+                  // foundTransits[sign] = true; // Mark transit as found
+                  // break; // Stop checking further for this sign
+                }
+                // if (foundTransits[sign]) break; // Stop checking further for this sign
+              }
+              // if (foundTransits[sign]) break; // Stop checking further for this sign
+            }
+
+            // if (i == 0) break
+
+
+            // if (foundTransits[sign]) break; // Stop checking further for this sign
+          }
+          const jsonData = JSON.stringify(transits, null, 2);
+          fs.writeFileSync(filePath, jsonData, 'utf-8');
+          console.log('Data has been written to', filePath);
+          return res.status(200).json(transits);
+        } catch (error) {
+          console.error("Error:", error);
+          return res.status(500).json({ error: "Internal Server Error" });
+        }
+
+
+
+
+
+        console.log('Transits received:', transits);
+        // Handle transits data
+      });
+    } else {
+      // This is the worker thread
+      parentPort.on('message', async ({ planet, rashi }) => {
+        // Your asynchronous processing here
+        const transits = await yourAsyncFunction(planet, rashi);
+        parentPort.postMessage(transits);
+      });
+    }
+
+
+
+
+
+
+
   }
+
 
 
 }

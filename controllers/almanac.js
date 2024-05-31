@@ -69,29 +69,15 @@ module.exports = {
     try {
 
 
-     async function sleep(ms) {
+      async function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
       }
-      const getAlmanacData_d = async (
-        currentDate,
-        currentTime,
-        planet,
-        rashi
-      ) => {
-        let data = await almanacData_d(
-          currentDate.toISOString().split("T")[0],
-          currentTime,
-          planet,
-          rashi
-        );
-        return data
-      }
 
 
-      const filePath = 'output.json';
+      const filePath = `${req.body.planet}.json`;
       const planet = req.body.planet;
       const rashi = req.body.rashi;
-      const zodiacSigns = ["aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"];
+      const zodiacSigns = ["pisces", "aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius"];
       // const zodiacSigns = ["pisces", "aries"];
 
       const transits = [];
@@ -108,7 +94,7 @@ module.exports = {
 
       let i = 0
       const upToDegree = 0; // Adjust this degree if needed
-      for (let currentDate = new Date(2024, 0, 1); currentDate <= endDate; currentDate.setDate(currentDate.getDate() + 1)) {
+      for (let currentDate = new Date(); currentDate <= endDate; currentDate.setDate(currentDate.getDate() + 1)) {
 
         for (let hour = 0; hour < 24; hour++) {
           // console.log('-------- after break -----------------');
@@ -124,7 +110,7 @@ module.exports = {
               rashi
             );
             console.log(`date : ${currentDate.toISOString().split("T")[0]},${currentTime}\n position : ${result.almanacDataaa_.data.data.position.degree}:  ${result.almanacDataaa_.data.data.position.minute} `)
-            console.log('---- signddd --------', zodiacSigns[i]);
+            // console.log('---- signddd --------', zodiacSigns[i]);
             if (
               result.almanacDataaa_.data.data.position.degree == upToDegree &&
               result.almanacDataaa_.data.data.position.name === zodiacSigns[i]
@@ -174,122 +160,71 @@ module.exports = {
 
 
   almanac_df_1: async (req, res) => {
+    console.log('-------- STARTED -----------------');
 
-    if (isMainThread) {
-      // This is the main thread
-      const worker = new Worker(__filename);
-      worker.postMessage({ planet, rashi });
-      worker.on('message', (transits) => {
+    const filePath = `${req.body.planet}.json`;
+    const planet = req.body.planet;
+    const rashi = req.body.rashi;
+    const worker = new Worker(__filename);
 
-        try {
+    worker.postMessage({ planet, rashi });
 
+    worker.on('message', (transits) => {
+      console.log('-------- STARTED AGAIN  -----------------');
 
-          function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-          }
+      const filePath = 'output.json';
+      const zodiacSigns = ["aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"];
 
+      const startDate = new Date();
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 365);
 
+      let i = 0;
+      const upToDegree = 0; // Adjust this degree if needed
+      for (let currentDate = new Date(); currentDate <= endDate; currentDate.setDate(currentDate.getDate() + 1)) {
+        for (let hour = 0; hour < 24; hour++) {
+          for (let minute = 0; minute < 60; minute++) {
+            const currentTime = `${hour}:${minute}`;
+            let result = getAlmanacData_d(currentDate.toISOString().split("T")[0], currentTime, planet, rashi);
+            if (
+              result.almanacDataaa_.data.data.position.degree == upToDegree &&
+              result.almanacDataaa_.data.data.position.name === zodiacSigns[i]
+            ) {
+              transits.push({
+                date: currentDate.toISOString().split("T")[0],
+                time: currentTime,
+                position: result.almanacDataaa_.data.data.position,
+                zodiacSign: zodiacSigns[i]
+              });
 
-          const filePath = 'output.json';
-          const planet = req.body.planet;
-          const rashi = req.body.rashi;
-          const zodiacSigns = ["aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"];
-          // const zodiacSigns = ["pisces", "aries"];
-
-          const transits = [];
-          const startDate = new Date();
-          const endDate = new Date(startDate);
-          endDate.setDate(endDate.getDate() + 365);
-
-          // Initialize flags for each zodiac sign
-          const foundTransits = {};
-          zodiacSigns.forEach(sign => {
-            foundTransits[sign] = false;
-          });
-          // console.log('zodiacSigns =======', zodiacSigns);
-
-          let i = 0
-          const upToDegree = 0; // Adjust this degree if needed
-          for (let currentDate = new Date(2024, 1, 1); currentDate <= endDate; currentDate.setDate(currentDate.getDate() + 1)) {
-
-            for (let hour = 0; hour < 24; hour++) {
-              // console.log('-------- after break -----------------');
-              // await sleep(2000);
-
-              for (let minute = 0; minute < 60; minute++) {
-                const currentTime = `${hour}:${minute}`;
-
-
-                let result = getAlmanacData_d(
-                  currentDate.toISOString().split("T")[0],
-                  currentTime,
-                  planet,
-                  rashi
-                )
-                console.log(`date : ${currentDate.toISOString().split("T")[0]},${currentTime}\n position : ${result.almanacDataaa_.data.data.position.degree}:  ${result.almanacDataaa_.data.data.position.minute} `)
-                console.log('---- signddd --------', zodiacSigns[i]);
-                if (
-                  result.almanacDataaa_.data.data.position.degree == upToDegree &&
-                  result.almanacDataaa_.data.data.position.name === zodiacSigns[i]
-                ) {
-                  console.log('---- FOUND --------', zodiacSigns[i]);
-                  transits.push({
-                    date: currentDate.toISOString().split("T")[0],
-                    time: currentTime,
-                    position: result.almanacDataaa_.data.data.position,
-                    zodiacSign: zodiacSigns[i]
-                  });
-
-                  i = i + 1
-                  if (i == zodiacSigns.length) {
-                    i = 0
-                  }
-                  // await sleep(1000);
-                  // foundTransits[sign] = true; // Mark transit as found
-                  // break; // Stop checking further for this sign
-                }
-                // if (foundTransits[sign]) break; // Stop checking further for this sign
+              i++;
+              if (i == zodiacSigns.length) {
+                i = 0;
               }
-              // if (foundTransits[sign]) break; // Stop checking further for this sign
             }
-
-            // if (i == 0) break
-
-
-            // if (foundTransits[sign]) break; // Stop checking further for this sign
           }
-          const jsonData = JSON.stringify(transits, null, 2);
-          fs.writeFileSync(filePath, jsonData, 'utf-8');
-          console.log('Data has been written to', filePath);
-          return res.status(200).json(transits);
-        } catch (error) {
-          console.error("Error:", error);
-          return res.status(500).json({ error: "Internal Server Error" });
         }
+      }
 
+      const jsonData = JSON.stringify(transits, null, 2);
+      fs.writeFileSync(filePath, jsonData, 'utf-8');
+      console.log('Data has been written to', filePath);
+      return res.status(200).json(transits);
+    });
 
-
-
-
-        console.log('Transits received:', transits);
-        // Handle transits data
-      });
-    } else {
-      // This is the worker thread
-      parentPort.on('message', async ({ planet, rashi }) => {
-        // Your asynchronous processing here
-        const transits = await yourAsyncFunction(planet, rashi);
-        parentPort.postMessage(transits);
-      });
-    }
-
-
-
-
-
-
-
+    worker.on('error', (err) => {
+      console.error('Worker error:', err);
+      if (!isMainThread) {
+        parentPort.on('message', async ({ planet, rashi }) => {
+          console.log('Worker received message:', { planet, rashi });
+          const transits = await yourAsyncFunction(planet, rashi);
+          console.log('Worker sending transits:', transits);
+          parentPort.postMessage(transits);
+        })
+      }
+    });
   }
+
 
 
 

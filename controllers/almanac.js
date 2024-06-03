@@ -77,7 +77,19 @@ module.exports = {
       const filePath = `${req.body.planet}.json`;
       const planet = req.body.planet;
       const rashi = req.body.rashi;
-      const zodiacSigns = ["pisces", "aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius"];
+      const zodiacSigns = ["pisces",
+        "aries",
+        "taurus",
+        "gemini",
+        "cancer",
+        "leo",
+        "virgo",
+        "libra",
+        "scorpio",
+        "sagittarius",
+        "capricorn",
+        "aquarius"
+      ];
       // const zodiacSigns = ["pisces", "aries"];
 
       const transits = [];

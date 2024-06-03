@@ -1,7 +1,7 @@
 const { required } = require("../user/validation/user");
 const fs = require('fs');
 const { Worker, isMainThread, parentPort } = require('worker_threads');
-
+const transitJson = require('../moon.json')
 const { almanacData, almanacData_d } = require('../utils/astro')
 //==================================================
 
@@ -93,8 +93,10 @@ module.exports = {
       // console.log('zodiacSigns =======', zodiacSigns);
 
       let i = 0
+      let startDateNew = new Date("2024-05-31")
+      // console.log('---- startDateNew---------------', startDateNew);
       const upToDegree = 0; // Adjust this degree if needed
-      for (let currentDate = new Date(); currentDate <= endDate; currentDate.setDate(currentDate.getDate() + 1)) {
+      for (let currentDate = startDateNew; currentDate <= endDate; currentDate.setDate(currentDate.getDate() + 1)) {
 
         for (let hour = 0; hour < 24; hour++) {
           // console.log('-------- after break -----------------');
@@ -152,11 +154,20 @@ module.exports = {
   },
 
 
+  almanac_planet_transit: async (req, res) => {
+    try {
 
 
+      
+      console.log('transitJson-------------',transitJson);
 
-
-
+     
+      return res.status(200).json(transitJson);
+    } catch (error) {
+      console.error("Error:", error);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  },
 
 
   almanac_df_1: async (req, res) => {

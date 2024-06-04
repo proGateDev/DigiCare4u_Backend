@@ -1,7 +1,8 @@
 const { required } = require("../user/validation/user");
 const fs = require('fs');
 const { Worker, isMainThread, parentPort } = require('worker_threads');
-const transitJson = require('../moon.json')
+const moonJson = require('../transitJson/moon.json')
+const mercuryJson = require('../transitJson/mercury.json')
 const { almanacData, almanacData_d } = require('../utils/astro')
 //==================================================
 
@@ -74,11 +75,25 @@ module.exports = {
       }
 
 
-      const filePath = `${req.body.planet}.json`;
+      const filePath = `${req.body.planet}_new.json`;
       const planet = req.body.planet;
       const rashi = req.body.rashi;
-      const zodiacSigns = ["pisces",
-        "aries",
+      // const zodiacSigns = ["pisces",
+      //   "aries",
+      //   "taurus",
+      //   "gemini",
+      //   "cancer",
+      //   "leo",
+      //   "virgo",
+      //   "libra",
+      //   "scorpio",
+      //   "sagittarius",
+      //   "capricorn",
+      //   "aquarius"
+      // ];
+
+      const zodiacSigns = [
+
         "taurus",
         "gemini",
         "cancer",
@@ -88,7 +103,9 @@ module.exports = {
         "scorpio",
         "sagittarius",
         "capricorn",
-        "aquarius"
+        "aquarius",
+        "pisces",
+        "aries"
       ];
       // const zodiacSigns = ["pisces", "aries"];
 
@@ -114,7 +131,7 @@ module.exports = {
           // console.log('-------- after break -----------------');
           // await sleep(2000);
 
-          for (let minute = 0; minute < 60; minute++) {
+          for (let minute = 0; minute < 60; minute = minute + 20) {
             const currentTime = `${hour}:${minute}`;
 
             const result = await almanacData_d(
@@ -124,7 +141,7 @@ module.exports = {
               rashi
             );
             console.log(`date : ${currentDate.toISOString().split("T")[0]},${currentTime}\n position : ${result.almanacDataaa_.data.data.position.degree}:  ${result.almanacDataaa_.data.data.position.minute} `)
-            // console.log('---- signddd --------', zodiacSigns[i]);
+            console.log('---- signddd --------', result.almanacDataaa_.data.data.position.name);
             if (
               result.almanacDataaa_.data.data.position.degree == upToDegree &&
               result.almanacDataaa_.data.data.position.name === zodiacSigns[i]
@@ -138,6 +155,7 @@ module.exports = {
               });
 
               i = i + 1
+              console.log('---- here we are top -----------');
               if (i == zodiacSigns.length) {
                 i = 0
               }
@@ -149,7 +167,7 @@ module.exports = {
           }
           // if (foundTransits[sign]) break; // Stop checking further for this sign
         }
-
+        console.log('---- here we are -----------');
         if (i == 0) break
 
 
@@ -169,12 +187,12 @@ module.exports = {
   almanac_planet_transit: async (req, res) => {
     try {
 
-
-      
-      console.log('transitJson-------------',transitJson);
-
-     
-      return res.status(200).json(transitJson);
+      planetTransitJsonList = {
+        'moon': moonJson,
+        'mercury': mercuryJson,
+      }
+      console.log('----- param ----',req.query.planet);
+      return res.status(200).json(planetTransitJsonList[req.query.planet]);
     } catch (error) {
       console.error("Error:", error);
       return res.status(500).json({ error: "Internal Server Error" });

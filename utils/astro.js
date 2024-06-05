@@ -23,6 +23,7 @@ const kaalPurushaChartData = [
     house: 1,
     rashiMode: "cardinal",
     gender: "male",
+    element: "fire"
   },
   {
     sign: "taurus",
@@ -31,6 +32,7 @@ const kaalPurushaChartData = [
     house: 2,
     rashiMode: "fixed",
     gender: "female",
+    element: "earth"
   },
   {
     sign: "gemini",
@@ -39,6 +41,7 @@ const kaalPurushaChartData = [
     house: 3,
     rashiMode: "mutable",
     gender: "trans",
+    element: "air"
   },
   {
     sign: "cancer",
@@ -47,6 +50,8 @@ const kaalPurushaChartData = [
     house: 4,
     rashiMode: "cardinal",
     gender: "female",
+    element: "water"
+
   },
   {
     sign: "leo",
@@ -55,6 +60,8 @@ const kaalPurushaChartData = [
     house: 5,
     rashiMode: "fixed",
     gender: "male",
+    element: "fire"
+
   },
   {
     sign: "virgo",
@@ -63,6 +70,8 @@ const kaalPurushaChartData = [
     house: 6,
     rashiMode: "mutable",
     gender: "female",
+    element: "earth"
+
   },
   {
     sign: "libra",
@@ -71,6 +80,8 @@ const kaalPurushaChartData = [
     house: 7,
     rashiMode: "cardinal",
     gender: "male",
+    element: "air"
+
   },
   {
     sign: "scorpio",
@@ -79,6 +90,8 @@ const kaalPurushaChartData = [
     house: 8,
     rashiMode: "fixed",
     gender: "female",
+    element: "water"
+
   },
   {
     sign: "sagittarius",
@@ -87,6 +100,8 @@ const kaalPurushaChartData = [
     house: 9,
     rashiMode: "mutable",
     gender: "trans",
+    element: "fire"
+
   },
   {
     sign: "capricorn",
@@ -95,6 +110,8 @@ const kaalPurushaChartData = [
     house: 10,
     rashiMode: "cardinal",
     gender: "trans",
+    element: "earth"
+
   },
   {
     sign: "aquarius",
@@ -103,6 +120,8 @@ const kaalPurushaChartData = [
     house: 11,
     rashiMode: "fixed",
     gender: "male",
+    element: "air"
+
   },
   {
     sign: "pisces",
@@ -111,6 +130,8 @@ const kaalPurushaChartData = [
     house: 12,
     rashiMode: "mutable",
     gender: "female",
+    element: "water"
+
   },
 ];
 //=====================================================
@@ -170,13 +191,13 @@ const generateZodiacCycle = (lagnaIndex) => {
     let signsMeta = kaalPurushaChartData.find(
       (x) => x.sign === rotatedZodiacSigns[i]
     );
-
     zodiacCycle.push({
       name: rotatedZodiacSigns[i],
       house: i + 1,
       ruler: rulingPlanet.lord,
       rashiMode: signsMeta.rashiMode,
       gender: signsMeta.gender,
+      element: signsMeta.element,
     });
   }
   // console.log(" zodiacCycle", zodiacCycle);
@@ -279,7 +300,9 @@ module.exports = {
         owner: newZodiacCycle[i]["ruler"],
         rashiMode: newZodiacCycle[i]["rashiMode"],
         gender: newZodiacCycle[i]["gender"],
+        element: newZodiacCycle[i]["element"],
       });
+      // console.log('userHouses =======',userHouses);
     }
 
     return { userPlanets, userHouses };
@@ -323,6 +346,7 @@ module.exports = {
         owner: rashi.ruler,
         rashiMode: rashi.rashiMode,
         gender: rashi.gender,
+        element: rashi.element,
       };
     });
 

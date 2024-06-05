@@ -64,8 +64,7 @@ module.exports = {
         const mergedObject = { ...req.body, ...dateObj };
 
         const user = new model(mergedObject);
-        console.log("user   =========", user );
-
+        
         for (let index = 0; index < natalData.userPlanets.length; index++) {
           const element = natalData.userPlanets[index];
           const planet = new planetModel(element);
@@ -74,7 +73,8 @@ module.exports = {
           user.planets = user.planets.concat(planet.id);
           await user.save();
         }
-
+        
+        console.log("natalData.userHouses   =========", natalData.userHouses );
         // console.log("natalData.userHouses.length  =========", natalData.userHouses.length);
         for (let index = 0; index < natalData.userHouses.length; index++) {
           const houseElement = natalData.userHouses[index];

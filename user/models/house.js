@@ -42,6 +42,7 @@ const houseSchema = new mongoose.Schema({
   owner: String,
   rashiMode: String,
   gender: String,
+  element: String,
   // user_id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
 

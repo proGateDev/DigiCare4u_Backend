@@ -12,7 +12,7 @@ const userEventList = [
                 'rulerOf': [4, 11],
                 'placesAway': 6,
             }
-        ],
+        ],  
 
     }
 ]

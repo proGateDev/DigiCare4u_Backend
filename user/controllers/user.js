@@ -4,6 +4,7 @@ const houseModel = require("../models/house");
 const userCreationValidation = require("../../user/validation/user");
 const { default: axios } = require("axios");
 const astroUtils = require("../../utils/astro");
+const db = require("../../database");
 const ObjectId = require("mongodb").ObjectId;
 
 //==================================================
@@ -27,7 +28,7 @@ module.exports = {
   getUser: async (req, res) => {
     try {
       console.log("-------- data ----------", model);
-      const data = await model.find({}).populate(['houses','planets']);
+      const data = await model.find({}).populate(['houses', 'planets']);
       res.status(200).json(data);
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -36,8 +37,8 @@ module.exports = {
   },
   //===============  GET_BY_ID ====================================
   getUserById: async (req, res) => {
-    console.log('userId-------------',req.body.userId);
-    const data = await model.findOne({ id: req.body.userId }).populate(['planets','houses']);
+    console.log('userId-------------', req.body.userId);
+    const data = await model.findOne({ id: req.body.userId }).populate(['planets', 'houses']);
     res.status(200).json(data);
   },
   //===============  POST ====================================
@@ -64,7 +65,7 @@ module.exports = {
         const mergedObject = { ...req.body, ...dateObj };
 
         const user = new model(mergedObject);
-        
+
         for (let index = 0; index < natalData.userPlanets.length; index++) {
           const element = natalData.userPlanets[index];
           const planet = new planetModel(element);
@@ -73,8 +74,8 @@ module.exports = {
           user.planets = user.planets.concat(planet.id);
           await user.save();
         }
-        
-        console.log("natalData.userHouses   =========", natalData.userHouses );
+
+        console.log("natalData.userHouses   =========", natalData.userHouses);
         // console.log("natalData.userHouses.length  =========", natalData.userHouses.length);
         for (let index = 0; index < natalData.userHouses.length; index++) {
           const houseElement = natalData.userHouses[index];
@@ -105,4 +106,38 @@ module.exports = {
     await user.save();
     res.status(200).json(user);
   },
+
+
+  // controllers/yourController.js
+
+  getHouseSpecificData: async (req, res) => {
+    try {
+      const { planet, house } = req.body;
+
+      // Convert planet and house to lowercase for consistency
+      const lowerCasePlanet = planet.toLowerCase();
+      const lowerCaseHouse = house.toLowerCase();
+
+      const userData = await model.find({
+        planets: {
+          $elemMatch: {
+            name: 'moon',
+            isIn: '1'
+          }
+        }
+      });
+
+      console.log('------ userData ---------', userData);
+
+      if (userData.length === 0) {
+        return res.status(404).json({ message: 'No data found for the given planet and house.' });
+      }
+
+      res.status(200).json(userData);
+    } catch (error) {
+      console.error('Error fetching house-specific data:', error);
+      res.status(500).json({ message: 'Internal server error.' });
+    }
+  }
+
 };

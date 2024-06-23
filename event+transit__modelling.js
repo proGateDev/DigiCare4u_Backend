@@ -12,25 +12,49 @@ const userEventList = [
                 'rulerOf': [4, 11],
                 'placesAway': 6,
             }
-        ],  
+        ],
 
     }
 ]
 
 
+let event = [
+    {
+        eventName: '',
+        event: {
+            type: 'fire',
+            lord: 'sun',
+            natal: {
+                deposited: 6,
+                sign: 'gemini',
+                lord: 'mercury',
+                assignedHouseLordship: 8,
+                placesAway: 11
+            },
+            transiting: {
+                deposited: 7,
+                sign: 'cancer',
+                lord: 'moon',
+                placesAway: 12
+            },
+        },
+        from: '',
+        to: '',
+    }
+]
 let planetEvents = [
-// --------- Mundane ---------------
-{
-    'userId': null,
-    'planet': 'mars',
-    'rulerOf': [1, 8],
-    'originallyPlacedIn': null,
-    'transiting': 'taurus',
-    'transitingHouse': 2,
-    'transitingOn': '01-07-2024'
-},
+    // --------- Mundane ---------------
+    {
+        'userId': null,
+        'planet': 'mars',
+        'rulerOf': [1, 8],
+        'originallyPlacedIn': null,
+        'transiting': 'taurus',
+        'transitingHouse': 2,
+        'transitingOn': '01-07-2024'
+    },
 
-// --------- Personal ---------------
+    // --------- Personal ---------------
     {
         'userId': 369,
         'planet': 'mars',

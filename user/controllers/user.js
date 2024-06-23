@@ -4,9 +4,9 @@ const houseModel = require("../models/house");
 const userCreationValidation = require("../../user/validation/user");
 const { default: axios } = require("axios");
 const astroUtils = require("../../utils/astro");
-const db = require("../../database");
-const ObjectId = require("mongodb").ObjectId;
-
+const mongoose = require("mongoose");
+// const model = require('./path/to/user/model'); // Adjust the path as needed
+const Planet = require('../models/planet'); 
 //==================================================
 module.exports = {
   getPlanet: async (req, res) => {
@@ -117,17 +117,39 @@ module.exports = {
       // Convert planet and house to lowercase for consistency
       const lowerCasePlanet = planet.toLowerCase();
       const lowerCaseHouse = house.toLowerCase();
-
-      const userData = await model.find({
-        planets: {
-          $elemMatch: {
-            name: 'moon',
-            isIn: '1'
+ // Adjust the path as needed
+      
+      const userData = await model.aggregate([
+        {
+          $lookup: {
+            from: 'planets',
+            localField: 'planets',
+            foreignField: '_id',
+            as: 'planetDetails'
+          }
+        },
+        {
+          $unwind: '$planetDetails'
+        },
+        {
+          $match: {
+            'planetDetails.name': lowerCasePlanet,
+            'planetDetails.isIn': lowerCaseHouse
+          }
+        },
+        {
+          $lookup: {
+            from: 'houses',
+            localField: 'houses',
+            foreignField: '_id',
+            as: 'houseDetails'
           }
         }
-      });
+        
+      ])
+      
+      
 
-      console.log('------ userData ---------', userData);
 
       if (userData.length === 0) {
         return res.status(404).json({ message: 'No data found for the given planet and house.' });

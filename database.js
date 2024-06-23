@@ -8,6 +8,6 @@ const db = mongoose.connect(process.env.DB, {
 }).then(() => {
 
     console.log("-------------  --------------", process.env.DB)
-    console.log("------------- Database got connected --------------", db)
+    console.log("------------- Database got connected --------------")
 })
 module.exports = db;

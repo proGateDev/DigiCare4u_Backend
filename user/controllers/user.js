@@ -37,8 +37,8 @@ module.exports = {
   },
   //===============  GET_BY_ID ====================================
   getUserById: async (req, res) => {
-    console.log('userId-------------', req.body.userId);
     const data = await model.findOne({ id: req.body.userId }).populate(['planets', 'houses']);
+    // console.log('userId data-------------', data);
     res.status(200).json(data);
   },
   //===============  POST ====================================

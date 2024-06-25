@@ -6,7 +6,7 @@ const { default: axios } = require("axios");
 const astroUtils = require("../../utils/astro");
 const mongoose = require("mongoose");
 // const model = require('./path/to/user/model'); // Adjust the path as needed
-const Planet = require('../models/planet'); 
+const Event = require('../models/event');
 //==================================================
 module.exports = {
   getPlanet: async (req, res) => {
@@ -117,8 +117,8 @@ module.exports = {
       // Convert planet and house to lowercase for consistency
       const lowerCasePlanet = planet.toLowerCase();
       const lowerCaseHouse = house.toLowerCase();
- // Adjust the path as needed
-      
+      // Adjust the path as needed
+
       const userData = await model.aggregate([
         {
           $lookup: {
@@ -145,10 +145,10 @@ module.exports = {
             as: 'houseDetails'
           }
         }
-        
+
       ])
-      
-      
+
+
 
 
       if (userData.length === 0) {
@@ -160,6 +160,147 @@ module.exports = {
       console.error('Error fetching house-specific data:', error);
       res.status(500).json({ message: 'Internal server error.' });
     }
-  }
+  },
+
+
+
+
+  createEvent: async (req,res) => {
+    const event = new Event({
+      userId: '66601fcb5eb070396fbf300e', // Example user ID
+      eventName: 'Sun entering Cancer',
+      event: {
+        type: 'dharmic',
+        lord: 'sun',
+        isRetrograde: false,
+        assignedHouseLordship: 8,
+        planetStrength: {
+          shadbala: 5,
+          chestabala: 4,
+          digbala: 1,
+          drikbala: 1,
+          horabala: 3,
+          kendrabala: 3,
+          naisargikabala: 1,
+          ochchabala: 8,
+          pakshabala: 8,
+          saptavargajabala: 4,
+          sthanabala: 4,
+        },
+        planetInNavamsha: {
+          sign: 'gemini',
+          house: 3,
+        },
+        nakshatrasIn: {
+          name: 'ashwini',
+          lord: 'sun',
+        },
+        isPlanetBeneficOrMalefic: ['benefic', 'malefic'],
+        isPlanetDebilatedOrExalted: ['exaltation', 'deblitation'],
+        planetAvastha: ['avastha1', 'avastha2', 'avastha3'],
+        natal: {
+          position: {
+            sign: 'aries',
+            longitude: '26 degree 15 minutes',
+          },
+          depositedAt: {
+            house: {
+              name: 6,
+              isItsOwnHouse: false,
+              houseAngle: ['kendra', 'upachaya', 'trikona'],
+              houseLordNature: ['friend', 'enemy'],
+              lord: 'mercury',
+            },
+            sign: {
+              name: 'gemini',
+              element: 'air',
+              mode: 'mutable',
+              isItsMooltrikona: false,
+              isItsOwnHouse: false,
+            },
+          },
+          placesAway: 11,
+          housesInAspect: 12,
+          aspectedByPlanets: [
+            {
+              planet: 'moon',
+              friend: true,
+              enemy: false,
+              malefic: true,
+              benefic: false,
+              aspect: ['conjunction', 'sextile', 'square', 'trine', 'opposition'],
+            }
+          ],
+          planetAspecting: [
+            {
+              planet: 'moon',
+              house: '1',
+              friend: true,
+              enemy: false,
+              malefic: true,
+              benefic: false,
+              aspect: ['conjunction', 'sextile', 'square', 'trine', 'opposition'],
+            }
+          ],
+        },
+        transiting: {
+          position: {
+            sign: 'aries',
+            longitude: '26 degree 15 minutes',
+          },
+          depositedAt: {
+            house: {
+              name: 6,
+              isItsOwnHouse: false,
+              houseAngle: ['kendra', 'upachaya', 'trikona'],
+              houseLordNature: ['friend', 'enemy'],
+              lord: 'mercury',
+            },
+            sign: {
+              name: 'gemini',
+              element: 'air',
+              mode: 'mutable',
+              isItsMooltrikona: false,
+              isItsOwnHouse: false,
+            },
+          },
+          placesAway: 11,
+          housesInAspect: 12,
+          aspectedByPlanets: [
+            {
+              planet: 'moon',
+              friend: true,
+              enemy: false,
+              malefic: true,
+              benefic: false,
+              aspect: ['conjunction', 'sextile', 'square', 'trine', 'opposition'],
+            }
+          ],
+          planetAspecting: [
+            {
+              planet: 'moon',
+              house: '1',
+              friend: true,
+              enemy: false,
+              malefic: true,
+              benefic: false,
+              aspect: ['conjunction', 'sextile', 'square', 'trine', 'opposition'],
+            }
+          ],
+          from: new Date('2024-06-16'),
+          to: new Date('2024-07-15'),
+        },
+      },
+    });
+
+    await event.save();
+    return res.status(201).json(event);
+  },
+
+  getEventById: async (req, res) => {
+    const data = await Event.findOne({ userId: req.body.userId })
+    // console.log('userId data-------------', data);
+    res.status(200).json(data);
+  },
 
 };

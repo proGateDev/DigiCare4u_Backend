@@ -18,28 +18,136 @@ const userEventList = [
 ]
 
 
-let event = [
+let events = [
     {
-        eventName: '',
+        userId: '66601fcb5eb070396fbf300e',
+        eventName: 'Sun entering Cancer',
+
         event: {
-            type: 'fire',
+            type: 'dharmic',
             lord: 'sun',
-            natal: {
-                deposited: 6,
+            isRetrograde: false,
+            assignedHouseLordship: 8,
+            planetStrength: {
+                shadbala: 5,
+                chestabala: 4,
+                digbala: 1,
+                drikbala: 1,
+                horabala: 3,
+                kendrabala: 3,
+                naisargikabala: 1,
+                ochchabala: 8,
+                pakshabala: 8,
+                saptavargajabala: 4,
+                sthanabala: 4,
+            },
+            planetInNavamsha: {
                 sign: 'gemini',
-                lord: 'mercury',
-                assignedHouseLordship: 8,
-                placesAway: 11
+                house: 3,
+            },
+            nakshatrasIn: {
+                name: 'ashwini',
+                lord: 'sun',
+            },
+            isPlanetBeneficOrMalefic: ['benefic', 'malefic'],
+            isPlanetDebilatedOrExalted: ['exaltation', 'deblitation'],
+            planetAvastha: ['avastha1', 'avastha2', 'avastha3'],
+            natal: {
+                position: {
+                    sign: 'aries',
+                    longitude: '26 degree 15 minutes',
+                },
+                depositedAt: {
+                    house: {
+                        name: 6,
+                        isItsOwnHouse: false,
+                        houseAngle: ['kendra', 'upachaya', 'trikona'],
+                        houseLordNature: ['friend', 'enemy'],
+                        lord: 'mercury',
+                    },
+                    sign: {
+                        name: 'gemini',
+                        element: 'air',
+                        mode: 'mutable',
+                        isItsMooltrikona: false,
+                        isIntsOwnHouse: false,
+                    },
+                },
+                placesAway: 11,
+                housesInAspect: 12,
+                aspectedByPlanets: [
+                    {
+                        planet: 'moon',
+                        friend: true,
+                        enemy: false,
+                        malefic: true,
+                        benefic: false,
+                        aspect: ['conjunction', 'sextile', 'square', 'trine', 'opposition']
+                    }
+                ],
+                planetAscpecting: [
+                    {
+                        planet: 'moon',
+                        house: '1',
+                        friend: true,
+                        enemy: false,
+                        malefic: true,
+                        benefic: false,
+                        aspect: ['conjunction', 'sextile', 'square', 'trine', 'opposition']
+                    }
+                ],
+
             },
             transiting: {
-                deposited: 7,
-                sign: 'cancer',
-                lord: 'moon',
-                placesAway: 12
+                position: {
+                    sign: 'aries',
+                    longitude: '26 degree 15 minutes',
+                },
+                depositedAt: {
+                    house: {
+                        name: 6,
+                        isItsOwnHouse: false,
+                        houseAngle: ['kendra', 'upachaya', 'trikona'],
+                        houseLordNature: ['friend', 'enemy'],
+                        lord: 'mercury',
+                    },
+                    sign: {
+                        name: 'gemini',
+                        element: 'air',
+                        mode: 'mutable',
+                        isItsMooltrikona: false,
+                        isIntsOwnHouse: false,
+                    },
+                },
+                placesAway: 11,
+                housesInAspect: 12,
+                aspectedByPlanets: [
+                    {
+                        planet: 'moon',
+                        friend: true,
+                        enemy: false,
+                        malefic: true,
+                        benefic: false,
+                        aspect: ['conjunction', 'sextile', 'square', 'trine', 'opposition']
+                    }
+                ],
+                planetAscpecting: [
+                    {
+                        planet: 'moon',
+                        house: '1',
+                        friend: true,
+                        enemy: false,
+                        malefic: true,
+                        benefic: false,
+                        aspect: ['conjunction', 'sextile', 'square', 'trine', 'opposition']
+                    }
+                ],
+
+                from: '2024-16-06',
+                to: '2024-15-07',
             },
+
         },
-        from: '',
-        to: '',
     }
 ]
 let planetEvents = [

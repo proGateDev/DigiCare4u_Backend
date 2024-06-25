@@ -9,5 +9,7 @@ router.post("/byId", controller.getUserById);
 router.post("/create", controller.createUser);
 router.post("/house-signs", controller.getUserHouseSigns);
 router.post("/house-specific-data", controller.getHouseSpecificData);
+router.post("/event/create", controller.createEvent);
+router.post("/event/get-byId", controller.getEventById);
 
 module.exports = router;

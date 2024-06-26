@@ -198,3 +198,64 @@ const request2 = {
     'planet': 'mars',
     'originallyPlacedIn': 9
 }
+
+
+
+
+
+
+
+// Stocks       RulingPlanets
+// ---------------------------
+// NIFTY      - jupiter
+// BANK_NIFTY - venus
+const angles = [
+    11.25,
+    22.5,
+    33.75,
+    45,
+    56.25,
+    60,
+    67.5,
+    78.75,
+    90,
+    101.25,
+    112.5,
+    120,
+    123.375,
+    135,
+    146.25,
+    157.5,
+    168.75,
+    180,
+    191.25,
+    202.5,
+    213.75,
+    225,
+    236.25,
+    240,
+    247.5,
+    258.75,
+    270,
+    281.25,
+    292.15,
+    300,
+    303.75,
+    315,
+    326.25,
+    337.5,
+    348.75,
+    360
+];
+
+
+
+// phasePercentages =[12.5 %, 25%, 33.3%, 37.5%, 50%, 62.5%, 66.6%,75%, 87.5% ]
+
+// EXAMPLE: the high of 436.75
+// 436.75 x 8 = 3494, divide 3494 by 360 = 9.7056 (subtract the whole number 9) and
+// multiply the remainder by 360 (.7056 x 360 = 254).
+// 254 = 14 degrees Sagittarius.
+
+325.22
+86.46

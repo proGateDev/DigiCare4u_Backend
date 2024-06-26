@@ -5,7 +5,13 @@ const moonJson = require('../transitJson/moon.json')
 const mercuryJson = require('../transitJson/mercury.json')
 const { almanacData, almanacData_d } = require('../utils/astro')
 //==================================================
-
+// List of angles
+const angles = [
+  11.25, 22.5, 33.75, 45, 56.25, 60, 67.5, 78.75, 90, 101.25, 112.5, 120,
+  123.375, 135, 146.25, 157.5, 168.75, 180, 191.25, 202.5, 213.75, 225,
+  236.25, 240, 247.5, 258.75, 270, 281.25, 292.15, 300, 303.75, 315,
+  326.25, 337.5, 348.75, 360
+]
 module.exports = {
   almanac: async (req, res) => {
     try {
@@ -191,7 +197,7 @@ module.exports = {
         'moon': moonJson,
         'mercury': mercuryJson,
       }
-      console.log('----- param ----',req.query.planet);
+      console.log('----- param ----', req.query.planet);
       return res.status(200).json(planetTransitJsonList[req.query.planet]);
     } catch (error) {
       console.error("Error:", error);
@@ -264,7 +270,87 @@ module.exports = {
         })
       }
     });
+  },
+
+
+
+
+  // =================================
+
+
+
+  almanac_df_2: async (req, res) => {
+    console.log('-------- STARTED -----------------');
+
+    const filePath = `${req.body.planet}.json`;
+    const planet = req.body.planet;
+    const rashi = req.body.rashi;
+    const worker = new Worker(__filename);
+
+    worker.postMessage({ planet, rashi });
+
+    worker.on('message', (transits) => {
+      console.log('-------- STARTED AGAIN  -----------------');
+
+      const filePath = 'output.json';
+      const zodiacSigns = ["aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"];
+
+      const startDate = new Date();
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 365);
+
+      let i = 0;
+      const upToDegree = 0; // Adjust this degree if needed
+      for (let currentDate = new Date(); currentDate <= endDate; currentDate.setDate(currentDate.getDate() + 1)) {
+        for (let hour = 0; hour < 24; hour++) {
+          for (let minute = 0; minute < 60; minute++) {
+            const currentTime = `${hour}:${minute}`;
+            let result = getAlmanacData_d(currentDate.toISOString().split("T")[0], currentTime, planet, rashi);
+            if (
+              angles.includes(result.almanacDataaa_.data.data.position.degree) &&
+              result.almanacDataaa_.data.data.position.name === zodiacSigns[i]
+            ) {
+              transits.push({
+                date: currentDate.toISOString().split("T")[0],
+                time: currentTime,
+                position: result.almanacDataaa_.data.data.position,
+                zodiacSign: zodiacSigns[i]
+              });
+
+              i++;
+              if (i == zodiacSigns.length) {
+                i = 0;
+              }
+            }
+          }
+        }
+      }
+
+      const jsonData = JSON.stringify(transits, null, 2);
+      fs.writeFileSync(filePath, jsonData, 'utf-8');
+      console.log('Data has been written to', filePath);
+      return res.status(200).json(transits);
+    });
+
+    worker.on('error', (err) => {
+      console.error('Worker error:', err);
+      if (!isMainThread) {
+        parentPort.on('message', async ({ planet, rashi }) => {
+          console.log('Worker received message:', { planet, rashi });
+          const transits = await yourAsyncFunction(planet, rashi);
+          console.log('Worker sending transits:', transits);
+          parentPort.postMessage(transits);
+        });
+      }
+    });
   }
+
+
+
+
+
+
+
 
 
 

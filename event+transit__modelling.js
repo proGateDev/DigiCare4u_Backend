@@ -257,5 +257,3 @@ const angles = [
 // multiply the remainder by 360 (.7056 x 360 = 254).
 // 254 = 14 degrees Sagittarius.
 
-325.22
-86.46

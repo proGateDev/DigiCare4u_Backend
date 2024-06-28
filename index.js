@@ -27,11 +27,11 @@ const coldStartSolution = () => {
     // axios.get
     console.log("-------- Cold Start -------------")
   }, 1000)
+  coldStartSolution();
 }
 app.get("/", (req, res) => {
   res.send("<h1> AstroLogics Server </h1>");
 });
-coldStartSolution();
 //===================================================
 app.use(routes)
 // app.use("/transit", require("./routes/transit"));

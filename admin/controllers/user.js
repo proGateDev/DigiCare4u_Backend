@@ -1,10 +1,8 @@
 const model = require("../models/user");
 // const planetModel = require("../models/planet");
 // const houseModel = require("../models/house");
-const userCreationValidation = require("../../user/validation/user");
 const superAdminCreationValidation = require("../../validation/superAdminCreation")
 const { default: axios } = require("axios");
-const astroUtils = require("../../utils/astro");
 const mongoose = require("mongoose");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -22,23 +20,34 @@ module.exports = {
       console.log("--------  started ----------");
       const { email, password } = req.body;
 
-      // Check if email and password are provided
-      if (!email || !password) {                                                                                                                                                                                                            
-        return res.status(400).json({ message: "Email and password are required" });
+      if (!email) {
+        return res.status(400).json({
+          status: 400,
+          message: "Email is required"
+        });
       }
+      
+      if (!password) {
+        return res.status(400).json({
+          status: 400,
+          message: "Password is required"
+        });
+      }
+      
+
 
       // Find the user by email
       const user = await model.findOne({ email });
       // console.log(user,'---- USER --');        
 
       if (!user) {
-        return res.status(401).json({ message: "Invalid email" });
+        return res.status(401).json({ message: "User is not registered with Digicare" });
       }
 
       // Compare provided password with hashed password in the database
       console.log('-----> ', password, user?.password);
 
-      const isPasswordValid = await  checkEncryptedPassword(password, user?.password);
+      const isPasswordValid = await checkEncryptedPassword(password, user?.password);
       console.log('--------->', isPasswordValid);
 
       if (!isPasswordValid) {
@@ -49,7 +58,7 @@ module.exports = {
       const token = jwt.sign(
         { userId: user._id, email: user.email },
         process.env.JWT_SECRET,
-        { expiresIn: '1d' } // Token expires in 1 day
+        { expiresIn: '1m' } // Token expires in 1 day
       );
 
       // Send response with the token

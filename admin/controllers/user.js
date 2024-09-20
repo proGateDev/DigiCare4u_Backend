@@ -26,14 +26,14 @@ module.exports = {
           message: "Email is required"
         });
       }
-      
+
       if (!password) {
         return res.status(400).json({
           status: 400,
           message: "Password is required"
         });
       }
-      
+
 
 
       // Find the user by email
@@ -41,7 +41,10 @@ module.exports = {
       // console.log(user,'---- USER --');        
 
       if (!user) {
-        return res.status(401).json({ message: "User is not registered with Digicare" });
+        return res.status(401).json({
+          status: 401,
+          message: "User is not registered with Digicare"
+        });
       }
 
       // Compare provided password with hashed password in the database
@@ -51,18 +54,22 @@ module.exports = {
       console.log('--------->', isPasswordValid);
 
       if (!isPasswordValid) {
-        return res.status(401).json({ message: "Invalid  password" });
+        return res.status(401).json({
+          status: 401,
+          message: "Invalid  password"
+        });
       }
 
       // If authenticated, generate a JWT token with 1 day expiry
       const token = jwt.sign(
-        { userId: user._id, email: user.email },
+        { userId: user._id },
         process.env.JWT_SECRET,
-        { expiresIn: '1m' } // Token expires in 1 day
+        { expiresIn: '10m' } // Token expires in 1 day
       );
 
       // Send response with the token
       res.status(200).json({
+        status: 200,
         message: "User authenticated successfully",
         token,
       });
@@ -127,5 +134,26 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
+
+
+
+
+  getUserById: async (req, res) => {
+    try {
+      console.log("-------- user data----------",);
+      let userId = req?.userId
+      const userData = await model.findOne({ id: userId });
+      jsonResponse = {
+        message: "user found successfully",
+        user: userData,
+      };
+      res.status(200).json(jsonResponse);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+
+
 
 };

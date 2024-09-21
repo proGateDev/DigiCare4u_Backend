@@ -34,7 +34,7 @@ app.get("/", (req, res) => {
 });
 //===================================================
 app.use(routes)
-// app.use("/transit", require("./routes/transit"));
+// app.use("/admin", require("./routes/transit"));
 // app.use("/user", require("./routes/user"));
 // app.use("/aspect", require("./routes/aspect"));
 // app.use("/chartData", require("./routes/chartData"));

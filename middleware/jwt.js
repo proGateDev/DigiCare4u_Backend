@@ -31,9 +31,15 @@ const checkUserToken = (req, res, next) => {
       return res.status(401).json({ response: "Invalid token" });
     }
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ response: "Token expired" });
+      return res.status(401).json({
+        status: 401,
+        response: "Token expired"
+      });
     }
-    return res.status(500).json({ response: "Internal Server Error" });
+    return res.status(500).json({
+      status: 500,
+      response: "Internal Server Error"
+    });
   }
 };
 

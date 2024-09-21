@@ -1,7 +1,7 @@
 const model = require("../models/user");
 // const planetModel = require("../models/planet");
 // const houseModel = require("../models/house");
-const superAdminCreationValidation = require("../../validation/superAdminCreation")
+const superAdminCreationValidation = require("../../admin/validation/superAdminCreation")
 const { default: axios } = require("axios");
 const mongoose = require("mongoose");
 const bcrypt = require('bcryptjs');
@@ -80,7 +80,7 @@ module.exports = {
     }
   },
 
-  createUser: async (req, res) => {
+  createAdminUser: async (req, res) => {
     try {
       // =========== VALIDATION ==================
       const { error, value } = superAdminCreationValidation.validate(req.body);
@@ -119,7 +119,7 @@ module.exports = {
     }
   },
 
-  getUser: async (req, res) => {
+  getUserMember: async (req, res) => {
     try {
       const data = await model.find({});
       console.log("-------- data ----------", data);
@@ -138,7 +138,7 @@ module.exports = {
 
 
 
-  getUserById: async (req, res) => {
+  geLoggedInUser: async (req, res) => {
     try {
       console.log("-------- user data----------",);
       let userId = req?.userId

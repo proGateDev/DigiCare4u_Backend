@@ -1,12 +1,8 @@
-const model = require("../models/user");
+const model = require("../../model/user");
 const superAdminCreationValidation = require("../validation/superAdminCreation")
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 //==================================================
-const checkEncryptedPassword = async (password, encryptedPassword) => {
-  const isPasswordValid = await bcrypt.compare(password, encryptedPassword);
-  return isPasswordValid
-}
 
 module.exports = {
 
@@ -69,47 +65,111 @@ module.exports = {
 
 
 
+
+
   getAdminProfile: async (req, res) => {
     try {
-      console.log("-------- user data----------",);
-      let userId = req?.userId
-      const userData = await model.findOne({ id: userId });
-      jsonResponse = {
-        message: "user found successfully",
+     
+  
+      // Verify and decode the token to extract the userId
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const userId = decoded.userId;
+  
+      // Fetch the user data from the database using the userId
+      const userData = await model.findOne({ _id: userId });
+  
+      if (!userData) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      // Prepare and send the response
+      const jsonResponse = {
+        message: "User found successfully",
         user: userData,
       };
+  
       res.status(200).json(jsonResponse);
     } catch (error) {
       console.error("Error fetching user data:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
+  
+  updateAdminProfile: async (req, res) => {
+    try {
+      const userId = req?.userId;
+
+      // Check if userId is provided
+      if (!userId) {
+        return res.status(400).json({
+          status: 400,
+          message: "AdminId is required"
+        });
+      }
+
+      // Extract the fields to be updated from the request body
+      const updateFields = req.body;
+      delete updateFields.userId;  // Remove userId from the fields to update
+
+      // Find the admin profile by userId and update the relevant fields
+      const updatedUser = await model.findOneAndUpdate(
+        { _id: userId },          // Filter by userId (_id is default in MongoDB)
+        { $set: updateFields },   // Update the fields dynamically
+        { new: true }             // Return the updated document
+      );
+
+      // Check if the user was found and updated
+      if (!updatedUser) {
+        return res.status(404).json({ message: "Admin profile not found" });
+      }
+
+      // Send the updated profile back as the response
+      res.status(200).json({
+        message: "Admin profile updated successfully",
+        user: updatedUser
+      });
+    } catch (error) {
+      console.error("Error updating admin profile:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+
+
+
 
   deleteAdminProfile: async (req, res) => {
     try {
-        const userId = req?.userId;
-        
-        // Find the admin profile by userId and update the IsDeleted field
-        const updatedUser = await model.findOneAndUpdate(
-            { id: userId },               // Filter by userId
-            { IsDeleted: '1' },           // Set IsDeleted to '1'
-            { new: true }                 // Return the updated document
-        );
 
-        if (!updatedUser) {
-            return res.status(404).json({ message: "Admin profile not found" });
-        }
+      const userId = req?.body?.userId;
+      console.log('--- userId   ----', userId);
+      if (!userId) {
+        return res.status(300).json({
+          status: 300,
+          message: "AdminId is required"
+        });
+      }
 
-        const jsonResponse = {
-            message: "Admin profile deleted successfully",
-            user: updatedUser,
-        };
-        res.status(200).json(jsonResponse);
+
+      // Find the admin profile by userId and update the isDeleted field
+      const updatedUser = await model.findOneAndUpdate(
+        { _id: userId },              // Filter by userId (_id is default in MongoDB)
+        { isDeleted: 'true' },        // Set isDeleted to 'true'
+        { new: true }                 // Return the updated document
+      );
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: "Admin profile not found" });
+      }
+
+      res.status(200).json({
+        message: "Admin profile deleted successfully",
+        user: updatedUser
+      });
     } catch (error) {
-        console.error("Error deleting admin profile:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+      console.error("Error deleting admin profile:", error);
+      res.status(500).json({ error: "Internal Server Error" });
     }
-}
+  }
 
 
 };

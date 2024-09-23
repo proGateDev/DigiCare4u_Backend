@@ -1,12 +1,7 @@
-const model = require("../models/user");
-// const superAdminCreationValidation = require("../../validation/superAdminCreation")
-const bcrypt = require('bcryptjs');
+const model = require("../../model/user");
+const checkEncryptedPassword = require('../../util/auth')
 const jwt = require('jsonwebtoken');
 //==================================================
-const checkEncryptedPassword = async (password, encryptedPassword) => {
-  const isPasswordValid = await bcrypt.compare(password, encryptedPassword);
-  return isPasswordValid
-}
 
 module.exports = {
   login: async (req, res) => {
@@ -58,7 +53,7 @@ module.exports = {
       const token = jwt.sign(
         { userId: user._id },
         process.env.JWT_SECRET,
-        { expiresIn: '10m' } // Token expires in 1 day
+        { expiresIn: '120m' } // Token expires in 1 day
       );
 
       // Send response with the token

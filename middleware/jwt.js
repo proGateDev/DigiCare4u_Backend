@@ -1,9 +1,8 @@
 const jwt = require('jsonwebtoken');
-const SECRET_KEY = process.env.JWT_SECRET
+const SECRET_KEY = process.env.JWT_SECRET;
 
 const checkUserToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
-
 
   if (!authHeader) {
     return res.status(401).json({
@@ -11,17 +10,17 @@ const checkUserToken = (req, res, next) => {
       response: "Missing User Token in the headers",
     });
   }
-  //  =============== Why 'Bearer' ================ :
-  //   By including Bearer, you inform the server that this is an access token to be used for authenticating the client.
-  const token = authHeader.split(' ')[1]; //
+
+  // Extract the token from the authorization header
+  const token = authHeader.split(' ')[1];
 
   try {
     // Verify and decode the token
     const decoded = jwt.verify(token, SECRET_KEY);
-    console.log('=---------- decoded -------', decoded);
 
-    // Attach the decoded user data to the request object
+    // Attach the decoded user data and token to the request object
     req.userId = decoded?.userId;
+    req.tokenData = decoded; // Attach the entire decoded token
 
     // Proceed to the next middleware or route handler
     next();

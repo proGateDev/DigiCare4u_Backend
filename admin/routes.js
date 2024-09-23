@@ -7,7 +7,7 @@ const adminAuthRoutes = require("./routes/auth");
 
 
 router.use("/profile", adminProfileRoutes);  
-router.use("/login", adminAuthRoutes);       
+router.use("/auth", adminAuthRoutes);       
 router.use("/profile-list", adminProfilesListRoutes);     
 
 module.exports = router;

@@ -53,14 +53,14 @@ module.exports = {
       const token = jwt.sign(
         { userId: user._id },
         process.env.JWT_SECRET,
-        { expiresIn: '120m' } // Token expires in 1 day
+        { expiresIn: '180m' } // Token expires in 1 day
       );
 
       // Send response with the token
       res.status(200).json({
         status: 200,
         message: "User authenticated successfully",
-        token,
+      
       });
 
     } catch (error) {

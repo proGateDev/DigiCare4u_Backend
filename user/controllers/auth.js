@@ -1,4 +1,4 @@
-const model = require("../../model/user");
+const model = require("../models/profile");
 const jwt = require('jsonwebtoken');
 const bcrypt = require("bcryptjs");
 const checkEncryptedPassword = require('../../util/auth')
@@ -71,7 +71,7 @@ module.exports = {
       const token = jwt.sign(
         { userId: newUser._id },
         process.env.JWT_SECRET,
-        { expiresIn: '120m' } // Token expires in 2 hours
+        { expiresIn: '360m' } // Token expires in 2 hours
       );
   
       // Send response with the token

@@ -1,4 +1,4 @@
-const model = require("../../model/user");
+const model = require("../models/profile");
 const superAdminCreationValidation = require("../validation/superAdminCreation")
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -36,7 +36,11 @@ module.exports = {
       // Return the newly created user (excluding the password from the response for security)
       const { password, ...userWithoutPassword } = user._doc;
 
-      return res.status(201).json(userWithoutPassword);
+      return res.status(201).json({
+        'status': 201,
+        'adminUser': userWithoutPassword,
+        'message': 'Admin user created successfully',
+      });
 
     } catch (error) {
       res.status(500).json({
@@ -69,32 +73,34 @@ module.exports = {
 
   getAdminProfile: async (req, res) => {
     try {
-     
-  
-      // Verify and decode the token to extract the userId
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const userId = decoded.userId;
-  
+
+
+      const userId = req.userId;
+
       // Fetch the user data from the database using the userId
       const userData = await model.findOne({ _id: userId });
-  
+
       if (!userData) {
-        return res.status(404).json({ message: "User not found" });
+        return res.status(404).json({
+          status: 404,
+          message: "User not found"
+        });
       }
-  
+
       // Prepare and send the response
       const jsonResponse = {
+        status:200,
         message: "User found successfully",
         user: userData,
       };
-  
+
       res.status(200).json(jsonResponse);
     } catch (error) {
       console.error("Error fetching user data:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
-  
+
   updateAdminProfile: async (req, res) => {
     try {
       const userId = req?.userId;

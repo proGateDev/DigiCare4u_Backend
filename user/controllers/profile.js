@@ -1,4 +1,4 @@
-const model = require("../../model/user");
+const model = require("../models/profile");
 const superAdminCreationValidation = require("../validation/superAdminCreation")
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');

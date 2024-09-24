@@ -3,13 +3,14 @@ const mongoose = require("mongoose");
 //===================================
 const userSchema = new mongoose.Schema({
   name: String,
-  role: String,
-  email: String,
+  role: { type: String, enum: ['super-admin', 'user', 'member'], default: 'user' },
+  members: { type: mongoose.Schema.Types.ObjectId, ref: 'member' }, // User who added this member
+
+  email: { type: String, unique: true }, 
   mobile: String,
   password: String,
-  userType : String,
-  groupType : String,
-  isDeleted: { type: Boolean, default: false },
+  groupType: { type: String, default: 'none' },
+  isDeleted: { type: String, default: 'false' },
   createdBy: { type: String, default: "system" },
   updatedBy: { type: String, default: "system" },
   createdAt: { type: Date, default: Date.now },
@@ -23,11 +24,11 @@ const userSchema = new mongoose.Schema({
 // Update updatedAt field before saving
 userSchema.pre('save', function (next) {
   console.log('======= MONGOOSE middleware ------>');
-  
+
   this.updatedAt = Date.now();
   next();
 });
 
-const model = mongoose.model('user', userSchema);
-module.exports = model;
+const userModel = mongoose.model('user', userSchema);
+module.exports = userModel;
 

@@ -3,9 +3,11 @@ const router = express.Router();
 const controller = require("../controllers/auth");
 const checkUserToken = require("../../middleware/jwt");
 //==========================================
-// router.post("/signup", controller.signup);
 router.post("/login", controller.login);
 
-// router.get("/", checkUserToken, controller.geLoggedInUser);
+router.get("/verify-email", controller.verifyEmail);
+router.post("/resend-verification-email", controller.resendVerificationEmail);
+
+
 
 module.exports = router;

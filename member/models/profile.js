@@ -6,7 +6,8 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['super-admin', 'user', 'member'], default: 'member' },
   parentUser: { type: mongoose.Schema.Types.ObjectId, ref: 'user' }, // User who added this member
 
-  email: { type: String, unique: true }, 
+  // email: { type: String, unique: true }, 
+  email: { type: String}, 
   mobile: String,
   password: String,
   // userType: { type: String, default: 'member' },
@@ -17,8 +18,13 @@ const userSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
   },
   
-  status: String, // For tracking SOS or emergency status
-  punchInTime: { type: Date },
+  locationStatus: {
+    type: String,
+    enum: ['inactive', 'active', 'sos'], // Define allowed values
+    default: 'inactive', // Default status is 'inactive'
+    required: true, // Ensure that status is always set
+  },
+    punchInTime: { type: Date },
   isApproved: { type: Boolean, default: false },
 
   isDeleted: { type: Boolean, default: false },
@@ -34,7 +40,7 @@ const userSchema = new mongoose.Schema({
 
 // Update updatedAt field before saving
 userSchema.pre('save', function (next) {
-  console.log('======= MONGOOSE middleware ------>');
+  // console.log('======= MONGOOSE middleware ------>');
 
   this.updatedAt = Date.now();
   next();

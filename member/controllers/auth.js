@@ -1,12 +1,11 @@
 const model = require("../models/profile");
-const checkEncryptedPassword = require('../../util/auth')
+const { checkEncryptedPassword } = require('../../util/auth')
 const jwt = require('jsonwebtoken');
 //==================================================
 
 module.exports = {
   login: async (req, res) => {
     try {
-      console.log("--------  started ----------");
       const { email, password } = req.body;
 
       if (!email) {
@@ -36,11 +35,19 @@ module.exports = {
         });
       }
 
-      // Compare provided password with hashed password in the database
-      console.log('-----> ', password, user?.password);
 
+
+      if (!user.isApproved) {
+        return res.status(401).json({
+          status: 401,
+          error: "User is not verified",
+          message: "Member need to verify the email"
+        });
+      }
+
+      console.log('password checking 0--0--------', password, user?.password)
       const isPasswordValid = await checkEncryptedPassword(password, user?.password);
-      console.log('--------->', isPasswordValid);
+      console.log('----- isPasswordValid  --------', isPasswordValid )
 
       if (!isPasswordValid) {
         return res.status(401).json({
@@ -60,7 +67,8 @@ module.exports = {
       res.status(200).json({
         status: 200,
         message: "User authenticated successfully",
-      
+        token
+
       });
 
     } catch (error) {
@@ -68,6 +76,102 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
+
+
+
+
+  verifyEmail: async (req, res) => {
+    const { token } = req.query;
+
+    try {
+      // Verify the token first
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const userId = decoded.userId;
+      console.log(userId);
+
+      // Find the user in the database
+      const user = await model.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({
+          status: 404,
+          message: "User not found."
+        });
+      }
+
+      // Check if the user's email is already approved
+      if (user?.isApproved) {
+        return res.status(400).json({
+          status: 400,
+          message: "Email is already verified."
+        });
+      }
+
+      // Update user status to 'approved'
+      await model.findByIdAndUpdate(userId, { isApproved: true });
+
+      res.status(200).json({
+        status: 200,
+        message: "Your email has been verified! You can now log in."
+      });
+    } catch (error) {
+      // Handle token expiration specifically
+      if (error.name === 'TokenExpiredError') {
+        return res.status(401).json({
+          status: 401,
+          message: "Token has expired. Please request a new verification link."
+        });
+      }
+      // Handle other errors
+      console.error("Email verification error:", error);
+      res.status(400).json({
+        status: 400,
+        message: "Invalid verification link.",
+        error
+      });
+    }
+  },
+
+
+  resendVerificationEmail: async (req, res) => {
+    const { email } = req.body; // User provides their email
+
+    // Find the user by email
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Generate a new verification token
+    const newToken = jwt.sign(
+      { email: user.email, userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' } // Token valid for 1 hour
+    );
+
+    const verificationLink = `${clientURL}/verify-email?token=${newToken}`;
+
+    // Send the verification email
+    const messageData = {
+      from: '<nischal@progatetechnology.com>',
+      to: user.email,
+      subject: 'Resend: Please Verify Your Email',
+      html: `
+          <div>
+              <p>Click <a href="${verificationLink}">here</a> to verify your email.</p>
+          </div>
+      `,
+    };
+
+    try {
+      await sendMail(messageData);
+      return res.status(200).json({ message: 'Verification email resent successfully.' });
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+      return res.status(500).json({ message: 'Error sending verification email.' });
+    }
+  }
 
 
 };

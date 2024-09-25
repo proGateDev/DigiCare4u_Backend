@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
 
 // Update updatedAt field before saving
 userSchema.pre('save', function (next) {
-  console.log('======= MONGOOSE middleware ------>');
+  // console.log('======= MONGOOSE middleware ------>');
 
   this.updatedAt = Date.now();
   next();

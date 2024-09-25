@@ -1,7 +1,7 @@
 const model = require("../models/profile");
 const jwt = require('jsonwebtoken');
 const bcrypt = require("bcryptjs");
-const checkEncryptedPassword = require('../../util/auth')
+const {checkEncryptedPassword} = require('../../util/auth')
 //==================================================
  
 

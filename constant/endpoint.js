@@ -1,2 +1,2 @@
-const clientURL = "http://localhost:3000"
+const clientURL = "http://192.168.0.172:3000"
 module.exports = clientURL

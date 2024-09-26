@@ -1,53 +1,50 @@
-// Import required modules
 const { Server } = require('socket.io'); // Correct import for socket.io server
 
-class SocketService {
-  constructor(server) {
-    this.io = new Server(server, {
-      cors: {
-        origin: '*', // Adjust based on your needs
-        methods: ['GET', 'POST'],
-      },
-      transports: ['websocket'], // Use websocket transport
+let io; // Define io globally
+
+const socketService = (server) => {
+  io = new Server(server, {
+    cors: {
+      origin: '*', // Adjust based on your needs
+      methods: ['GET', 'POST'],
+    },
+    // transports: ['websocket'], // Use websocket transport
+  });
+
+  io.on('connection', (socket) => {
+    console.log('A user connected:', socket.id);
+
+    // Listen for the event to join a user room
+    socket.on('joinRoom', (userId) => {
+      socket.join(userId);
+      console.log(`User ${userId} joined room: ${userId}`);
     });
-    
-    this.initialize();
-  }
 
-  initialize() {
-    this.io.on('connection', (socket) => {
-      console.log('A user connected:', socket.id);
-
-      // Listen for the event to join a user room
-      socket.on('joinRoom', (userId) => {
-        this.joinUserRoom(userId, socket);
-      });
-
-      // Handle disconnection
-      socket.on('disconnect', () => {
-        console.log('User disconnected:', socket.id);
-      });
-
-      // Other event listeners can be added here if needed
+    // Handle disconnection
+    socket.on('disconnect', () => {
+      console.log('User disconnected:', socket.id);
     });
-  }
+  });
+};
 
-  // Method to send a notification to a specific user
-  sendNotification(userId, notification) {
-    this.io.to(userId).emit('notification', notification);
+// Function to send notification
+const sendNotification = (userId, notification) => {
+  if (io) {
+    console.log('============ gaya socket tak ------------>',notification)
+    io.to(userId).emit('notification', notification);
   }
+};
 
-  // Method to join a specific user to a room
-  joinUserRoom(userId, socket) {
-    socket.join(userId); // This allows a specific user to receive notifications
-    console.log(`User ${userId} joined room: ${userId}`);
+// Function to broadcast notification
+const broadcastNotification = (notification) => {
+  if (io) {
+    io.emit('notification', notification);
   }
+};
 
-  // Optionally, you can provide a method to broadcast notifications to all users
-  broadcastNotification(notification) {
-    this.io.emit('notification', notification);
-  }
-}
-
-// Export the class, not an instance
-module.exports = SocketService;
+// Export the functions
+module.exports = {
+  socketService,
+  sendNotification,
+  broadcastNotification,
+};

@@ -1,5 +1,6 @@
 const userModel = require("../models/profile");
 const memberModel = require("../../member/models/profile");
+const notificationModel = require("../../model/notification");
 const superAdminCreationValidation = require("../validation/superAdminCreation");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -8,9 +9,8 @@ const sendMail = require("../../service/email");
 const clientURL = require("../../constant/endpoint");
 const { generatePassword, encryptPassword } = require('../../util/auth')
 
-const SocketService = require('../../service/socket'); // Adjust the path accordingly
-//==================================================
-const socketService = SocketService; // Use the already instantiated service
+const socketService = require('../../service/socket');
+const { sendNotification } = require('../../service/socket');
 
 //==================================================
 module.exports = {
@@ -65,7 +65,6 @@ module.exports = {
       // const passwordEncrypted = await encryptPassword()
       const passwordEncrypted = await bcrypt.hash(password, 10);
 
-      console.log('passwordEncrypted --------', passwordEncrypted);
 
 
       for (const memberData of membersData) {
@@ -84,9 +83,17 @@ module.exports = {
             password: passwordEncrypted
           });
 
+          const notifyTo = await notificationModel.create({
+            userId,
+            message: `You have added a new member: ${memberData?.name}`,
+            isRead: false,
+            
+
+          });
+
           createdMembers.push(newMember);
 
-          if (newMember) {
+          if (newMember && notifyTo) {
 
             const verificationToken = jwt.sign(
               { email: memberData.email, userId: newMember._id }, // Payload
@@ -132,10 +139,8 @@ module.exports = {
             };
 
             await sendMail(messageData);
-            console.log('-------- SOCKET  before --------->');
-            
-            socketService.emitNotification(userId, `You have added a new member: ${memberName}`);
-            console.log('-------- SOCKET  after --------->');
+
+            sendNotification(userId, `You have added a new member: ${memberData?.name}`);
 
             res.status(201).json({
               message: "Members imported successfully",
@@ -149,7 +154,7 @@ module.exports = {
             });
           }
 
-          console.log(`Email sent to ${memberData.email} }`);
+          console.log(` ---------- Email sent ----------------- `);
         } catch (emailError) {
           console.error(`Failed to send email to ${memberData.email}:`, emailError);
         }

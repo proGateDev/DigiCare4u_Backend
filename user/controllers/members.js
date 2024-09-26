@@ -7,8 +7,12 @@ const XLSX = require('xlsx');
 const sendMail = require("../../service/email");
 const clientURL = require("../../constant/endpoint");
 const { generatePassword, encryptPassword } = require('../../util/auth')
-//==================================================
 
+const SocketService = require('../../service/socket'); // Adjust the path accordingly
+//==================================================
+const socketService = SocketService; // Use the already instantiated service
+
+//==================================================
 module.exports = {
   getUserMembers: async (req, res) => {
     try {
@@ -128,6 +132,11 @@ module.exports = {
             };
 
             await sendMail(messageData);
+            console.log('-------- SOCKET  before --------->');
+            
+            socketService.emitNotification(userId, `You have added a new member: ${memberName}`);
+            console.log('-------- SOCKET  after --------->');
+
             res.status(201).json({
               message: "Members imported successfully",
               members: createdMembers,

@@ -1,14 +1,11 @@
-// const express = require("express");
-// const router = express.Router();
-// const controller = require("../../admin/controllers/profile");
-// const checkUserToken = require("../../middleware/jwt");
-// //==========================================
+const express = require("express");
+const router = express.Router();
+const controller = require("../../member/controllers/profile");
+const checkUserToken = require("../../middleware/jwt");
+//==========================================
+
+router.get("/", checkUserToken, controller.getMemberProfile);     // Read
 
 
-// router.post("/", controller.createAdminProfile); // Create
-// router.get("/", checkUserToken, controller.getAdminProfile);     // Read
-// router.patch("/", checkUserToken, controller.updateAdminProfile);   // Update
-// router.delete("/", checkUserToken, controller.deleteAdminProfile); // Delete
 
-
-// module.exports = router;
+module.exports = router;

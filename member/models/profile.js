@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String}, 
   mobile: String,
   password: String,
-  // userType: { type: String, default: 'member' },
+  userType: { type: String, default: 'member' },
   groupType: { type: String, default: 'none' },
   location: {
     latitude: { type: Number, default: 0.00 },

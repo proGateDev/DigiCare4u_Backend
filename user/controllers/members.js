@@ -87,7 +87,7 @@ module.exports = {
             userId,
             message: `You have added a new member: ${memberData?.name}`,
             isRead: false,
-            
+
 
           });
 
@@ -169,5 +169,36 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
+
+
+  getUserMemberById: async (req, res) => {
+    try {
+
+      const userId = req.userId; // Get the logged-in user's ID from the request
+      console.log(req?.body, ' ============= getUserMemberById---------------------------');
+      const { memberId } = req?.body; // Get the memberId from the route parameters
+
+      // Find the member by ID, ensuring that it belongs to the user
+      const memberData = await memberModel.findOne({ _id: memberId, parentUser: userId });
+
+      if (!memberData) {
+        return res.status(404).json({
+          status: 404,
+          message: "Member not found or does not belong to the current user."
+        });
+      }
+
+      res.status(200).json({
+        status: 200,
+        message: "Member found successfully",
+        member: memberData
+      });
+    } catch (error) {
+      console.error("Error fetching member data:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+
+
 
 };

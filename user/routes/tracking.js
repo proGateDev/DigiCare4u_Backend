@@ -5,6 +5,6 @@ const checkUserToken = require("../../middleware/jwt");
 //==========================================
 
 
-router.put("/",checkUserToken, controller.updateMemberLocation); // Create
+router.post("/geocode",checkUserToken, controller.getLocationFromCoordinates); // Create
 
 module.exports = router;

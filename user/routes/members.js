@@ -15,7 +15,9 @@ router.post(
     uploadData.single('file'),
     controller.createUserMember
 );
-router.get("/", checkUserToken, controller.getUserMembers);
+router.get("/list", checkUserToken, controller.getUserMembers);
+// router.get("/:id", checkUserToken, controller.getUserMembers);
+router.post('/member-by-id', checkUserToken, controller.getUserMemberById);
 
 
 

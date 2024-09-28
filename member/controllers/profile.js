@@ -8,7 +8,9 @@ module.exports = {
 
   getMemberProfile: async (req, res) => {
     try {
-      const userId = req.userId
+      const userId = req?.userId
+      console.log('========== userId =============>',userId);
+      
 
 
       const userData = await model.findOne({ _id: userId });

@@ -1,4 +1,4 @@
-const model = require("../models/profile");
+const memberModel = require("../models/profile");
 const { checkEncryptedPassword } = require('../../util/auth')
 const jwt = require('jsonwebtoken');
 //==================================================
@@ -25,7 +25,7 @@ module.exports = {
 
 
       // Find the user by email
-      const user = await model.findOne({ email });
+      const user = await memberModel.findOne({ email });
       // console.log(user,'---- USER --');        
 
       if (!user) {
@@ -90,7 +90,7 @@ module.exports = {
       console.log(userId);
 
       // Find the user in the database
-      const user = await model.findById(userId);
+      const user = await memberModel.findById(userId);
 
       if (!user) {
         return res.status(404).json({
@@ -108,7 +108,7 @@ module.exports = {
       }
 
       // Update user status to 'approved'
-      await model.findByIdAndUpdate(userId, { isApproved: true });
+      await memberModel.findByIdAndUpdate(userId, { isApproved: true });
 
       res.status(200).json({
         status: 200,
@@ -137,7 +137,7 @@ module.exports = {
     const { email } = req.body; // User provides their email
 
     // Find the user by email
-    const user = await userModel.findOne({ email });
+    const user = await memberModel.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });

@@ -30,10 +30,22 @@ const socketService = (server) => {
 // Function to send notification
 const sendNotification = (userId, notification) => {
   if (io) {
-    console.log('============ gaya socket tak ------------>',notification)
+    console.log('============  SOCKET  ------------>',userId)
     io.to(userId).emit('notification', notification);
+    // io.to(userId).emit('notification', notification);
   }
 };
+
+
+const sendServerDetailToClient = (data) => {
+  if (io) {
+    console.log('============  sendServerDetailToClient  ------------>',data)
+    io.emit('server', data);
+  }
+};
+
+
+
 
 // Function to broadcast notification
 const broadcastNotification = (notification) => {
@@ -47,4 +59,5 @@ module.exports = {
   socketService,
   sendNotification,
   broadcastNotification,
+  sendServerDetailToClient
 };

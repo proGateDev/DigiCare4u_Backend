@@ -32,7 +32,7 @@ module.exports = {
             if (response.data.status === "OK") {
                  formattedAddress = response.data.results[0].formatted_address;
             } else {
-                console.error('Error fetching address:', response.data.status);
+                console.error('Error fetching address:', response);
                 return res.status(500).json({ message: "Error fetching address", status: response.data.status });
             }
     

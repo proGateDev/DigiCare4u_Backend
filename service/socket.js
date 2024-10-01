@@ -40,7 +40,7 @@ const sendNotification = (userId, notification) => {
 const sendServerDetailToClient = (data) => {
   if (io) {
     console.log('============  sendServerDetailToClient  ------------>',data)
-    io.emit('server', data);
+    io.emit('getUserId', data);
   }
 };
 

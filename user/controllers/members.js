@@ -10,7 +10,7 @@ const clientURL = require("../../constant/endpoint");
 const { generatePassword, encryptPassword } = require('../../util/auth')
 
 const socketService = require('../../service/socket');
-const { sendNotification,sendServerDetailToClient } = require('../../service/socket');
+const { sendNotification, sendServerDetailToClient } = require('../../service/socket');
 
 //==================================================
 module.exports = {
@@ -141,7 +141,7 @@ module.exports = {
             await sendMail(messageData);
 
             sendNotification(userId, `You have added a new member: ${memberData?.name}`);
-            sendServerDetailToClient( `server se aaya mera DOST : ${memberData?.name}`);
+            sendServerDetailToClient(` --------- server se aaya mera DOST ---------------- : ${memberData?.name}`);
 
             res.status(201).json({
               message: "Members imported successfully",
@@ -177,10 +177,14 @@ module.exports = {
 
       const userId = req.userId; // Get the logged-in user's ID from the request
       // console.log(req?.body, ' ============= getUserMemberById---------------------------');
-      const { memberId } = req?.body; // Get the memberId from the route parameters
+      const  memberId = req?.params?.memberId; // Get the memberId from the route parameters
+      console.log('params', req?.params);
+      console.log('---------', memberId);
+
 
       // Find the member by ID, ensuring that it belongs to the user
       const memberData = await memberModel.findOne({ _id: memberId, parentUser: userId });
+
 
       if (!memberData) {
         return res.status(404).json({

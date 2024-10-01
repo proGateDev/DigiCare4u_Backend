@@ -17,7 +17,7 @@ router.post(
 );
 router.get("/list", checkUserToken, controller.getUserMembers);
 // router.get("/:id", checkUserToken, controller.getUserMembers);
-router.post('/member-by-id', checkUserToken, controller.getUserMemberById);
+router.get('/:memberId', checkUserToken, controller.getUserMemberById);
 
 
 

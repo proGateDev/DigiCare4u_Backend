@@ -5,6 +5,7 @@ const memberRoutes = require("./member/routes");
 const userRoutes = require("./user/routes");
 const sosRoutes = require("./routes/sos");
 const jwtDecryptRoutes = require("./routes/jwtDecrypt");
+const authRoutes = require("./routes/auth");
 
 //=================================
 router.use("/admin", adminRoutes);
@@ -15,6 +16,7 @@ router.use("/member", memberRoutes);
 
 router.use('/sos', sosRoutes);
 router.use('/jwt', jwtDecryptRoutes);
+router.use('/auth', authRoutes);
 // app.use('/api', punchRoutes);
 // app.use('/api', scheduleRoutes);
 // app.use('/api', sessionRoutes);

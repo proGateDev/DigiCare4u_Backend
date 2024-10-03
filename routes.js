@@ -6,6 +6,7 @@ const userRoutes = require("./user/routes");
 const sosRoutes = require("./routes/sos");
 const jwtDecryptRoutes = require("./routes/jwtDecrypt");
 const authRoutes = require("./routes/auth");
+const trackRoutes = require("./routes/track");
 
 //=================================
 router.use("/admin", adminRoutes);
@@ -17,6 +18,7 @@ router.use("/member", memberRoutes);
 router.use('/sos', sosRoutes);
 router.use('/jwt', jwtDecryptRoutes);
 router.use('/auth', authRoutes);
+router.use('/track', trackRoutes);
 // app.use('/api', punchRoutes);
 // app.use('/api', scheduleRoutes);
 // app.use('/api', sessionRoutes);

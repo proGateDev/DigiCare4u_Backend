@@ -4,7 +4,7 @@ const locationLogSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true }, 
   memberId: { type: mongoose.Schema.Types.ObjectId, ref: 'member' } ,
 
-  ocation: {
+  location: {
     latitude: { type: Number, required: true },
     longitude: { type: Number, required: true }
   },

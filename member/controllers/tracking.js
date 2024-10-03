@@ -1,46 +1,42 @@
 const memberModel = require("../models/profile");
-const superAdminCreationValidation = require("../validation/superAdminCreation")
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const trackingHistoryModel = require('../../model/trackingHistory'); // Update with the correct path
+
 //==================================================
 
 module.exports = {
 
     updateMemberLocation: async (req, res) => {
-        const memberId = req?.userId
-        const { latitude, longitude } = req.body;
-        console.log('-------- memberId --->',memberId);
-
         try {
-            // Validate request body for latitude and longitude
-            if (!(latitude && longitude)) {
-                return res.status(400).json({
-                    status: 400,
-                    message: "Latitude and  Longitude is required"
-                });
-            }
+            const memberId = req.userId;
+            const { latitude, longitude } = req.body;
+            console.log('locatin ----------memberId ', latitude, longitude, memberId);
 
+            // Update the member's location
+            const updatedMember = await memberModel.findByIdAndUpdate(
+                memberId,
+                {
+                    location: {
+                        type: 'Point',
+                        coordinates: [longitude, latitude],
+                    },
+                    locationStatus: 'active',
+                },
+                { new: true }
+            );
 
-            const member = await memberModel.findById({ _id: memberId });
+            // Save to tracking history
+            const newLocationHistory = new trackingHistoryModel({
+                memberId,
+                location: {
+                    type: 'Point',
+                    coordinates: [longitude, latitude],
+                },
+            });
+            await newLocationHistory.save();
 
-
-            if (!member) {
-                return res.status(404).json({ message: "Member not found" });
-            }
-
-            // Update the location and updatedAt
-            member.location.latitude = latitude;
-            member.location.longitude = longitude;
-            member.location.updatedAt = Date.now();
-
-            // Save the updated member data
-            await member.save();
-
-            return res.status(200).json({ message: "Location updated successfully", member });
+            res.status(200).json({ message: 'Location updated successfully', member: updatedMember });
         } catch (error) {
-            console.error("Error updating location:", error);
-            return res.status(500).json({ message: "Server error", error });
+            res.status(500).json({ message: 'Error updating location', error: error.message });
         }
     }
-
 }

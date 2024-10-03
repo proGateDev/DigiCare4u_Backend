@@ -17,6 +17,8 @@ module.exports = {
   getUserMembers: async (req, res) => {
     try {
       const userId = req.userId;
+      console.log(userId);
+      
       const userData = await memberModel.find({ parentUser: userId });
 
       if (!userData) {
@@ -138,7 +140,7 @@ module.exports = {
                         `,
             };
 
-            await sendMail(messageData);
+            // await sendMail(messageData);
 
             sendNotification(userId, `You have added a new member: ${memberData?.name}`);
             sendServerDetailToClient(` --------- server se aaya mera DOST ---------------- : ${memberData?.name}`);

@@ -64,7 +64,7 @@ module.exports = {
 
       const createdMembers = [];
       // const password = generatePassword()
-      const password = 1234
+      const password = '1234'
       // const passwordEncrypted = await encryptPassword()
       const passwordEncrypted = await bcrypt.hash(password, 10);
 

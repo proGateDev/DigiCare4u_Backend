@@ -5,23 +5,105 @@ const superAdminCreationValidation = require("../validation/superAdminCreation")
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const XLSX = require('xlsx');
-const sendMail = require("../../service/email");
+// const sendMail = require("../../service/email");
+const sendMail = require("../../service/sgMail");
 const clientURL = require("../../constant/endpoint");
 const { generatePassword, encryptPassword } = require('../../util/auth')
 
 const socketService = require('../../service/socket');
 const { sendNotification, sendServerDetailToClient } = require('../../service/socket');
+const mongoose = require("mongoose");
 
 //==================================================
 module.exports = {
+  // getUserMembers: async (req, res) => {
+  //   try {
+  //     const userId = req.userId;
+  //     console.log('------------- getUserMembers --------',userId);
+
+  //     const userData = await memberModel.find({ parentUser: userId });
+
+  //     if (!userData) {
+  //       return res.status(404).json({
+  //         status: 404,
+  //         message: "No members added yet, please add members to track them."
+  //       });
+  //     }
+
+  //     res.status(200).json({
+  //       status: 200,
+  //       message: "Members found successfully",
+  //       members: userData,
+  //       count: userData.length
+  //     });
+  //   } catch (error) {
+  //     console.error("Error fetching user data:", error);
+  //     res.status(500).json({ error: "Internal Server Error" });
+  //   }
+  // },
+
+
+
+
+
   getUserMembers: async (req, res) => {
     try {
-      const userId = req.userId;
-      console.log('------------- getUserMembers --------',userId);
-      
-      const userData = await memberModel.find({ parentUser: userId });
+      const userId = mongoose.Types.ObjectId(req.userId); // Convert the userId to ObjectId
+      console.log('------------- getUserMembers --------', userId);
 
-      if (!userData) {
+      // Fetch members associated with the userId using aggregate
+      const userData = await memberModel.aggregate([
+        {
+          $match: {
+            parentUser: userId // Filter by the user's ID
+          }
+        },
+        {
+          $lookup: {
+            from: 'trackinghistories', // Collection name in lowercase
+            localField: '_id', // Field from member model (member's _id)
+            foreignField: 'memberId', // Field from trackingHistories model (memberId)
+            as: 'trackingHistories' // Output array field
+          }
+        },
+        {
+          $unwind: {
+            path: '$trackingHistories',
+            preserveNullAndEmptyArrays: true // Keep members even if they have no tracking history
+          }
+        },
+        {
+          $sort: {
+            'trackingHistories.timestamp': -1 // Sort by the latest tracking history timestamp
+          }
+        },
+        {
+          $group: {
+            _id: '$_id',
+            name: { $first: '$name' },
+            email: { $first: '$email' },
+            mobile: { $first: '$mobile' },
+            latestTracking: { $first: '$trackingHistories' } // Get the latest tracking history
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            email: 1,
+            mobile: 1,
+            latestTracking: {
+              $cond: {
+                if: { $ne: ['$latestTracking', null] }, // Check if latestTracking is not null
+                then: '$latestTracking',
+                else: null // or some default value
+              }
+            }
+          }
+        }
+      ]);
+
+      if (!userData.length) {
         return res.status(404).json({
           status: 404,
           message: "No members added yet, please add members to track them."
@@ -39,6 +121,8 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
+
+
 
   createUserMember: async (req, res) => {
     try {
@@ -63,8 +147,8 @@ module.exports = {
       }
 
       const createdMembers = [];
-      // const password = generatePassword()
-      const password = '1234'
+      const password = generatePassword()
+      // const password = '1234'
       // const passwordEncrypted = await encryptPassword()
       const passwordEncrypted = await bcrypt.hash(password, 10);
 
@@ -141,7 +225,8 @@ module.exports = {
                         `,
             };
 
-            // await sendMail(messageData);
+            await sendMail(messageData);
+            // await sendMail();
 
             sendNotification(userId, `You have added a new member: ${memberData?.name}`);
             sendServerDetailToClient(` --------- server se aaya mera DOST ---------------- : ${memberData?.name}`);
@@ -180,7 +265,7 @@ module.exports = {
 
       const userId = req.userId; // Get the logged-in user's ID from the request
       // console.log(req?.body, ' ============= getUserMemberById---------------------------');
-      const  memberId = req?.params?.memberId; // Get the memberId from the route parameters
+      const memberId = req?.params?.memberId; // Get the memberId from the route parameters
       console.log('params', req?.params);
       console.log('---------', memberId);
 

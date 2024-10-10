@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const locationHistorySchema = new mongoose.Schema({
   memberId: { type: mongoose.Schema.Types.ObjectId, ref: 'member' },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
-  
+
   // Use geospatial data for tracking locations
   location: {
     type: {
@@ -17,7 +17,15 @@ const locationHistorySchema = new mongoose.Schema({
       required: true,
     },
   },
-  
+
+  // Add address fields to the schema
+  formattedAddress: { type: String, default: 'NOT FOUND' },
+  locality: { type: String, default: 'NOT FOUND' },
+  sublocality: { type: String, default: 'NOT FOUND' },
+  region: { type: String, default: 'NOT FOUND' },
+  country: { type: String, default: 'NOT FOUND' },
+  postalCode: { type: String, default: 'NOT FOUND' },
+
   timestamp: { type: Date, default: Date.now },
 });
 

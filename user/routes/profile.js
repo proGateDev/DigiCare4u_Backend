@@ -7,7 +7,7 @@ const checkUserToken = require("../../middleware/jwt");
 
 // router.post("/", controller.createAdminProfile); // Create
 router.get("/",checkUserToken, controller.getUserProfile);     // Read
-// router.patch("/", checkUserToken, controller.updateAdminProfile);   // Update
+router.patch("/", checkUserToken, controller.updateUserProfile);   // Update
 // router.delete("/", checkUserToken, controller.deleteAdminProfile); // Delete
 
 

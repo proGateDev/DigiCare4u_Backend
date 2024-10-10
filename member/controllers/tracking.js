@@ -1,6 +1,6 @@
 const memberModel = require("../models/profile");
 const trackingHistoryModel = require('../../model/trackingHistory'); // Update with the correct path
-const getAddressFromCoordinates = require("../../service/geoCOde");
+const getAddressFromCoordinates = require("../../service/geoCode");
 
 //==================================================
 

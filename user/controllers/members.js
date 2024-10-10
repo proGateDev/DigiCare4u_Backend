@@ -17,7 +17,7 @@ module.exports = {
   getUserMembers: async (req, res) => {
     try {
       const userId = req.userId;
-      console.log(userId);
+      console.log('------------- getUserMembers --------',userId);
       
       const userData = await memberModel.find({ parentUser: userId });
 

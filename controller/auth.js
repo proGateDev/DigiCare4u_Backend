@@ -91,22 +91,24 @@ module.exports = {
 
   login: async (req, res) => {
     try {
+      console.log("--------  started User login ----------");
+
       const { email, password } = req.body;
-  
+
       if (!email) {
         return res.status(400).json({
           status: 400,
           message: "Email is required"
         });
       }
-  
+
       if (!password) {
         return res.status(400).json({
           status: 400,
           message: "Password is required"
         });
       }
-  
+
       // Find the user by email
       const user = await userModel.findOne({ email });
       if (user) {
@@ -117,10 +119,11 @@ module.exports = {
             message: "Invalid password"
           });
         }
-  
+
         // If authenticated, generate a JWT token
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '360m' });
-  
+        console.log('login token : ', token);
+
         // Send response with the token
         return res.status(200).json({
           status: 200,
@@ -129,7 +132,7 @@ module.exports = {
           token
         });
       }
-  
+
       // If not found in User, check in the Member collection
       const member = await memberModel.findOne({ email });
       if (member) {
@@ -140,10 +143,10 @@ module.exports = {
             message: "Invalid password"
           });
         }
-  
+
         // If authenticated, generate a JWT token
         const token = jwt.sign({ userId: member._id }, process.env.JWT_SECRET, { expiresIn: '360m' });
-  
+
         // Send response with the token
         return res.status(200).json({
           status: 200,
@@ -152,17 +155,17 @@ module.exports = {
           token
         });
       }
-  
+
       // If neither a user nor member is found
       return res.status(401).json({
         status: 401,
         message: "User is not registered with DigiCare"
       });
-  
+
     } catch (error) {
       res.status(500).json({ error: error });
     }
   },
-  
+
 
 };

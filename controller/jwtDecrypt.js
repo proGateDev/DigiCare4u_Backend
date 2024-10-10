@@ -3,6 +3,8 @@ const userModel = require('../user/models/profile'); // Import the Member model
 
 exports.getJWTDetails = async (req, res) => {
     try {
+        console.log('decoding token .....................................................');
+        
         const userId = req.userId; // Extract userId from the request
 
         // First, check in the User collection
@@ -11,7 +13,7 @@ exports.getJWTDetails = async (req, res) => {
             return res.status(200).json({
                 status: 200,
                 message: 'User found',
-                id: user._id, // Return user ID
+                data: user                    , // Return user ID
                 userType: 'user' // Return userType as 'user'
             });
         }
@@ -22,7 +24,7 @@ exports.getJWTDetails = async (req, res) => {
             return res.status(200).json({
                 status: 200,
                 message: 'Member found',
-                id: member._id, // Return member ID
+                data: member , // Return member ID
                 userType: 'member' // Return userType as 'member'
             });
         }

@@ -1,5 +1,6 @@
 const sosLogModel = require('../model/sosLog');
 const { axios } = require("axios");
+const { updateLocation } = require('../service/socket');
 
 
 module.exports = {
@@ -7,7 +8,7 @@ module.exports = {
         try {
             console.log('000000 Started ------->', req.body);
 
-            const {  latitude, longitude } = req.body;
+            const { latitude, longitude } = req.body;
 
             // Call the Google Geocoding API
             const googleMapsPlatformAPIKey = process.env.GOOGLE_MAPS_API_KEY; // Set your API key in environment variables
@@ -43,6 +44,9 @@ module.exports = {
             console.log('error-->', error);
             return res.status(500).json({ message: 'Error logging SOS', error });
         }
-    }
+    },
+    updateLocationSocket: async (req, res) => {
+        updateLocation(req.body);
 
+    }
 }

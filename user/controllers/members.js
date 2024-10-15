@@ -263,7 +263,8 @@ module.exports = {
   getUserMemberById: async (req, res) => {
     try {
 
-      const userId = req.userId; // Get the logged-in user's ID from the request
+      // const userId = req.userId; // Get the logged-in user's ID from the request
+      const userId ='66f673eaa447d313a6747f9a'
       // console.log(req?.body, ' ============= getUserMemberById---------------------------');
       const memberId = req?.params?.memberId; // Get the memberId from the route parameters
       console.log('params', req?.params);

@@ -111,6 +111,7 @@ module.exports = {
 
       // Find the user by email
       const user = await userModel.findOne({ email });
+      
       if (user) {
         const isPasswordValid = await checkEncryptedPassword(password, user.password);
         if (!isPasswordValid) {
@@ -135,6 +136,8 @@ module.exports = {
 
       // If not found in User, check in the Member collection
       const member = await memberModel.findOne({ email });
+      console.log(email,member);
+
       if (member) {
         const isPasswordValid = await checkEncryptedPassword(password, member.password);
         if (!isPasswordValid) {

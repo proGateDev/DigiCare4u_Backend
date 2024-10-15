@@ -264,11 +264,11 @@ module.exports = {
     try {
 
       // const userId = req.userId; // Get the logged-in user's ID from the request
+      console.log('--------  getUserMemberById ---------------');
       const userId ='66f673eaa447d313a6747f9a'
       // console.log(req?.body, ' ============= getUserMemberById---------------------------');
       const memberId = req?.params?.memberId; // Get the memberId from the route parameters
-      console.log('params', req?.params);
-      console.log('---------', memberId);
+      // console.log('params', req?.params);
 
 
       // Find the member by ID, ensuring that it belongs to the user

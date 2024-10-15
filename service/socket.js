@@ -28,7 +28,7 @@ const socketService = (server) => {
         { new: true }
       );
 
-      socket.emit('locationUpdateResponse', 'response from the server : location UPDATED !!');
+      socket.emit('locationUpdateResponse', `Location UPDATED !! `);
 
 
       // Emit notification only to the specific user

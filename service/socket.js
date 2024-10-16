@@ -1,5 +1,6 @@
 const { Server } = require('socket.io'); // Correct import for socket.io server
 const memberModel = require('../member/models/profile');
+const trackingHistoryModel = require('../model/trackingHistory');
 
 let io; // Define io globally
 
@@ -15,7 +16,22 @@ const socketService = (server) => {
   io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
     socket.on('onLocationUpdate', async (data) => {
-      console.log('-------- updating location in the background ---------------',[data.latitude, data.longitude]);
+      console.log('-------- updating location in the background ---------------', [data.latitude, data.longitude]);
+
+
+      const newTrackingHistory = await trackingHistoryModel.create(
+        {
+          location: {
+            type: 'Point',
+            coordinates: [data.latitude, data.longitude],
+          },
+          memberId: '670df8794ac80f26f99dd7ee',
+        },
+        { new: true }
+      );
+
+
+
       const updatedMember = await memberModel.findByIdAndUpdate(
         '670df8794ac80f26f99dd7ee',
         {
@@ -27,8 +43,10 @@ const socketService = (server) => {
         },
         { new: true }
       );
+      if (updatedMember) {
 
-      socket.emit('locationUpdateResponse', `Location UPDATED !! `);
+        socket.emit('locationUpdateResponse', true);
+      }
 
 
       // Emit notification only to the specific user

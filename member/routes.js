@@ -10,7 +10,7 @@ const subMemberskRoutes = require("./routes/subMembers");
 router.use("/auth", memberAuthRoutes);       
 router.use("/profile", memberProfileRoutes);       
 router.use("/track", memberTrackRoutes);       
-router.use("/colleagues", subMemberskRoutes);       
+router.use("/team", subMemberskRoutes);       
 
 
 

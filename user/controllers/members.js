@@ -83,6 +83,7 @@ module.exports = {
             name: { $first: '$name' },
             email: { $first: '$email' },
             mobile: { $first: '$mobile' },
+            groupType: { $first: '$groupType' },
             latestTracking: { $first: '$trackingHistories' } // Get the latest tracking history
           }
         },
@@ -92,13 +93,14 @@ module.exports = {
             name: 1,
             email: 1,
             mobile: 1,
+            groupType:1,
             latestTracking: {
               $cond: {
                 if: { $ne: ['$latestTracking', null] }, // Check if latestTracking is not null
                 then: '$latestTracking',
                 else: null // or some default value
               }
-            }
+            },
           }
         }
       ]);

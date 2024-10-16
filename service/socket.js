@@ -19,18 +19,19 @@ const socketService = (server) => {
       console.log('-------- updating location in the background ---------------', [data.latitude, data.longitude]);
 
 
-      const newTrackingHistory = await trackingHistoryModel.create(
+      const newTrackingHistory = await  trackingHistoryModel.create(
         {
+          memberId: '670df8794ac80f26f99dd7ee',
+          userId: '670df8794df80f26f99dd7ee',
           location: {
             type: 'Point',
             coordinates: [data.latitude, data.longitude],
           },
-          memberId: '670df8794ac80f26f99dd7ee',
         },
-        { new: true }
+        
       );
 
-
+    // await   newTrackingHistory.save()
 
       const updatedMember = await memberModel.findByIdAndUpdate(
         '670df8794ac80f26f99dd7ee',

@@ -10,7 +10,7 @@ const locationHistorySchema = new mongoose.Schema({
     type: {
       type: String,
       enum: ['Point'], // 'Point' for 2D sphere indexing
-      required: true,
+      required: false,
     },
     coordinates: {
       type: [Number], // [longitude, latitude]

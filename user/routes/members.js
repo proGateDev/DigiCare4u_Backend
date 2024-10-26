@@ -17,8 +17,9 @@ router.post(
 );
 router.get("/list", checkUserToken, controller.getUserMembers);
 // router.get("/:id", checkUserToken, controller.getUserMembers);
-// router.get('/:memberId', checkUserToken, controller.getUserMemberById);
-router.get('/:memberId',  controller.getUserMemberById);
+router.get('/:memberId', checkUserToken, controller.getUserMemberById);
+// router.get('/:memberId',  controller.getUserMemberById);
+router.delete('/:memberId',  controller.deleteUserMemberById);
 
 
 

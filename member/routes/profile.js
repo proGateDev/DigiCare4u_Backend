@@ -6,7 +6,7 @@ const checkUserToken = require("../../middleware/jwt");
 
 router.get("/", checkUserToken, controller.getMemberProfile);     
 router.patch("/", checkUserToken, controller.updateMemberProfile);   // Update
-router.patch("/live-update", controller.dummyUserLiveLocationUpdate);   // Update
+router.patch("/location-update",checkUserToken, controller.userLiveLocationUpdate);   // Update
 
 
 

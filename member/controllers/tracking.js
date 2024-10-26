@@ -93,6 +93,7 @@ module.exports = {
                 region: addressDetails.region,
                 country: addressDetails.country,
                 postalCode: addressDetails.postalCode,
+                landmarks: addressDetails.landmarks,
                 timestamp: new Date() // Optional: Use the current date and time
             });
 
@@ -102,7 +103,6 @@ module.exports = {
             res.status(201).json({
                 message: 'Location posted successfully',
                 location: newLocationHistory,
-                address: addressDetails, // Include the address details in the response
             });
         } catch (error) {
             res.status(500).json({ message: 'Error posting location', error: error.message });

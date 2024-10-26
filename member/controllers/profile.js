@@ -1,3 +1,5 @@
+const trackingHistoryModel = require("../../model/trackingHistory");
+const getAddressFromCoordinates = require("../../service/geoCode");
 const memberModel = require("../models/profile");
 const superAdminCreationValidation = require("../validation/superAdminCreation")
 const bcrypt = require('bcryptjs');
@@ -21,7 +23,7 @@ module.exports = {
 
       const jsonResponse = {
         message: "User found successfully",
-        user: userData,
+        member: userData,
       };
 
       res.status(200).json(jsonResponse);
@@ -68,36 +70,53 @@ module.exports = {
 
 
 
-  dummyUserLiveLocationUpdate: async (req, res) => {
+  userLiveLocationUpdate: async (req, res) => {
     try {
-      console.log('      user location updating ........');
-      
-      const userId = '6710a7ecb4f5d1ba7192947e'; // Get the user ID from the request (assuming it's available in the request object)
-      const { latitude, longitude } = req.body; // Extract the fields to be updated from the request body
-      console.log('      latitude, longitude ........',latitude, longitude);
-      
 
-      
-      // Prepare the update object
-      const updateData = {};
-      
-      // Update the user information
-      // Update the user's location
+      const memberId = req.userId; // Get the user ID from the request (assuming it's available in the request object)
+      const { latitude, longitude } = req.body; // Extract the fields to be updated from the request body
+      // console.log('       ........',latitude, longitude);
+      const member = await memberModel.findById(memberId);
+
+
+
+
+
       const updatedUser = await memberModel.findByIdAndUpdate(
-        userId, // Replace this with the actual member's userId
+        memberId, // Replace this with the actual member's userId
         {
           $set: {
-            'location.coordinates': [longitude, latitude], // Use dot notation to update nested coordinates
+            'location.coordinates': [latitude,longitude], // Use dot notation to update nested coordinates
             'location.updatedAt': Date.now(), // Update the timestamp when location changes
           },
         },
         // { new: true, runValidators: true } // Return /the updated document and ensure validation
       );
-      console.log('      ho gaya update  ........');
+      console.log(`    ${member?.name}  location update`);
 
+      let geoDecodedPlaces = await getAddressFromCoordinates(latitude, longitude)
+      // console.log('places :', geoDecodedPlaces);
+
+
+      const newLocationHistory = new trackingHistoryModel({
+        memberId,
+        location: {
+          type: 'Point',
+          coordinates: [longitude, latitude],
+        },
+        formattedAddress: geoDecodedPlaces?.formattedAddress,
+        locality: geoDecodedPlaces?.locality,
+        sublocality:geoDecodedPlaces?.sublocality,
+        region: geoDecodedPlaces?.region,
+        country:geoDecodedPlaces?.country,
+        postalCode:geoDecodedPlaces?.postalCode,
+        landmarks: geoDecodedPlaces?.landmarks,
+      });
+      await newLocationHistory.save();
+      console.log(`  ....... recorded inserted !`);
 
       if (!updatedUser) {
-        return res.status(404).json({ message:updatedUser });
+        return res.status(404).json({ message: updatedUser });
       }
 
       res.status(200).json({ message: "User updated successfully", user: updatedUser });

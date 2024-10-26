@@ -25,6 +25,7 @@ const locationHistorySchema = new mongoose.Schema({
   region: { type: String, default: 'NOT FOUND' },
   country: { type: String, default: 'NOT FOUND' },
   postalCode: { type: String, default: 'NOT FOUND' },
+  landmarks: { type: Array, default: [] },
 
   timestamp: { type: Date, default: Date.now },
 });

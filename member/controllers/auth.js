@@ -1,6 +1,7 @@
 const memberModel = require("../models/profile");
 const { checkEncryptedPassword } = require('../../util/auth')
 const jwt = require('jsonwebtoken');
+const { onMemberVerified } = require("../../service/socket");
 //==================================================
 
 module.exports = {
@@ -47,7 +48,7 @@ module.exports = {
 
       console.log('password checking 0--0--------', password, user?.password)
       const isPasswordValid = await checkEncryptedPassword(password, user?.password);
-      console.log('----- isPasswordValid  --------', isPasswordValid )
+      console.log('----- isPasswordValid  --------', isPasswordValid)
 
       if (!isPasswordValid) {
         return res.status(401).json({
@@ -80,57 +81,102 @@ module.exports = {
 
 
 
-  verifyEmail: async (req, res) => {
-    const { token } = req.query;
+  // verifyEmail: async (req, res) => {
+  //   const { token } = req.query;
 
+  //   try {
+  //     // Verify the token first
+  //     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  //     const userId = decoded.userId;
+  //     console.log(userId);
+
+  //     // Find the user in the database
+  //     const user = await memberModel.findById(userId);
+
+  //     if (!user) {
+  //       return res.status(404).json({
+  //         status: 404,
+  //         message: "User not found."
+  //       });
+  //     }
+
+  //     // Check if the user's email is already approved
+  //     if (user?.isApproved) {
+  //       return res.status(400).json({
+  //         status: 400,
+  //         message: "Email is already verified."
+  //       });
+  //     }
+
+  //     // Update user status to 'approved'
+  //     await memberModel.findByIdAndUpdate(userId, { isApproved: true });
+
+  //     res.status(200).json({
+  //       status: 200,
+  //       message: "Your email has been verified! You can now log in."
+  //     });
+  //   } catch (error) {
+  //     // Handle token expiration specifically
+  //     if (error.name === 'TokenExpiredError') {
+  //       return res.status(401).json({
+  //         status: 401,
+  //         message: "Token has expired. Please request a new verification link."
+  //       });
+  //     }
+  //     // Handle other errors
+  //     console.error("Email verification error:", error);
+  //     res.status(400).json({
+  //       status: 400,
+  //       message: "Invalid verification link.",
+  //       error
+  //     });
+  //   }
+  // },
+
+  verifyEmail: async (req, res) => {
+    console.log('------ verifyEmail API ------------>');
     try {
+      const { token } = req.query
       // Verify the token first
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const userId = decoded.userId;
-      console.log(userId);
+      const memberId = decoded.userId;
+      // console.log(memberId);
 
-      // Find the user in the database
-      const user = await memberModel.findById(userId);
 
-      if (!user) {
-        return res.status(404).json({
-          status: 404,
-          message: "User not found."
-        });
+      // const memberId = req.body.memberId;
+      console.log('------ memberId  ------------>', memberId);
+      // const userId = req.body.userId; // The user who added the member
+      const member = await memberModel.findById(memberId);
+
+      // if (member && !member.isApproved) {
+        if (member ) {
+        member.isApproved = true;
+        await member.save();
+
+        // const io = req.app.get('socketio');
+
+
+        const memberVerifyingMessage = {
+          message: `${member?.name} has verified the account`,
+          memberId: member._id,
+        }
+        onMemberVerified(memberVerifyingMessage)
+        // console.log(' chala', chala);
+
+
+        return res.status(200).send('Member verified and notification sent');
+      } else {
+        return res.status(400).send('Member already approved');
       }
-
-      // Check if the user's email is already approved
-      if (user?.isApproved) {
-        return res.status(400).json({
-          status: 400,
-          message: "Email is already verified."
-        });
-      }
-
-      // Update user status to 'approved'
-      await memberModel.findByIdAndUpdate(userId, { isApproved: true });
-
-      res.status(200).json({
-        status: 200,
-        message: "Your email has been verified! You can now log in."
-      });
     } catch (error) {
-      // Handle token expiration specifically
-      if (error.name === 'TokenExpiredError') {
-        return res.status(401).json({
-          status: 401,
-          message: "Token has expired. Please request a new verification link."
-        });
-      }
-      // Handle other errors
-      console.error("Email verification error:", error);
-      res.status(400).json({
-        status: 400,
-        message: "Invalid verification link.",
-        error
-      });
+      res.status(500).send('Error verifying member');
     }
   },
+
+
+
+
+
 
 
   resendVerificationEmail: async (req, res) => {

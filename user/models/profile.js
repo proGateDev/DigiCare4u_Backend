@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   members: { type: mongoose.Schema.Types.ObjectId, ref: 'member' }, // User who added this member
   userType: { type: String, default: 'user' },
 
-  email: { type: String, unique: true }, 
+  email: { type: String, unique: true },
   mobile: String,
   password: String,
   groupType: { type: String, default: 'none' },

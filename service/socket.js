@@ -1,6 +1,7 @@
 const { Server } = require('socket.io'); // Correct import for socket.io server
 const memberModel = require('../member/models/profile');
 const trackingHistoryModel = require('../model/trackingHistory');
+const chatModel = require('../model/chat');
 
 let io; // Define io globally
 
@@ -19,7 +20,7 @@ const socketService = (server) => {
       console.log('-------- updating location in the background ---------------', [data.latitude, data.longitude]);
 
 
-      const newTrackingHistory = await  trackingHistoryModel.create(
+      const newTrackingHistory = await trackingHistoryModel.create(
         {
           memberId: '670df8794ac80f26f99dd7ee',
           userId: '670df8794df80f26f99dd7ee',
@@ -28,10 +29,10 @@ const socketService = (server) => {
             coordinates: [data.latitude, data.longitude],
           },
         },
-        
+
       );
 
-    // await   newTrackingHistory.save()
+      // await   newTrackingHistory.save()
 
       const updatedMember = await memberModel.findByIdAndUpdate(
         '670df8794ac80f26f99dd7ee',
@@ -53,6 +54,41 @@ const socketService = (server) => {
       // Emit notification only to the specific user
       // sendNotification(userId, notification);
     });
+
+    socket.on('chat', async (data) => {
+      try {
+        const chatObject = {
+          sender: data?.userId,
+          message: data?.message?.text,
+
+
+        }
+        console.log(' --- chatObject  ------------------', chatObject);
+
+        const newMessage = new chatModel(chatObject);
+        await newMessage.save();
+
+        // io.to(data.roomId).emit('newChatMessage', newMessage);
+      } catch (error) {
+        console.error('Error posting chat data:', error);
+      }
+    });
+
+
+
+    socket.on('getChatHistory', async (userId) => {
+      try {
+        
+        const chatHistory = await chatModel.find({ sender:userId }); // Fetch messages for the room
+        console.log('chatHistory  ',chatHistory );
+        socket.emit('chatHistory', chatHistory); // Send the chat history back to the client
+      } catch (error) {
+        // console.error('Error fetching chat history:', error);
+        // socket.emit('chatHistoryError', 'Unable to fetch chat history.');
+      }
+    });
+
+
 
     // Listen for the event to join a user room
     socket.on('joinRoom', (userId) => {
@@ -94,8 +130,44 @@ const updateLocation = (data) => {
 };
 
 
+//=====================================
+
+const onMemberVerified = (message) => {
+  if (io) {
+    console.log('============  onMemberVerified chala    ................')
+    io.emit('onMemberVerified', message);
+  }
+};
+//--------------- Chat sockets ----------------------------------------
+const onUserJoined = (roomId, user) => {
+  if (io) {
+    console.log(`User ${user.username} joined room ${roomId}`);
+    io.to(roomId).emit("onUserJoined", { roomId, user });
+  }
+};
 
 
+
+
+
+// Assuming you have Express and Socket.IO set up
+
+// Fetching chat history
+// const sendUserMemberChatHistory = async () => {
+//   try {
+//     const chatHistory = await Chat.find({ roomId }); // Replace with your database call
+//     socket.emit('chatHistory', chatHistory); // Send history back to the client
+//   } catch (error) {
+//     console.error('Error fetching chat history:', error);
+//   }
+// };
+
+// Posting chat messages
+
+
+
+
+//=====================================
 
 
 
@@ -112,5 +184,8 @@ module.exports = {
   sendNotification,
   broadcastNotification,
   sendServerDetailToClient,
-  updateLocation
+  updateLocation,
+  onMemberVerified,
+  onUserJoined,
+  // sendUserMemberChatHistory,
 };

@@ -49,7 +49,7 @@ module.exports = {
   getUserMembers: async (req, res) => {
     try {
       const userId = mongoose.Types.ObjectId(req.userId); // Convert the userId to ObjectId
-      console.log('------------- getUserMembers --------', userId);
+      // console.log('------------- getUserMembers --------');
 
       // Fetch members associated with the userId using aggregate
       const userData = await memberModel.aggregate([
@@ -84,6 +84,7 @@ module.exports = {
             email: { $first: '$email' },
             mobile: { $first: '$mobile' },
             groupType: { $first: '$groupType' },
+            location: { $first: '$location' },
             latestTracking: { $first: '$trackingHistories' } // Get the latest tracking history
           }
         },
@@ -94,6 +95,7 @@ module.exports = {
             email: 1,
             mobile: 1,
             groupType:1,
+            location:1,
             latestTracking: {
               $cond: {
                 if: { $ne: ['$latestTracking', null] }, // Check if latestTracking is not null
@@ -230,8 +232,8 @@ module.exports = {
             await sendMail(messageData);
             // await sendMail();
 
-            sendNotification(userId, `You have added a new member: ${memberData?.name}`);
-            sendServerDetailToClient(` --------- server se aaya mera DOST ---------------- : ${memberData?.name}`);
+            // sendNotification(userId, `You have added a new member: ${memberData?.name}`);
+            // sendServerDetailToClient(` --------- server se aaya mera DOST ---------------- : ${memberData?.name}`);
 
             res.status(201).json({
               message: "Members imported successfully",
@@ -265,16 +267,17 @@ module.exports = {
   getUserMemberById: async (req, res) => {
     try {
 
-      // const userId = req.userId; // Get the logged-in user's ID from the request
-      console.log('--------  getUserMemberById ---------------');
-      const userId ='66f673eaa447d313a6747f9a'
+      const userId = req.userId; // Get the logged-in user's ID from the request
+      // const userId ='66f673eaa447d313a6747f9a'
       // console.log(req?.body, ' ============= getUserMemberById---------------------------');
       const memberId = req?.params?.memberId; // Get the memberId from the route parameters
       // console.log('params', req?.params);
-
-
+      
+      
+      // console.log('--------  IDs ---------------',userId,memberId);
       // Find the member by ID, ensuring that it belongs to the user
       const memberData = await memberModel.findOne({ _id: memberId, parentUser: userId });
+      // console.log('--------  memberData ---------------',memberData);
 
 
       if (!memberData) {
@@ -293,7 +296,40 @@ module.exports = {
       console.error("Error fetching member data:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
+  },
+
+
+
+  deleteUserMemberById: async (req, res) => {
+    try {
+      const userId = req.userId; // Get the logged-in user's ID from the request
+      const memberId = req?.params?.memberId; // Get the memberId from the route parameters
+      
+      
+      // Find and delete the member by ID, ensuring that it belongs to the user
+      const memberData = await memberModel.findOneAndDelete({ 
+        _id: memberId,
+        //  parentUser: userId
+         });
+  
+      if (!memberData) {
+        return res.status(404).json({
+          status: 404,
+          message: "Member not found or does not belong to the current user."
+        });
+      }
+  
+      res.status(200).json({
+        status: 200,
+        message: "Member deleted successfully",
+        member: memberData
+      });
+    } catch (error) {
+      console.error("Error deleting member data:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   }
+  
 
 
 

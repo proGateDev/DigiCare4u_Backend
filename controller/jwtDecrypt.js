@@ -3,7 +3,7 @@ const userModel = require('../user/models/profile'); // Import the Member model
 
 exports.getJWTDetails = async (req, res) => {
     try {
-        console.log('decoding token .....................................................');
+        // console.log('decoding token .....................................................');
         
         const userId = req.userId; // Extract userId from the request
 

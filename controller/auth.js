@@ -111,10 +111,11 @@ module.exports = {
 
       // Find the user by email
       const user = await userModel.findOne({ email });
-      // console.log('verified ?', user);
-
+      console.log(' user ---- ?', user?.id);
+      
       if (user) {
         const isPasswordValid = await checkEncryptedPassword(password, user.password);
+        // console.log(' user isPasswordValid  ---- ?', isPasswordValid );
         if (!isPasswordValid) {
           return res.status(401).json({
             status: 401,
@@ -123,7 +124,7 @@ module.exports = {
         }
 
         // If authenticated, generate a JWT token
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '360m' });
+        const token = jwt.sign({ userId: user?._id }, process.env.JWT_SECRET, { expiresIn: '360m' });
         console.log('login token : ', token);
 
         // Send response with the token

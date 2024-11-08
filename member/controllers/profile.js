@@ -11,7 +11,7 @@ module.exports = {
   getMemberProfile: async (req, res) => {
     try {
       const userId = req?.userId
-      console.log('========== userId =============>', userId);
+      // console.log('========== userId =============>', userId);
 
 
 
@@ -73,6 +73,8 @@ module.exports = {
   userLiveLocationUpdate: async (req, res) => {
     try {
 
+      console.log('userLiveLocationUpdate -------');
+      
       const memberId = req.userId; // Get the user ID from the request (assuming it's available in the request object)
       const { latitude, longitude } = req.body; // Extract the fields to be updated from the request body
       // console.log('       ........',latitude, longitude);

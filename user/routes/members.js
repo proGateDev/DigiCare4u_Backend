@@ -6,7 +6,6 @@ const multer = require('multer');
 const uploadData = require("../../middleware/upload");
 
 //==========================================
-// const upload = multer({ storage:  storage }); // Ensure a destination is set
 
 
 router.post(
@@ -16,10 +15,10 @@ router.post(
     controller.createUserMember
 );
 router.get("/list", checkUserToken, controller.getUserMembers);
-// router.get("/:id", checkUserToken, controller.getUserMembers);
 router.get('/:memberId', checkUserToken, controller.getUserMemberById);
-// router.get('/:memberId',  controller.getUserMemberById);
-router.delete('/:memberId',  controller.deleteUserMemberById);
+router.delete('/:memberId', controller.deleteUserMemberById);
+router.get('/:memberId/daily-transit', controller.getUserMemberDailyTransit);
+
 
 
 

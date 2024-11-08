@@ -13,6 +13,7 @@ const { generatePassword, encryptPassword } = require('../../util/auth')
 const socketService = require('../../service/socket');
 const { sendNotification, sendServerDetailToClient } = require('../../service/socket');
 const mongoose = require("mongoose");
+const trackingHistoryModel = require("../../model/trackingHistory");
 
 //==================================================
 module.exports = {
@@ -94,8 +95,8 @@ module.exports = {
             name: 1,
             email: 1,
             mobile: 1,
-            groupType:1,
-            location:1,
+            groupType: 1,
+            location: 1,
             latestTracking: {
               $cond: {
                 if: { $ne: ['$latestTracking', null] }, // Check if latestTracking is not null
@@ -272,8 +273,8 @@ module.exports = {
       // console.log(req?.body, ' ============= getUserMemberById---------------------------');
       const memberId = req?.params?.memberId; // Get the memberId from the route parameters
       // console.log('params', req?.params);
-      
-      
+
+
       // console.log('--------  IDs ---------------',userId,memberId);
       // Find the member by ID, ensuring that it belongs to the user
       const memberData = await memberModel.findOne({ _id: memberId, parentUser: userId });
@@ -304,21 +305,21 @@ module.exports = {
     try {
       const userId = req.userId; // Get the logged-in user's ID from the request
       const memberId = req?.params?.memberId; // Get the memberId from the route parameters
-      
-      
+
+
       // Find and delete the member by ID, ensuring that it belongs to the user
-      const memberData = await memberModel.findOneAndDelete({ 
+      const memberData = await memberModel.findOneAndDelete({
         _id: memberId,
         //  parentUser: userId
-         });
-  
+      });
+
       if (!memberData) {
         return res.status(404).json({
           status: 404,
           message: "Member not found or does not belong to the current user."
         });
       }
-  
+
       res.status(200).json({
         status: 200,
         message: "Member deleted successfully",
@@ -328,8 +329,46 @@ module.exports = {
       console.error("Error deleting member data:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
+  },
+
+
+  getUserMemberDailyTransit: async (req, res) => {
+    const { memberId } = req.params;
+    const { date } = req.query;
+
+    console.log('memberId 672b1a0a2c602f29a52ca408', memberId);
+
+
+    if (!memberId || !date) {
+      return res.status(400).json({ error: "Member ID and date are required" });
+    }
+
+    try {
+      // Parse the date and get the start and end of the day
+      const startOfDay = new Date(date);
+      startOfDay.setUTCHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(date);
+      endOfDay.setUTCHours(23, 59, 59, 999);
+
+      // Query database for locations within the specified date range
+      const locations = await trackingHistoryModel.find({
+        memberId,
+        timestamp: { $gte: startOfDay, $lte: endOfDay }
+      }).sort('timestamp');
+      console.log(locations);
+
+      res.json({
+        status: 200,
+        data: locations,
+        message: "Location found successfully"
+      });
+    } catch (error) {
+      console.error("Error fetching locations: ", error);
+      res.status(500).json({ error: "An error occurred while fetching locations." });
+    }
   }
-  
+
 
 
 

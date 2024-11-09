@@ -94,7 +94,7 @@ module.exports = {
         },
         // { new: true, runValidators: true } // Return /the updated document and ensure validation
       );
-      console.log(`    ${member?.name}  location update`);
+      console.log(`    ${member?.name}  Location Updated !`);
 
       let geoDecodedPlaces = await getAddressFromCoordinates(latitude, longitude)
       // console.log('places :', geoDecodedPlaces);
@@ -115,7 +115,7 @@ module.exports = {
         landmarks: geoDecodedPlaces?.landmarks,
       });
       await newLocationHistory.save();
-      console.log(`  ....... recorded inserted !`);
+      console.log(`  ....... Recorded Inserted !`);
 
       if (!updatedUser) {
         return res.status(404).json({ message: updatedUser });

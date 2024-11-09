@@ -367,9 +367,57 @@ module.exports = {
       console.error("Error fetching locations: ", error);
       res.status(500).json({ error: "An error occurred while fetching locations." });
     }
+  },
+
+
+  getUserMemberDailyTransitActivityFrequency: async (req, res) => {
+
+
+
+    try {
+      const memberId  = req.userId;
+      console.log('memberId =========================', memberId);
+      const { date } = req.body;
+      console.log(date, memberId);
+
+      const startDate = new Date(date);
+      const endDate = new Date(date);
+      endDate.setDate(endDate.getDate() + 1);
+
+      const result = await trackingHistoryModel.aggregate([
+        {
+          $match: {
+            memberId: mongoose.Types.ObjectId(memberId),
+            timestamp: { $gte: startDate, $lt: endDate },
+          },
+        },
+        {
+          $group: {
+            _id: "$sublocality",
+            count: { $sum: 1 },
+          },
+        },
+        {
+          $sort: { count: -1 },
+        },
+      ]);
+
+      res.json({
+        status:200,
+        data:result
+      });
+    } catch (error) {
+      res.status(404).json({ 
+        status:400,
+        message: "Failed to fetch visit frequencies" });
+    }
   }
 
 
 
+}
 
-};
+
+
+
+

@@ -18,6 +18,7 @@ router.get("/list", checkUserToken, controller.getUserMembers);
 router.get('/:memberId', checkUserToken, controller.getUserMemberById);
 router.delete('/:memberId', controller.deleteUserMemberById);
 router.get('/:memberId/daily-transit', controller.getUserMemberDailyTransit);
+router.post('/activity-frequency', checkUserToken,controller.getUserMemberDailyTransitActivityFrequency);
 
 
 

@@ -8,6 +8,7 @@ const jwtDecryptRoutes = require("./routes/jwtDecrypt");
 const authRoutes = require("./routes/auth");
 const trackRoutes = require("./routes/track");
 const assignRoutes = require("./routes/assignment");
+const { contactUs } = require("./controller/contactUs");
 
 //=================================
 router.use("/admin", adminRoutes);
@@ -21,6 +22,9 @@ router.use('/jwt', jwtDecryptRoutes);
 router.use('/auth', authRoutes);
 router.use('/track', trackRoutes);
 router.use('/assign', assignRoutes);
+router.post('/contact-us', contactUs);
+
+
 // app.use('/api', punchRoutes);
 // app.use('/api', scheduleRoutes);
 // app.use('/api', sessionRoutes);

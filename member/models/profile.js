@@ -35,6 +35,8 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
 
+  isOnline: { type: Boolean, default: false },
+
   punchInTime: { type: Date },
   isApproved: { type: Boolean, default: false },
   isDeleted: { type: Boolean, default: false },

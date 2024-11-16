@@ -11,7 +11,9 @@ const userSchema = new mongoose.Schema({
   mobile: String,
   password: String,
   groupType: { type: String, default: 'none' },
-  isDeleted: { type: String, default: 'false' },
+  isSubscribed: { type: Boolean, default: false },
+
+  isDeleted: { type: Boolean, default: false},
   createdBy: { type: String, default: "system" },
   updatedBy: { type: String, default: "system" },
   createdAt: { type: Date, default: Date.now },

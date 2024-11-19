@@ -4,12 +4,20 @@ module.exports = {
     assignment: async (req, res) => {
         try {
             console.log(' assigning this .......', req.body);
-
-            const { memberId, userId, locationName, coordinates } = req.body;
+            const userId = req.userId
+            console.log(' ---- userId   -----------', userId );
+            const { memberId, locationName, coordinates } = req.body;
 
             // Check if all required fields are provided
-            if (!memberId || !userId || !locationName || !coordinates || !coordinates.lat || !coordinates.lng) {
-                return res.status(400).json({ error: 'All fields are required' });
+            if (
+                !memberId ||
+                !userId ||
+                !locationName ||
+                !coordinates) {
+                return res.status(400).json({
+                    status: 400,
+                    message: 'All fields are required'
+                });
             }
 
             // Create a new assignment
@@ -22,6 +30,9 @@ module.exports = {
 
             // Save the assignment to the database
             const savedAssignment = await newAssignment.save();
+            console.log('============ newAssignment ========================');
+            console.log(newAssignment);
+            // console.log('====================================');
             res.status(201).json({
                 message: 'Location assigned successfully',
                 assignment: savedAssignment,

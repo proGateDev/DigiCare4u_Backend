@@ -19,12 +19,15 @@ const locationHistorySchema = new mongoose.Schema({
   },
 
   // Add address fields to the schema
-  formattedAddress: { type: String, default: 'NOT FOUND' },
+  preferredAddress: { type: String, default: 'NOT FOUND' },
+  address: { type: String, default: 'NOT FOUND' },
   locality: { type: String, default: 'NOT FOUND' },
-  sublocality: { type: String, default: 'NOT FOUND' },
+  street: { type: String, default: 'NOT FOUND' },
+  neighborhood: { type: String, default: 'NOT FOUND' },
   region: { type: String, default: 'NOT FOUND' },
+  district: { type: String, default: 'NOT FOUND' },
   country: { type: String, default: 'NOT FOUND' },
-  postalCode: { type: String, default: 'NOT FOUND' },
+  postcode: { type: String, default: 'NOT FOUND' },
   landmarks: { type: Array, default: [] },
 
   timestamp: { type: Date, default: Date.now },

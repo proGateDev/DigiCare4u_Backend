@@ -76,8 +76,12 @@ module.exports = {
       console.log('userLiveLocationUpdate -------');
       
       const memberId = req.userId; // Get the user ID from the request (assuming it's available in the request object)
-      const { latitude, longitude } = req.body; // Extract the fields to be updated from the request body
-      // console.log('       ........',latitude, longitude);
+      const { 
+        latitude, 
+        longitude,
+      locationDetails
+      } = req.body; // Extract the fields to be updated from the request body
+      console.log('       locationDetails........',locationDetails);
       const member = await memberModel.findById(memberId);
 
 
@@ -96,7 +100,7 @@ module.exports = {
       );
       console.log(`    ${member?.name}  Location Updated !`);
 
-      let geoDecodedPlaces = await getAddressFromCoordinates(latitude, longitude)
+      // let geoDecodedPlaces = await getAddressFromCoordinates(latitude, longitude)
       // console.log('places :', geoDecodedPlaces);
 
 
@@ -106,13 +110,16 @@ module.exports = {
           type: 'Point',
           coordinates: [longitude, latitude],
         },
-        formattedAddress: geoDecodedPlaces?.formattedAddress,
-        locality: geoDecodedPlaces?.locality,
-        sublocality:geoDecodedPlaces?.sublocality,
-        region: geoDecodedPlaces?.region,
-        country:geoDecodedPlaces?.country,
-        postalCode:geoDecodedPlaces?.postalCode,
-        landmarks: geoDecodedPlaces?.landmarks,
+        preferredAddress: locationDetails?.preferredAddress,
+        address:locationDetails?.address,
+        locality: locationDetails?.locality,
+        street:locationDetails?.street,
+        neighborhood:locationDetails?.neighborhood,
+        region: locationDetails?.region,
+        district:locationDetails?.district,
+        country:locationDetails?.country,
+        postcode:locationDetails?.postcode,
+        landmarks: locationDetails?.landmarks,
       });
       await newLocationHistory.save();
       console.log(`  ....... Recorded Inserted !`);

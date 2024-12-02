@@ -1,9 +1,25 @@
 const { Server } = require('socket.io'); // Correct import for socket.io server
 const memberModel = require('../member/models/profile');
+const userModel = require('../user/models/profile');
 const trackingHistoryModel = require('../model/trackingHistory');
 const chatModel = require('../model/chat');
+const jwt = require('jsonwebtoken');
+let io;
 
-let io; // Define io globally
+//------------------ Helpers function(s) -------------------------
+const getConnectedMemberDetails = async (memberId) => {
+  try {
+
+    const member = await userModel.findById(memberId);
+    console.log('memberId:', memberId);
+    // console.log('member details ---:', member);
+    return member;
+  } catch (error) {
+    console.error('Error fetching member details:', error);
+    throw error;
+  }
+};
+//----------------------------------------------------------------
 
 const socketService = (server) => {
   io = new Server(server, {
@@ -13,97 +29,62 @@ const socketService = (server) => {
     },
     // transports: ['websocket'], // Use websocket transport
   });
+  const socketToMemberMap = {}; // Simple in-memory mapping (replace with Redis for scalability)
 
-  io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
-    socket.on('onLocationUpdate', async (data) => {
-      console.log('-------- updating location in the background ---------------', [data.latitude, data.longitude]);
-
-
-      const newTrackingHistory = await trackingHistoryModel.create(
-        {
-          memberId: '670df8794ac80f26f99dd7ee',
-          userId: '670df8794df80f26f99dd7ee',
-          location: {
-            type: 'Point',
-            coordinates: [data.latitude, data.longitude],
-          },
-        },
-
-      );
-
-      // await   newTrackingHistory.save()
-
-      const updatedMember = await memberModel.findByIdAndUpdate(
-        '670df8794ac80f26f99dd7ee',
-        {
-          location: {
-            type: 'Point',
-            coordinates: [data.latitude, data.longitude],
-          },
-          locationStatus: 'active',
-        },
-        { new: true }
-      );
-      if (updatedMember) {
-
-        socket.emit('locationUpdateResponse', true);
-      }
+  io.on('connection', async (socket) => {
+    console.log('----------------- CONNECTED ! -------------------');
+    
+    const token = socket?.handshake?.auth?.token?._j; // Example: JWT passed during connection
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const memberId = decoded?.userId;
+    const member = await getConnectedMemberDetails(memberId);
 
 
-      // Emit notification only to the specific user
-      // sendNotification(userId, notification);
-    });
+    // Super Admin
+    if (member?.role === 'super_admin') {
+      socket.join('super_admin'); // Room for Super Admin
+      console.log(`Super Admin joined room: super_admin`);
+    }
 
-    socket.on('chat', async (data) => {
-      try {
-        const chatObject = {
-          sender: data?.userId,
-          message: data?.message?.text,
+    // User
+    if (member?.role === 'user') {
+      socket.join(`user_${memberId}`); // Room for the User
+      console.log(`User joined room: user_${memberId}`);
+    }
+    // Member
+    if (memberId) {
+      socket.join(`member_${memberId}`); // Room for the Member
+      // console.log(`Socket ${socket.id} joined member room: member_${memberId}`);
+    }
 
-
-        }
-        console.log(' --- chatObject  ------------------', chatObject);
-
-        const newMessage = new chatModel(chatObject);
-        await newMessage.save();
-
-        // io.to(data.roomId).emit('newChatMessage', newMessage);
-      } catch (error) {
-        console.error('Error posting chat data:', error);
-      }
-    });
+    socket.join(memberId); // Use memberId as the room name
 
 
 
-    socket.on('getChatHistory', async (userId) => {
-      try {
-        
-        const chatHistory = await chatModel.find({ sender:userId }); // Fetch messages for the room
-        console.log('chatHistory  ',chatHistory );
-        socket.emit('chatHistory', chatHistory); // Send the chat history back to the client
-      } catch (error) {
-        // console.error('Error fetching chat history:', error);
-        // socket.emit('chatHistoryError', 'Unable to fetch chat history.');
-      }
-    });
 
+    console.log('A user connected:',
+      socket.id,
+      member.role,
+      decoded?.userId,
 
+    );
 
-    // Listen for the event to join a user room
-    socket.on('joinRoom', (userId) => {
-      socket.join(userId);
-      console.log(`User ${userId} joined room: ${userId}`);
-    });
 
     // Handle disconnection
     socket.on('disconnect', () => {
-      console.log('User disconnected:', socket.id);
+      console.log(`Socket ${socket.id} disconnected from room: ${memberId}`);
+
+      delete socketToMemberMap[socket.id];
+
     });
   });
 };
 
-// Function to send notification
+
+
+
+
+//== Server side socket function(s) ==================================================================
 const sendNotification = (userId, notification) => {
   if (io) {
     console.log('============  SOCKET  ------------>', userId)
@@ -130,7 +111,6 @@ const updateLocation = (data) => {
 };
 
 
-//=====================================
 
 const onMemberVerified = (message) => {
   if (io) {
@@ -147,42 +127,10 @@ const onUserJoined = (roomId, user) => {
 };
 
 
-
-
-
-// Assuming you have Express and Socket.IO set up
-
-// Fetching chat history
-// const sendUserMemberChatHistory = async () => {
-//   try {
-//     const chatHistory = await Chat.find({ roomId }); // Replace with your database call
-//     socket.emit('chatHistory', chatHistory); // Send history back to the client
-//   } catch (error) {
-//     console.error('Error fetching chat history:', error);
-//   }
-// };
-
-// Posting chat messages
-
-
-
-
-//=====================================
-
-
-
-// Function to broadcast notification
-const broadcastNotification = (notification) => {
-  if (io) {
-    io.emit('notification', notification);
-  }
-};
-
-// Export the functions
+//==================================================================
 module.exports = {
   socketService,
   sendNotification,
-  broadcastNotification,
   sendServerDetailToClient,
   updateLocation,
   onMemberVerified,

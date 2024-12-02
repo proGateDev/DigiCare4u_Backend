@@ -10,10 +10,15 @@ let io;
 const getConnectedMemberDetails = async (memberId) => {
   try {
 
-    const member = await userModel.findById(memberId);
-    console.log('memberId:', memberId);
+    const user = await userModel.findById(memberId);
+    if (user == null) {
+
+      const member = await memberModel.findById(memberId);
+      return member;
+    }
+    // console.log('details -------:', user, member);
+    return user;
     // console.log('member details ---:', member);
-    return member;
   } catch (error) {
     console.error('Error fetching member details:', error);
     throw error;
@@ -33,7 +38,7 @@ const socketService = (server) => {
 
   io.on('connection', async (socket) => {
     console.log('----------------- CONNECTED ! -------------------');
-    
+
     const token = socket?.handshake?.auth?.token?._j; // Example: JWT passed during connection
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const memberId = decoded?.userId;
@@ -62,12 +67,7 @@ const socketService = (server) => {
 
 
 
-    console.log('A user connected:',
-      socket.id,
-      member.role,
-      decoded?.userId,
-
-    );
+    console.log(` ---------- ${member.name} GOT Connected!`);
 
 
     // Handle disconnection

@@ -10,10 +10,12 @@ let io;
 const getConnectedMemberDetails = async (memberId) => {
   try {
 
-    const user = await userModel.findById(memberId);
+    const user = await userModel
+      .findById(memberId);
     if (user == null) {
 
-      const member = await memberModel.findById(memberId);
+      const member = await memberModel
+        .findById(memberId).populate('parentUser')
       return member;
     }
     // console.log('details -------:', user, member);
@@ -45,9 +47,9 @@ const socketService = (server) => {
     const member = await getConnectedMemberDetails(memberId);
     socketToMemberMap['socketId'] = socket.id;
     socketToMemberMap['clientId'] = memberId;
-    
-    
-    socketToMemberMap['clientType'] = member?.role ;
+
+
+    socketToMemberMap['clientType'] = member?.role;
     // Super Admin
     if (member?.role === 'super_admin') {
       socket.join('super_admin'); // Room for Super Admin
@@ -61,16 +63,21 @@ const socketService = (server) => {
     }
     // Member
     if (member?.role === 'member') {
+      let roomName = `user_${member?.parentUser?.id}`
+      // console.log(`roomName -------`,roomName);
       socket.join(`member_${memberId}`); // Room for the Member
+      socket.emit(roomName, socketToMemberMap);
+
+
       // console.log(`Socket ${socket.id} joined member room: member_${memberId}`);
     }
 
     socket.join(memberId); // Use memberId as the room name
 
-    socket.emit('liveMembers', socketToMemberMap)
+    // socket.emit('liveMembers', socketToMemberMap)
 
 
-    console.log(` ---------- ${member.name} GOT Connected!`,socketToMemberMap);
+    console.log(` ---------- ${member.name} ${member?.role} GOT Connected!`);
 
 
     // Handle disconnection

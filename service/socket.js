@@ -43,8 +43,11 @@ const socketService = (server) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const memberId = decoded?.userId;
     const member = await getConnectedMemberDetails(memberId);
-
-
+    socketToMemberMap['socketId'] = socket.id;
+    socketToMemberMap['clientId'] = memberId;
+    
+    
+    socketToMemberMap['clientType'] = member?.role ;
     // Super Admin
     if (member?.role === 'super_admin') {
       socket.join('super_admin'); // Room for Super Admin
@@ -57,17 +60,17 @@ const socketService = (server) => {
       console.log(`User joined room: user_${memberId}`);
     }
     // Member
-    if (memberId) {
+    if (member?.role === 'member') {
       socket.join(`member_${memberId}`); // Room for the Member
       // console.log(`Socket ${socket.id} joined member room: member_${memberId}`);
     }
 
     socket.join(memberId); // Use memberId as the room name
 
+    socket.emit('liveMembers', socketToMemberMap)
 
 
-
-    console.log(` ---------- ${member.name} GOT Connected!`);
+    console.log(` ---------- ${member.name} GOT Connected!`,socketToMemberMap);
 
 
     // Handle disconnection

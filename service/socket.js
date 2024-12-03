@@ -41,9 +41,6 @@ const socketService = (server) => {
   io.on('connection', async (socket) => {
     console.log("Client connected:", socket.id);
 
-    socket.on('data', (d) => {
-      console.log('Received data from client:', d);
-    });
 
     try {
       const token = socket?.handshake?.auth?.token;
@@ -74,7 +71,10 @@ const socketService = (server) => {
       }
 
       const member = await getConnectedMemberDetails(memberId);
-      if (!member) {
+      socket.on('data', (d) => {
+        console.log('From client -----:', d, member.role);
+      });
+      if(!member) {
         console.error(`Member with ID ${memberId} not found`);
         socket.emit('error', { message: 'Authentication failed: Member not found' });
         socket.disconnect();
@@ -90,6 +90,7 @@ const socketService = (server) => {
       // console.log(`----------------------> :user_${member?.parentUser._id}`);
       // user_66f673eaa447d313a6747f9a
       socket.emit(`user_66f673eaa447d313a6747f9a`, { data: socketToMemberMap[socket.id] });
+      socket.emit(`member_674d4fd79c5285f0c99b0062`, { data: socketToMemberMap[socket.id] });
       // socket.emit(`user_${member?.parentUser._id}`, { data: socketToMemberMap[socket.id] });
 
       socket.on('disconnect', () => {

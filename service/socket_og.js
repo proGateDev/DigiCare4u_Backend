@@ -36,80 +36,43 @@ const socketService = (server) => {
     },
     // transports: ['websocket'], // Use websocket transport
   });
-  // const socketToMemberMap = {}; // Simple in-memory mapping (replace with Redis for scalability)
-  const socketToMemberMap = {}; // Store socket-to-member mappings
-
+  const socketToMemberMap = {}; // Simple in-memory mapping (replace with Redis for scalability)
   io.on('connection', async (socket) => {
     console.log("Client connected:", socket.id);
+    socket.on('data', (d) => console.log(d))
+    socket.emit('in', { data: 369 })
 
-    // Listen for data from client
-    socket.on('data', (d) => {
-      console.log('Received data from client:', d);
-    });
+    console.log('---------- before sending -----------', socket?.handshake?.auth?.token?._j);
 
-    try {
-      // Extract token from the handshake
-      const token = socket?.handshake?.auth?.token;
-      if (!token) {
-        console.error('No token provided by client');
-        socket.emit('error', { message: 'Authentication failed: No token provided' });
-        socket.disconnect(); // Disconnect the unauthenticated client
-        return;
-      }
+    const token = socket?.handshake?.auth?.token?._j; // Example: JWT passed during connection
+    console.log('----------  sending -----------', token);
+    // if (!token) return
+      console.log('----------  INSIDE -----------');
 
-      // Verify the token
-      let decoded;
-      try {
-        decoded = jwt.verify(token, process.env.JWT_SECRET);
-      } catch (err) {
-        console.error('Invalid token:', err.message);
-        socket.emit('error', { message: 'Authentication failed: Invalid token' });
-        socket.disconnect(); // Disconnect the client on token verification failure
-        return;
-      }
 
-      // Extract member ID from the decoded token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const memberId = decoded?.userId;
-      if (!memberId) {
-        console.error('Invalid token: No userId present');
-        socket.emit('error', { message: 'Authentication failed: Invalid token structure' });
-        socket.disconnect();
-        return;
-      }
-
-      // Fetch member details from the database/service
+      console.log('----------  INSIDE memberId -----------', memberId);
       const member = await getConnectedMemberDetails(memberId);
-      if (!member) {
-        console.error(`Member with ID ${memberId} not found`);
-        socket.emit('error', { message: 'Authentication failed: Member not found' });
-        socket.disconnect();
-        return;
-      }
+      console.log('----------  INSIDE member -----------', member.role);
+      socketToMemberMap['socketId'] = socket.id;
+      socketToMemberMap['clientId'] = memberId;
+      
+      
+      socketToMemberMap['clientType'] = member?.role;
+      console.log('----------  socketToMemberMap -----------', socketToMemberMap);
 
-      // Map the socket to the member details
-      socketToMemberMap[socket.id] = {
-        socketId: socket.id,
-        clientId: memberId,
-        clientType: member.role,
-      };
-      console.log('Mapped socket to member:', socketToMemberMap[socket.id]);
 
-      // Emit the member details to the client
-      socket.emit('in', { data: socketToMemberMap[socket.id] });
+      socket.emit('in', { data: socketToMemberMap })
 
-      // Handle disconnection
       socket.on('disconnect', () => {
-        console.log(`Socket ${socket.id} disconnected for member ID: ${memberId}`);
+        console.log(`Socket ${socket.id} disconnected from room: ${memberId}`);
+
         delete socketToMemberMap[socket.id];
+
       });
-
-    } catch (error) {
-      console.error('Error during connection handling:', error.message);
-      socket.emit('error', { message: 'Internal server error' });
-      socket.disconnect(); // Disconnect the client on any unexpected error
-    }
+    
   });
-
 
 };
 

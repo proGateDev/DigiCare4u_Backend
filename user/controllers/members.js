@@ -376,7 +376,7 @@ module.exports = {
 
     try {
       const memberId  = req.userId;
-      console.log('memberId =========================', memberId);
+      // console.log('memberId =========================', memberId);
       const { date } = req.body;
       console.log(date, memberId);
 

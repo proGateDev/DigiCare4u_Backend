@@ -83,7 +83,7 @@ const socketService = (server) => {
 
       socketToMemberMap[socket.id] = {
         socketId: socket.id,
-        clientId: memberId,
+        clientId: member?.id,
         // clientId: '674d4fd79c5285f0c99b0062',
         clientType: member.role,
       };

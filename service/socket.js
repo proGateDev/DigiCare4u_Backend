@@ -90,9 +90,10 @@ const socketService = (server) => {
       socketToMemberMap[socket.id] = {
         socketId: socket.id,
         clientId: memberId,
+        // clientId: '672b1a0a2c602f29a52ca408',
         clientType: member.role,
       };
-      console.log('Mapped socket to member:', socketToMemberMap[socket.id]);
+      console.log('Mapped socket to member:', socketToMemberMap);
 
       // Emit the member details to the client
       socket.emit('in', { data: socketToMemberMap[socket.id] });

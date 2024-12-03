@@ -36,24 +36,21 @@ const socketService = (server) => {
     },
     // transports: ['websocket'], // Use websocket transport
   });
-  // const socketToMemberMap = {}; // Simple in-memory mapping (replace with Redis for scalability)
-  const socketToMemberMap = {}; // Store socket-to-member mappings
+  const socketToMemberMap = {};
 
   io.on('connection', async (socket) => {
     console.log("Client connected:", socket.id);
 
-    // Listen for data from client
     socket.on('data', (d) => {
       console.log('Received data from client:', d);
     });
 
     try {
-      // Extract token from the handshake
       const token = socket?.handshake?.auth?.token;
       if (!token) {
         console.error('No token provided by client');
         socket.emit('error', { message: 'Authentication failed: No token provided' });
-        socket.disconnect(); // Disconnect the unauthenticated client
+        socket.disconnect();
         return;
       }
 
@@ -68,7 +65,6 @@ const socketService = (server) => {
         return;
       }
 
-      // Extract member ID from the decoded token
       const memberId = decoded?.userId;
       if (!memberId) {
         console.error('Invalid token: No userId present');
@@ -77,7 +73,6 @@ const socketService = (server) => {
         return;
       }
 
-      // Fetch member details from the database/service
       const member = await getConnectedMemberDetails(memberId);
       if (!member) {
         console.error(`Member with ID ${memberId} not found`);
@@ -86,19 +81,17 @@ const socketService = (server) => {
         return;
       }
 
-      // Map the socket to the member details
       socketToMemberMap[socket.id] = {
         socketId: socket.id,
-        clientId: memberId,
-        // clientId: '672b1a0a2c602f29a52ca408',
+        // clientId: memberId,
+        clientId: '674d4fd79c5285f0c99b0062',
         clientType: member.role,
       };
-      console.log('Mapped socket to member:', socketToMemberMap);
+      // console.log(`----------------------> :user_${member?.parentUser._id}`);
+      // user_66f673eaa447d313a6747f9a
+      socket.emit(`user_66f673eaa447d313a6747f9a`, { data: socketToMemberMap[socket.id] });
+      // socket.emit(`user_${member?.parentUser._id}`, { data: socketToMemberMap[socket.id] });
 
-      // Emit the member details to the client
-      socket.emit('in', { data: socketToMemberMap[socket.id] });
-
-      // Handle disconnection
       socket.on('disconnect', () => {
         console.log(`Socket ${socket.id} disconnected for member ID: ${memberId}`);
         delete socketToMemberMap[socket.id];
@@ -107,7 +100,7 @@ const socketService = (server) => {
     } catch (error) {
       console.error('Error during connection handling:', error.message);
       socket.emit('error', { message: 'Internal server error' });
-      socket.disconnect(); // Disconnect the client on any unexpected error
+      socket.disconnect();
     }
   });
 
@@ -118,7 +111,6 @@ const socketService = (server) => {
 
 
 
-//== Server side socket function(s) ==================================================================
 const sendNotification = (userId, notification) => {
   if (io) {
     console.log('============  SOCKET  ------------>', userId)

@@ -81,28 +81,32 @@ const socketService = (server) => {
         socket.disconnect();
         return;
       }
-      if (member.role === 'user') {
-        socket.emit(`user`, { data: 'user hai !!' });
-
-      }
-      if (member.role === 'member') {
-        // socket.emit(`user`, { data: 'member hai !!' });
-        socket.emit(`user_${member?.parentUser._id}`, { data: socketToMemberMap[socket.id] });
-        socket.emit(`user_66f673eaa447d313a6747f9a`, { data: socketToMemberMap[socket.id] });
-
-
-      }
-
-
       socketToMemberMap[socket.id] = {
         socketId: socket.id,
         clientId: member?.id,
         // clientId: '672d97288a90cb779e57730e',
         clientType: member.role,
       };
+
+      if (member.role === 'user') {
+        socket.emit(`user_${memberId}`, { type: 'user' });
+      } else if (member.role === 'member') {
+
+        let liveMemberData = {
+          id: member?.id,
+          name: member?.name,
+          role: member?.role,
+        }
+
+        socket.join(`rohit`);
+        console.log('Broadcasting to all clients connected to room "rohit"');
+        io.emit("rohit",  liveMemberData ); // Broadcast to all connected clients
+      }
+
+
       // console.log(`----------------------> :user_${member.role}`);
       // user_66f673eaa447d313a6747f9a
-      socket.emit(`user_66f673eaa447d313a6747f9a`, { data: socketToMemberMap[socket.id] });
+      // socket.emit(`user_66f673eaa447d313a6747f9a`, { data: socketToMemberMap[socket.id] });
       socket.emit(`member_674d4fd79c5285f0c99b0062`, { data: socketToMemberMap[socket.id] });
       // socket.emit(`user_${member?.parentUser._id}`, { data: socketToMemberMap[socket.id] });
 

@@ -39,7 +39,7 @@ const socketService = (server) => {
   const socketToMemberMap = {};
 
   io.on('connection', async (socket) => {
-    console.log("Client connected:", socket.id);
+    console.log(" -------- Connectd !! -----------------", socket.connected, socket?.handshake?.auth?.userId);
 
 
     try {
@@ -63,6 +63,7 @@ const socketService = (server) => {
       }
 
       const memberId = decoded?.userId;
+      // console.error('memberId  --------',decoded );
       if (!memberId) {
         console.error('Invalid token: No userId present');
         socket.emit('error', { message: 'Authentication failed: Invalid token structure' });
@@ -71,23 +72,35 @@ const socketService = (server) => {
       }
 
       const member = await getConnectedMemberDetails(memberId);
-      socket.on('data', (d) => {
-        console.log('From client -----:', d, member.role);
-      });
-      if(!member) {
+      // socket.on('data', (d) => {
+      //   console.log('From client -----:', d, member.role);
+      // });
+      if (!member) {
         console.error(`Member with ID ${memberId} not found`);
         socket.emit('error', { message: 'Authentication failed: Member not found' });
         socket.disconnect();
         return;
       }
+      if (member.role === 'user') {
+        socket.emit(`user`, { data: 'user hai !!' });
+
+      }
+      if (member.role === 'member') {
+        // socket.emit(`user`, { data: 'member hai !!' });
+        socket.emit(`user_${member?.parentUser._id}`, { data: socketToMemberMap[socket.id] });
+        socket.emit(`user_66f673eaa447d313a6747f9a`, { data: socketToMemberMap[socket.id] });
+
+
+      }
+
 
       socketToMemberMap[socket.id] = {
         socketId: socket.id,
-        clientId: member?.id,
-        // clientId: '674d4fd79c5285f0c99b0062',
+        // clientId: member?.id,
+        clientId: '672d97288a90cb779e57730e',
         clientType: member.role,
       };
-      // console.log(`----------------------> :user_${member?.parentUser._id}`);
+      // console.log(`----------------------> :user_${member.role}`);
       // user_66f673eaa447d313a6747f9a
       socket.emit(`user_66f673eaa447d313a6747f9a`, { data: socketToMemberMap[socket.id] });
       socket.emit(`member_674d4fd79c5285f0c99b0062`, { data: socketToMemberMap[socket.id] });

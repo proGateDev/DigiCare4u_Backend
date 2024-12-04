@@ -96,8 +96,8 @@ const socketService = (server) => {
 
       socketToMemberMap[socket.id] = {
         socketId: socket.id,
-        // clientId: member?.id,
-        clientId: '672d97288a90cb779e57730e',
+        clientId: member?.id,
+        // clientId: '672d97288a90cb779e57730e',
         clientType: member.role,
       };
       // console.log(`----------------------> :user_${member.role}`);

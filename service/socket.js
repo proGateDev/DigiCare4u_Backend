@@ -34,7 +34,7 @@ const socketService = (server) => {
       origin: '*', // Adjust based on your needs
       methods: ['GET', 'POST'],
     },
-    // transports: ['websocket'], // Use websocket transport
+    transports: ['websocket'], // Use websocket transport
   });
   const socketToMemberMap = {};
 
@@ -98,9 +98,9 @@ const socketService = (server) => {
           role: member?.role,
         }
 
-        socket.join(`rohit`);
-        console.log('Broadcasting to all clients connected to room "rohit"');
-        io.emit("rohit",  liveMemberData ); // Broadcast to all connected clients
+        // socket.join(`rohit`);
+        console.log(`Broadcasting for  : ${member?.name} to : ${member?.parentUser._id}, user_${member?.parentUser?._id}, ${liveMemberData}`);
+        io.emit(`user_${member?.parentUser?._id}`, liveMemberData); // Broadcast to all connected clients
       }
 
 
@@ -110,11 +110,31 @@ const socketService = (server) => {
       socket.emit(`member_674d4fd79c5285f0c99b0062`, { data: socketToMemberMap[socket.id] });
       // socket.emit(`user_${member?.parentUser._id}`, { data: socketToMemberMap[socket.id] });
 
+      // socket.on('disconnect', () => {
+      //   console.log(`Disconnected ⛔ for  ${memberId}, ${member.name} `);
+      //   io.emit('disconnectMembers', { data:memberId });
+
+      //   delete socketToMemberMap[socket.id];
+      // });
+
+
+
+
+
+
+
       socket.on('disconnect', () => {
-        console.log(`Socket ${socket.id} disconnected for member ID: ${memberId}`);
-        delete socketToMemberMap[socket.id];
+        console.log(`Disconnected ⛔ for  ${memberId}, ${member.name} `);
+        io.emit('disconnectedMembers', {
+        
+          id:memberId,
+          name:member?.name
+        })
+
+        // delete socketToMemberMap[socket.id];
       });
 
+      // io.emit('myCustomEvent', { data: socketToMemberMap });
     } catch (error) {
       console.error('Error during connection handling:', error.message);
       socket.emit('error', { message: 'Internal server error' });
@@ -124,7 +144,6 @@ const socketService = (server) => {
 
 
 };
-
 
 
 

@@ -99,7 +99,8 @@ const socketService = (server) => {
         }
 
         // socket.join(`rohit`);
-        console.log(`Broadcasting for  : ${member?.name} to : ${member?.parentUser._id}, user_${member?.parentUser?._id}, ${liveMemberData}`);
+        console.log(`Sending .... `);
+        console.log(` member: ${liveMemberData.name} ; parent: ${member?.parentUser.name},`);
         io.emit(`user_${member?.parentUser?._id}`, liveMemberData); // Broadcast to all connected clients
       }
 

@@ -10,7 +10,10 @@ const userSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   mobile: String,
   password: String,
-  groupType: { type: String, default: 'none' },
+
+  groupType: { type: mongoose.Schema.Types.ObjectId, ref: 'Channel', required: false }, // Reference to Channel schema
+
+  // groupType: { type: String, default: 'none' },
   isSubscribed: { type: Boolean, default: false },
 
   isDeleted: { type: Boolean, default: false},

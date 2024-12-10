@@ -92,48 +92,43 @@ module.exports = {
   getChannelMembers: async (req, res) => {
     try {
       const userId = req.userId; // Extracted from JWT middleware
-      console.log('userId -----', userId);
-      
-      // Step 1: Find all channels created by the current user
-      const channels = await channelModel.find({ createdBy: userId }, { _id: 1 }); // Fetch only _id
-      const channelIds = channels.map((channel) => channel._id);
-      console.log(' ids -----', channelIds);
-      
-      if (!channelIds.length) {
-        return res.status(404).json({ status: 404, message: "No channels found for this user." });
-      }
-      
-      // Step 2: Find all channel members for the fetched channel IDs
-      const channelMembers = await channelMemberModel.find({ channelId: { $in: channelIds } });
-      console.log('members -----', channelMembers);
+      const {channelId} = req.query;
+      console.log(channelId);
+
+      // Step 1: Find all members in channels created by the logged-in user
+      const channelMembers = await channelMemberModel
+        .find({ addedBy: userId, channelId:channelId })
+        .populate("channelId", "name description") // Populate channel details
+        .populate("memberId", "name email mobile") // Populate member details
+        .select("channelId memberId role addedBy addedByModel joinedAt "); // Select specific fields
 
       if (!channelMembers.length) {
-        return res.status(404).json({ status: 404, message: "No members found for the specified channels." });
+        return res.status(404).json({
+          status: 404,
+          message: "No members found for channels added by the user.",
+        });
       }
 
-      // Step 3: Fetch user details for the member IDs
-      const memberIds = channelMembers.map((member) => member.memberId);
-      const members = await memberModel.find({ _id: { $in: memberIds } }, { name: 1, email: 1, mobile: 1 });
-
-      if (!members.length) {
-        return res.status(404).json({ status: 404, message: "No member details found." });
-      }
-
-      // Step 4: Format the result
-      const result = channelMembers.map((channelMember) => {
-        const memberDetails = members.find((member) => member._id.equals(channelMember.memberId));
-        return {
-          channelId: channelMember.channelId,
-          memberId: channelMember.memberId,
-          memberDetails: memberDetails || null, // Handle cases where member details are missing
-        };
-      });
+      // Step 2: Format the response data
+      const result = channelMembers.map((channelMember) => ({
+        channelId: channelMember.channelId._id,
+        channelName: channelMember.channelId.name,
+        channelDescription: channelMember.channelId.description,
+        memberId: channelMember.memberId._id,
+        memberName: channelMember.memberId.name,
+        memberEmail: channelMember.memberId.email,
+        memberMobile: channelMember.memberId.mobile,
+        role: channelMember.role,
+        addedBy: channelMember.addedBy,
+        addedByModel: channelMember.addedByModel,
+        joinedAt: channelMember.joinedAt,
+      }));
 
       res.status(200).json({
         status: 200,
         message: "Members fetched successfully.",
         data: result,
-        totalMember: result.length,
+        totalMembers: result.length,
       });
     } catch (error) {
       console.error("Error fetching channel members:", error);
@@ -143,47 +138,63 @@ module.exports = {
 
 
 
-  createChannelMembers: async (req, res) => {
-    try {
-      console.log("-------- Creating Channels ----------");
 
-      const { name, description, createdByModel } = req.body;
+
+
+  addMemberToChannel: async (req, res) => {
+    try {
+      console.log("-------- Adding member to channel --------");
+
+      const { channelId, memberId, role, addedByModel } = req.body;
       const loggedInUserId = req.userId;
 
       // Validate required fields
-      if (!name || !loggedInUserId || !createdByModel) {
+      if (!channelId || !memberId || !loggedInUserId || !addedByModel) {
         return res.status(400).json({ message: "All fields are required" });
       }
 
-      // Check if the channel already exists
-      // const isChannelExists = await channelModel.findOne({ name });
+      // Check if the channel exists
+      const channel = await channelModel.findById(channelId);
+      if (!channel) {
+        return res.status(404).json({ message: "Channel not found" });
+      }
 
-      // if (isChannelExists) {
-      //   return res.status(400).json({
-      //     status: 400,
-      //     message: "Channel already exists",
-      //   });
-      // }
+      // Validate the role (optional if enum ensures it)
+      const validRoles = ['admin', 'member', 'user'];
+      if (role && !validRoles.includes(role)) {
+        return res.status(400).json({ message: "Invalid role specified" });
+      }
 
-      // Create a new channel
-      const newChannel = new channelMemberModel({
-        channelId: "67541ae4d5090e3c19a47854",
-        memberId: "672b1a0a2c602f29a52ca408",
-        role: 'member',
-        joinedAt: "2024-11-06T07:26:02.289+00:00", // 'User' or 'Member'
+      // Check if the member already exists in the channel
+      const isMemberExists = await channelMemberModel.findOne({ channelId, memberId });
+      if (isMemberExists) {
+        return res.status(400).json({ message: "Member already exists in the channel" });
+      }
+
+      // Create a new channel member
+      const newChannelMember = new channelMemberModel({
+        channelId,
+        memberId,
+        role: role || 'member',
+        addedBy: loggedInUserId,
+        addedByModel,
+        joinedAt: new Date(),
       });
 
-      await newChannel.save();
+      await newChannelMember.save();
 
       res.status(201).json({
         status: 201,
-        message: "Channel created successfully",
-        channel: newChannel,
+        message: "Member added to channel successfully",
+        channelMember: newChannelMember,
       });
     } catch (error) {
-      console.error("Error creating channel:", error);
+      console.error("Error adding member to channel:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
+}
 
-};
+
+
+

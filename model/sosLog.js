@@ -23,7 +23,8 @@ const sosLogSchema = new mongoose.Schema({
     }
   },
   message: { type: String, default: 'SOS activated' },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  
 });
 
 const sosLogModel = mongoose.model('sosLog', sosLogSchema);

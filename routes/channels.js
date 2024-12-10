@@ -3,11 +3,11 @@ const router = express.Router();
 const controller = require("../controller/channels");
 const checkUserToken = require("../middleware/jwt");
 //==========================================
-router.post("/", checkUserToken,controller.createChannel);
-router.get("/", checkUserToken,controller.getChannels);
+router.post("/", checkUserToken,controller.createChannel);  //-------> create-channel
+router.get("/", checkUserToken,controller.getChannels);  //-------> fetch user-created channel
 
-router.get("/members", checkUserToken,controller.getChannelMembers);
-router.post("/channel-members", checkUserToken,controller.createChannelMembers);
+router.get("/members", checkUserToken,controller.getChannelMembers); //-------> fetched user-created channel's members
+router.post("/members", checkUserToken,controller.addMemberToChannel); //-------> adding members to user-created channel
 
 
 module.exports = router;

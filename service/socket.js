@@ -147,6 +147,7 @@ const socketService = (server) => {
       });
 
       socket.on('SOS', (data) => {
+        console.log('SOS', data.memberId);
 
         io.emit(`SOS_member_${data.memberId}`, {
           data: data.message

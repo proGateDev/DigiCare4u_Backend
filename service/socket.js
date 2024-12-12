@@ -39,10 +39,18 @@ const socketService = (server) => {
   const socketToMemberMap = {};
 
   io.on('connection', async (socket) => {
+
+
+
+
+
     console.log(" -------- Connectd !! -----------------", socket.connected, socket?.handshake?.auth?.userId);
 
 
     try {
+
+
+
       const token = socket?.handshake?.auth?.token;
       if (!token) {
         console.error('No token provided by client');
@@ -119,20 +127,31 @@ const socketService = (server) => {
       // });
 
 
+      // ============ Custom Socket f(x) ================================================
 
 
+
+      //==================================================================================================
 
 
 
       socket.on('disconnect', () => {
         console.log(`Disconnected ⛔ for  ${memberId}, ${member.name} `);
         io.emit('disconnectedMembers', {
-        
-          id:memberId,
-          name:member?.name
+
+          id: memberId,
+          name: member?.name
         })
 
         // delete socketToMemberMap[socket.id];
+      });
+
+      socket.on('SOS', (data) => {
+
+        io.emit(`SOS_member_${data.memberId}`, {
+          data: data.message
+        })
+
       });
 
       // io.emit('myCustomEvent', { data: socketToMemberMap });
@@ -142,6 +161,10 @@ const socketService = (server) => {
       socket.disconnect();
     }
   });
+
+
+
+
 
 
 };

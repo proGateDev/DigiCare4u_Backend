@@ -91,9 +91,11 @@ module.exports = {
 
   getChannelMembers: async (req, res) => {
     try {
+      
       const userId = req.userId; // Extracted from JWT middleware
       const {channelId} = req.query;
-      console.log(channelId);
+      console.log('fetching channeld : ',channelId);
+      // console.log(channelId);
 
       // Step 1: Find all members in channels created by the logged-in user
       const channelMembers = await channelMemberModel

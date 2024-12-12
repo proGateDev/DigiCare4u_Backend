@@ -147,10 +147,10 @@ const socketService = (server) => {
       });
 
       socket.on('SOS', (data) => {
-        console.log('SOS', data.memberId);
+        console.log('SOS To ____', `SOS_member_${data?.memberId}`);
 
-        io.emit(`SOS_member_${data.memberId}`, {
-          data: data.message
+        io.emit(`SOS_member_${data?.memberId}`, {
+          message: data.message
         })
 
       });

@@ -115,10 +115,11 @@ module.exports = {
       //   // { new: true, runValidators: true } // Return /the updated document and ensure validation
       // );
       console.log(`    ${member?.name}  Location Updated !`);
+      console.log('locationDetails', locationDetails);
 
       // let geoDecodedPlaces = await getAddressFromCoordinates(latitude, longitude)
       // console.log('places :', geoDecodedPlaces);
-      console.log(`  ....... Before adding  trackingHistoryModel .............`);
+      // console.log(`  ....... Before adding  trackingHistoryModel .............`);
 
 
       const newLocationHistory = new trackingHistoryModel({

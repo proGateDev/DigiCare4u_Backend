@@ -378,12 +378,11 @@ module.exports = {
       const memberId  = req.userId;
       // console.log('memberId =========================', memberId);
       const { date } = req.body;
-      console.log(date, memberId);
-
+      
       const startDate = new Date(date);
       const endDate = new Date(date);
       endDate.setDate(endDate.getDate() + 1);
-
+      
       const result = await trackingHistoryModel.aggregate([
         {
           $match: {
@@ -393,7 +392,7 @@ module.exports = {
         },
         {
           $group: {
-            _id: "$sublocality",
+            _id: "$locality",
             count: { $sum: 1 },
           },
         },
@@ -401,7 +400,8 @@ module.exports = {
           $sort: { count: -1 },
         },
       ]);
-
+      console.log('result', result);
+      
       res.json({
         status:200,
         data:result

@@ -50,7 +50,6 @@ module.exports = {
   getUserMembers: async (req, res) => {
     try {
       const userId = mongoose.Types.ObjectId(req.userId); // Convert the userId to ObjectId
-      // console.log('------------- getUserMembers --------');
 
       // Fetch members associated with the userId using aggregate
       const userData = await memberModel.aggregate([
@@ -75,7 +74,7 @@ module.exports = {
         },
         {
           $sort: {
-            'trackingHistories.timestamp': -1 // Sort by the latest tracking history timestamp
+            'location.updatedAt': -1 // Sort by location.updatedAt first
           }
         },
         {
@@ -371,18 +370,14 @@ module.exports = {
 
 
   getUserMemberDailyTransitActivityFrequency: async (req, res) => {
-
-
-
     try {
-      const memberId  = req.userId;
-      // console.log('memberId =========================', memberId);
+      const memberId = req.userId;
       const { date } = req.body;
-      
+
       const startDate = new Date(date);
       const endDate = new Date(date);
       endDate.setDate(endDate.getDate() + 1);
-      
+
       const result = await trackingHistoryModel.aggregate([
         {
           $match: {
@@ -400,16 +395,63 @@ module.exports = {
           $sort: { count: -1 },
         },
       ]);
-      console.log('result', result);
-      
+
+      // Filter out the result containing _id as null
+      const filteredResult = result.filter(item => item._id !== null);
+
       res.json({
-        status:200,
-        data:result
+        status: 200,
+        data: filteredResult
       });
     } catch (error) {
-      res.status(404).json({ 
-        status:400,
-        message: "Failed to fetch visit frequencies" });
+      res.status(404).json({
+        status: 400,
+        message: "Failed to fetch visit frequencies"
+      });
+    }
+  },
+
+
+  getUserMemberDailyTransitActivityFrequency_: async (req, res) => {
+    try {
+      // const memberId = req.userId;
+      const { date, memberId } = req.body;
+      console.log('getUserMemberDailyTransitActivityFrequency_ _____________', memberId);
+
+      const startDate = new Date(date);
+      const endDate = new Date(date);
+      endDate.setDate(endDate.getDate() + 1);
+
+      const result = await trackingHistoryModel.aggregate([
+        {
+          $match: {
+            memberId: mongoose.Types.ObjectId(memberId),
+            timestamp: { $gte: startDate, $lt: endDate },
+          },
+        },
+        {
+          $group: {
+            _id: "$locality",
+            count: { $sum: 1 },
+          },
+        },
+        {
+          $sort: { count: -1 },
+        },
+      ]);
+
+      // Filter out the result containing _id as null
+      const filteredResult = result.filter(item => item._id !== null);
+
+      res.json({
+        status: 200,
+        data: filteredResult
+      });
+    } catch (error) {
+      res.status(404).json({
+        status: 400,
+        message: "Failed to fetch visit frequencies"
+      });
     }
   }
 

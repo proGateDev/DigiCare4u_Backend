@@ -150,7 +150,10 @@ const socketService = (server) => {
         console.log('SOS To ____', `SOS_member_${data?.memberId} _____`);
 
         io.emit(`SOS_member_${data?.memberId}`, {
-          message: data.message
+          message: data.message,
+          memberId: data.memberId,
+          
+
         })
 
       });

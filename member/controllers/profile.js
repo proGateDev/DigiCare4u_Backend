@@ -71,17 +71,17 @@ module.exports = {
 
 
   userLiveLocationUpdate: async (req, res) => {
+    console.log('-------------- userLiveLocationUpdate -------');
     try {
 
-      console.log('userLiveLocationUpdate -------');
-      
+
       const memberId = req.userId; // Get the user ID from the request (assuming it's available in the request object)
-      const { 
-        latitude, 
+      const {
+        latitude,
         longitude,
-      locationDetails
+        locationDetails
       } = req.body; // Extract the fields to be updated from the request body
-      console.log('       locationDetails........',locationDetails);
+      console.log('       locationDetails........', locationDetails);
       const member = await memberModel.findById(memberId);
 
 
@@ -92,7 +92,7 @@ module.exports = {
         memberId, // Replace this with the actual member's userId
         {
           $set: {
-            'location.coordinates': [latitude,longitude], // Use dot notation to update nested coordinates
+            'location.coordinates': [latitude, longitude], // Use dot notation to update nested coordinates
             'location.updatedAt': Date.now(), // Update the timestamp when location changes
           },
         },
@@ -111,14 +111,14 @@ module.exports = {
           coordinates: [longitude, latitude],
         },
         preferredAddress: locationDetails?.preferredAddress,
-        address:locationDetails?.address,
+        address: locationDetails?.address,
         locality: locationDetails?.locality,
-        street:locationDetails?.street,
-        neighborhood:locationDetails?.neighborhood,
+        street: locationDetails?.street,
+        neighborhood: locationDetails?.neighborhood,
         region: locationDetails?.region,
-        district:locationDetails?.district,
-        country:locationDetails?.country,
-        postcode:locationDetails?.postcode,
+        district: locationDetails?.district,
+        country: locationDetails?.country,
+        postcode: locationDetails?.postcode,
         landmarks: locationDetails?.landmarks,
       });
       await newLocationHistory.save();

@@ -8,7 +8,7 @@ mongoose.connect(process.env.DB, { useNewUrlParser: true, useUnifiedTopology: tr
 async function addFieldToUsers() {
   try {
     // Update all users to have isSubscribed field set to false if not already present
-    await userModel.updateMany({ isSubscribed: { $exists: false } }, { $set: { isSubscribed: false } });
+    await userModel.updateMany({ location: { $exists: false } });
     console.log('Field isSubscribed added to all existing users.');
   } catch (error) {
     console.error('Error updating users:', error);
@@ -29,4 +29,5 @@ async function addFieldToMembers() {
   }
 }
 
-addFieldToMembers();
+// addFieldToMembers();
+addFieldToUsers()

@@ -11,12 +11,36 @@ const userSchema = new mongoose.Schema({
   mobile: String,
   password: String,
 
+
+
+  location: {
+    type: {
+      type: String,
+      enum: ['Point'], // 'Point' for 2D sphere indexing
+      required: true,
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      required: true,
+      default: [0.0, 0.0]
+    },
+    updatedAt: { type: Date, default: Date.now },
+  },
+
+
+
+
+
+
+
+
   groupType: { type: mongoose.Schema.Types.ObjectId, ref: 'Channel', required: false }, // Reference to Channel schema
 
   // groupType: { type: String, default: 'none' },
   isSubscribed: { type: Boolean, default: false },
 
-  isDeleted: { type: Boolean, default: false},
+  isDeleted: { type: Boolean, default: false },
   createdBy: { type: String, default: "system" },
   updatedBy: { type: String, default: "system" },
   createdAt: { type: Date, default: Date.now },

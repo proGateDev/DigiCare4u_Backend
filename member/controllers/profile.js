@@ -87,21 +87,38 @@ module.exports = {
 
 
 
+      console.log(`  ....... Before adding  memberModel .............`);
+      // Step 1: Find the member
+      const fetchedMember = await memberModel.findById(memberId);
+      console.log('member hai ... ', fetchedMember.name);
 
-      const updatedUser = await memberModel.findByIdAndUpdate(
-        memberId, // Replace this with the actual member's userId
-        {
-          $set: {
-            'location.coordinates': [latitude, longitude], // Use dot notation to update nested coordinates
-            'location.updatedAt': Date.now(), // Update the timestamp when location changes
-          },
-        },
-        // { new: true, runValidators: true } // Return /the updated document and ensure validation
-      );
+      // Step 2: Update the member's location if the member is found
+      if (fetchedMember) {
+        member.location.coordinates = [latitude, longitude];
+        member.location.updatedAt = Date.now();
+
+        await fetchedMember.save();
+      }
+
+
+
+
+
+      // const updatedUser = await memberModel.findByIdAndUpdate(
+      //   memberId, // Replace this with the actual member's userId
+      //   {
+      //     $set: {
+      //       'location.coordinates': [latitude, longitude], // Use dot notation to update nested coordinates
+      //       'location.updatedAt': Date.now(), // Update the timestamp when location changes
+      //     },
+      //   },
+      //   // { new: true, runValidators: true } // Return /the updated document and ensure validation
+      // );
       console.log(`    ${member?.name}  Location Updated !`);
 
       // let geoDecodedPlaces = await getAddressFromCoordinates(latitude, longitude)
       // console.log('places :', geoDecodedPlaces);
+      console.log(`  ....... Before adding  trackingHistoryModel .............`);
 
 
       const newLocationHistory = new trackingHistoryModel({
@@ -124,11 +141,11 @@ module.exports = {
       await newLocationHistory.save();
       console.log(`  ....... Recorded Inserted !`);
 
-      if (!updatedUser) {
-        return res.status(404).json({ message: updatedUser });
+      if (!fetchedMember) {
+        return res.status(404).json({ message: fetchedMember });
       }
 
-      res.status(200).json({ message: "User updated successfully", user: updatedUser });
+      res.status(200).json({ message: "User updated successfully", user: fetchedMember });
     } catch (error) {
       console.error("Error updating user:", error);
       res.status(500).json({ message: "Error updating user", error: error.message });

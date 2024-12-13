@@ -81,7 +81,7 @@ module.exports = {
         longitude,
         locationDetails
       } = req.body; // Extract the fields to be updated from the request body
-      console.log('       locationDetails........', locationDetails);
+      // console.log('       locationDetails........', locationDetails);
       const member = await memberModel.findById(memberId);
 
 

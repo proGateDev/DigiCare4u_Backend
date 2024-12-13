@@ -371,6 +371,8 @@ module.exports = {
 
   getUserMemberDailyTransitActivityFrequency: async (req, res) => {
     try {
+      console.log('getUserMemberDailyTransitActivityFrequency');
+      
       const memberId = req.userId;
       const { date } = req.body;
 

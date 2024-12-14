@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema({
   groupType: { type: mongoose.Schema.Types.ObjectId, ref: 'Channel', required: false }, // Reference to Channel schema
 
   // groupType: { type: String, default: 'none' },
-  isSubscribed: { type: Boolean, default: false },
+  isSubscribed: { type: Boolean, default: true },
 
   isDeleted: { type: Boolean, default: false },
   createdBy: { type: String, default: "system" },

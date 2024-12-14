@@ -196,7 +196,11 @@ module.exports = {
 
             const verificationLink = `${clientURL}/verify-email?token=${verificationToken}`;
             const messageData = {
-              from: '<nischal@progatetechnology.com>',
+              from: {
+                "email": "<nischal@progatetechnology.com>",
+                "name": "DigiCare4U"
+              },
+              // from: '<nischal@progatetechnology.com>',
               to: memberData?.email,
               subject: 'Welcome to DigiCare4u! Please Verify Your Email',
               html: `
@@ -276,7 +280,7 @@ module.exports = {
 
       // console.log('--------  IDs ---------------',userId,memberId);
       // Find the member by ID, ensuring that it belongs to the user
-      const memberData = await memberModel.findOne({ _id: memberId, parentUser: userId });
+      const memberData = await memberModel.findOne({ id: memberId, parentUser: userId });
       // console.log('--------  memberData ---------------',memberData);
 
 
@@ -372,7 +376,7 @@ module.exports = {
   getUserMemberDailyTransitActivityFrequency: async (req, res) => {
     try {
       console.log('getUserMemberDailyTransitActivityFrequency');
-      
+
       const memberId = req.userId;
       const { date } = req.body;
 

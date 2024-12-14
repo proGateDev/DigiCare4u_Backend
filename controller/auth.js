@@ -2,7 +2,8 @@ const userModel = require("../user/models/profile");
 const memberModel = require('../member/models/profile'); // Import the User model
 const jwt = require('jsonwebtoken');
 const bcrypt = require("bcryptjs");
-const { checkEncryptedPassword } = require('../util/auth')
+const { checkEncryptedPassword } = require('../util/auth');
+const channelModel = require("../model/channels");
 //==================================================
 
 
@@ -75,6 +76,23 @@ module.exports = {
         { expiresIn: '360m' } // Token expires in 2 hours
       );
 
+      // Create default channels
+      const defaultChannels = [
+        { name: 'IT', description: 'Default IT channel' },
+        { name: 'HR', description: 'Default HR channel' },
+        { name: 'SALES', description: 'Default Sales channel' },
+      ];
+
+      const channelPromises = defaultChannels.map(channel => {
+        return new channelModel({
+          ...channel,
+          createdBy: newUser._id,
+          createdByModel: 'User',
+        }).save();
+      });
+
+      await Promise.all(channelPromises);
+
       // Send response with the token
       res.status(201).json({
         status: 201,
@@ -112,8 +130,20 @@ module.exports = {
       // Find the user by email
       const user = await userModel.findOne({ email });
       console.log(' user ---- ?', user?.id);
-      
+      if (!user) {
+        return res.status(404).json({
+          status: 404,
+          message: "User not found"
+        });
+      }
       if (user) {
+        if (user?.isSubscribed == false) {
+          return res.status(401).json({
+            status: 401,
+            message: "Your Free Trails Has Been Be Expired !"
+          });
+        }
+
         const isPasswordValid = await checkEncryptedPassword(password, user.password);
         // console.log(' user isPasswordValid  ---- ?', isPasswordValid );
         if (!isPasswordValid) {
@@ -139,10 +169,10 @@ module.exports = {
       // If not found in User, check in the Member collection
       const member = await memberModel.findOne({ email });
       // console.log(email, member);
-      console.log('verified ?', member.isApproved);
+      console.log('verified ?', member?.isApproved);
 
       if (member) {
-        const isPasswordValid = await checkEncryptedPassword(password, member.password);
+        const isPasswordValid = await checkEncryptedPassword(password, member?.password);
         if (!isPasswordValid) {
           return res.status(401).json({
             status: 401,
@@ -150,7 +180,7 @@ module.exports = {
           });
         }
 
-        if (!member.isApproved) {
+        if (!member?.isApproved) {
           return res.status(401).json({
             status: 401,
             error: "User is not verified",
@@ -158,7 +188,6 @@ module.exports = {
           });
         }
 
-        // If authenticated, generate a JWT token
         const token = jwt.sign({ userId: member._id }, process.env.JWT_SECRET, { expiresIn: '360m' });
 
         // Send response with the token

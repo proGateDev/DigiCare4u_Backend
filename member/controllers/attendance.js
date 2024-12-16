@@ -1,20 +1,48 @@
-const PunchLog = require('../models/punchLog');
+const PunchLog = require('../models/attendance');
 
 // Punch-in for a member
-exports.punchIn = async (req, res) => {
+const Attendance = require('../models/attendance'); // Import the attendance model
+
+exports.markAttendance = async (req, res) => {
     try {
-        const { memberId, latitude, longitude } = req.body;
-        const newPunchIn = new PunchLog({
+        const memberId = req.userId
+        const { parentId, latitude, longitude } = req.body;
+        console.log('req.body--------', parentId);
+
+        // Get today's date (ignoring time)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Set to the beginning of the day
+
+        // Find if there is an attendance record for the member for today
+        const existingAttendance = await Attendance.findOne({
             memberId,
+            parentId, // Also check for the parentId to ensure attendance is unique per member and user
+            createdAt: { $gte: today } // Find attendance for today
+        });
+
+        if (existingAttendance) {
+            // If attendance for today already exists, return an error
+            return res.status(300).json({ message: 'Attendance already marked for today.' });
+        }
+
+        // If no attendance for today, create a new punch-in record
+        const newPunchIn = new Attendance({
+            memberId,
+            parentId, // Include parentId when creating the new record
             punchInTime: new Date(),
             locationDuringPunchIn: { latitude, longitude }
         });
+
         await newPunchIn.save();
+        console.log('========= Attednace Marked ==============================');
+
         return res.status(201).json({ message: 'Punch-in successful', data: newPunchIn });
     } catch (error) {
-        return res.status(500).json({ message: 'Error during punch-in', error });
+        console.error('Error during punch-in:', error); // Log the error for debugging
+        return res.status(500).json({ message: 'Error during punch-in', error: error.message });
     }
 };
+
 
 // Punch-out for a member
 exports.punchOut = async (req, res) => {

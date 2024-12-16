@@ -27,7 +27,6 @@ router.post('/contact-us', contactUs);
 
 router.use('/channels', channelsRoutes);
 
-// app.use('/api', punchRoutes);
 // app.use('/api', scheduleRoutes);
 // app.use('/api', sessionRoutes);
 // app.use('/api', locationLogRoutes);

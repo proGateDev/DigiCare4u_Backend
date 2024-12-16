@@ -5,7 +5,7 @@ module.exports = {
         try {
             console.log(' assigning this .......', req.body);
             const userId = req.userId
-            console.log(' ---- userId   -----------', userId );
+            console.log(' ---- userId   -----------', userId);
             const { memberId, locationName, coordinates } = req.body;
 
             // Check if all required fields are provided
@@ -73,9 +73,9 @@ module.exports = {
     patchAssignment: async (req, res) => {
         try {
             console.log('Updating task status...', req.body);
-    
+
             const { taskId, status } = req.body;
-    
+
             // Check if the taskId and status are provided
             if (!taskId || !status) {
                 return res.status(400).json({
@@ -83,7 +83,7 @@ module.exports = {
                     message: 'Task ID and status are required',
                 });
             }
-    
+
             // Validate the status
             const validStatuses = ['pending', 'in-progress', 'completed', 'cancelled'];
             if (!validStatuses.includes(status)) {
@@ -92,23 +92,23 @@ module.exports = {
                     message: `Invalid status. Allowed statuses are: ${validStatuses.join(', ')}`,
                 });
             }
-    
+
             // Find the task and update its status
             const updatedTask = await assignmentModel.findByIdAndUpdate(
                 taskId,
                 { status },
                 { new: true } // Return the updated document
             );
-    
+
             if (!updatedTask) {
                 return res.status(404).json({
                     status: 404,
                     message: 'Task not found',
                 });
             }
-    
+
             console.log('Task status updated:', updatedTask);
-    
+
             res.status(200).json({
                 message: 'Task status updated successfully',
                 task: updatedTask,
@@ -118,6 +118,6 @@ module.exports = {
             res.status(500).json({ error: 'Failed to update task status' });
         }
     },
-    
+
 
 }

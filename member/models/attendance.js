@@ -17,5 +17,5 @@ const attendanceSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-const attendance = mongoose.model('attendance', attendanceSchema);
-module.exports = attendance;
+const attendanceModel = mongoose.model('attendance', attendanceSchema);
+module.exports = attendanceModel;

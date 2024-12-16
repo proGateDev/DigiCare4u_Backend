@@ -14,6 +14,8 @@ const socketService = require('../../service/socket');
 const { sendNotification, sendServerDetailToClient } = require('../../service/socket');
 const mongoose = require("mongoose");
 const trackingHistoryModel = require("../../model/trackingHistory");
+const attendanceModel = require("../../member/models/attendance");
+const moment = require('moment'); // For handling date calculations
 
 //==================================================
 module.exports = {
@@ -459,7 +461,70 @@ module.exports = {
         message: "Failed to fetch visit frequencies"
       });
     }
+  },
+
+
+
+
+
+
+  getTodayAttendance_: async (req, res) => {
+    try {
+      const parentId = req.userId; // Assuming user info is added to the request via middleware
+      console.log('startOfDay________________', parentId);
+
+      // Get today's start and end time
+      const startOfDay = moment().startOf('day').toDate();
+      const endOfDay = moment().endOf('day').toDate();
+      console.log('startOfDay', startOfDay);
+
+      // Find attendance records for today for the parent user
+      const attendanceRecords = await attendanceModel.find({
+        parentId,
+        punchInTime: { $gte: startOfDay, $lte: endOfDay },
+      })
+      // .populate('member') // Include member details (name, email, etc.)
+        .sort({ punchInTime: 1 });
+      let id = attendanceRecords?.memberId
+      const memberDetail = await memberModel.findOne({ id })
+      // console.log('memberDetail', memberDetail?.name);
+
+      const formattedAttendance = attendanceRecords.map((record) => {
+        const totalHours = record.totalWorkHours || 0;
+        const status = record.punchOutTime ? 'present' : 'in-progress';
+        return {
+          _id: record._id,
+          memberId: record.memberId._id,
+          name: memberDetail?.name,
+          email: memberDetail?.email,
+          punchInTime: record.punchInTime,
+          punchOutTime: record.punchOutTime,
+          totalWorkHours: totalHours,
+          locationDuringPunchIn: record.locationDuringPunchIn,
+          locationDuringPunchOut: record.locationDuringPunchOut,
+          status,
+        };
+      });
+
+      return res.status(200).json({
+        success: true,
+        attendance: formattedAttendance,
+      });
+    } catch (error) {
+      console.error('Error fetching today\'s attendance:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Unable to fetch attendance data.',
+      });
+    }
   }
+
+
+
+
+
+
+
 
 
 

@@ -357,15 +357,45 @@ module.exports = {
       endOfDay.setUTCHours(23, 59, 59, 999);
 
       // Query database for locations within the specified date range
-      const locations = await trackingHistoryModel.find({
-        memberId,
-        timestamp: { $gte: startOfDay, $lte: endOfDay }
-      }).sort('timestamp');
-      console.log(locations);
+      const locationsGroupedByLocality = await trackingHistoryModel.aggregate([
+        // Step 1: Match entries for the given memberId and day range
+        {
+          $match: {
+            memberId: mongoose.Types.ObjectId(memberId),
+            timestamp: { $gte: startOfDay, $lte: endOfDay }
+          }
+        },
+        // Step 2: Group by locality
+        {
+          $group: {
+            _id: "$locality", // Group by locality
+            // entries: { $push: "$$ROOT" }, // Include all documents in the group
+            count: { $sum: 1 }, // Count the number of entries for each locality
+            averageTimestamp: { $avg: { $toLong: "$timestamp" } } // Calculate average timestamp
 
+          }
+        },
+        // Step 3: Sort the groups by count or other criteria
+        {
+          $sort: { count: -1 } // Sort by count in descending order
+        }
+      ]);
+      
+      const resultWithDates = locationsGroupedByLocality.map(group => ({
+        ...group,
+        averageTimestamp: new Date(group.averageTimestamp).toISOString() // Convert to ISO Date string
+      }));
+      
+      console.log(resultWithDates);
+
+
+
+      console.log(locationsGroupedByLocality);
+      
       res.json({
         status: 200,
-        data: locations,
+        count: locationsGroupedByLocality.length,
+        data: resultWithDates,
         message: "Location found successfully"
       });
     } catch (error) {

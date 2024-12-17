@@ -91,18 +91,23 @@ module.exports = {
 
   getChannelMembers: async (req, res) => {
     try {
-      
+
       const userId = req.userId; // Extracted from JWT middleware
-      const {channelId} = req.query;
-      console.log('fetching channeld : ',channelId);
+      const { channelId } = req.query;
+      console.log('fetching channeld : ', channelId, userId);
       // console.log(channelId);
 
       // Step 1: Find all members in channels created by the logged-in user
       const channelMembers = await channelMemberModel
-        .find({ addedBy: userId, channelId:channelId })
+        .find({ addedBy: userId, channelId: channelId })
         .populate("channelId", "name description") // Populate channel details
         .populate("memberId", "name email mobile") // Populate member details
         .select("channelId memberId role addedBy addedByModel joinedAt "); // Select specific fields
+
+      const channelMembers_ = await channelMemberModel
+        .find({ id: channelId })
+      console.log('channelMembers_', channelMembers_);
+
 
       if (!channelMembers.length) {
         return res.status(404).json({

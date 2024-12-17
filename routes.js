@@ -10,6 +10,7 @@ const trackRoutes = require("./routes/track");
 const assignRoutes = require("./routes/assignment");
 const { contactUs } = require("./controller/contactUs");
 const channelsRoutes = require("./routes/channels");
+const locationLogRoutes = require("./routes/locationLog");
 
 //=================================
 router.use("/admin", adminRoutes);
@@ -29,7 +30,7 @@ router.use('/channels', channelsRoutes);
 
 // app.use('/api', scheduleRoutes);
 // app.use('/api', sessionRoutes);
-// app.use('/api', locationLogRoutes);
+router.use('/location', locationLogRoutes);
 // app.use('/api', activityLogRoutes);
 
 //=================================

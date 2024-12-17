@@ -466,37 +466,51 @@ module.exports = {
 
 
 
-
-
   getTodayAttendance_: async (req, res) => {
     try {
       const parentId = req.userId; // Assuming user info is added to the request via middleware
-      console.log('startOfDay________________', parentId);
-
+  
       // Get today's start and end time
       const startOfDay = moment().startOf('day').toDate();
       const endOfDay = moment().endOf('day').toDate();
-      console.log('startOfDay', startOfDay);
-
-      // Find attendance records for today for the parent user
-      const attendanceRecords = await attendanceModel.find({
-        parentId,
-        punchInTime: { $gte: startOfDay, $lte: endOfDay },
-      })
-      // .populate('member') // Include member details (name, email, etc.)
+  
+      // Fetch all members belonging to the parent user
+      const allMembers = await memberModel.find({ parentUser: parentId });
+  
+      // Fetch attendance records for today for these members
+      const attendanceRecords = await attendanceModel
+        .find({
+          parentId,
+          punchInTime: { $gte: startOfDay, $lte: endOfDay },
+        })
         .sort({ punchInTime: 1 });
-      let id = attendanceRecords?.memberId
-      const memberDetail = await memberModel.findOne({ id })
-      // console.log('memberDetail', memberDetail?.name);
-
-      const formattedAttendance = attendanceRecords.map((record) => {
+  
+      // Fetch member details for attendance records
+      const memberDetailsMap = new Map();
+  
+      // Query member details for all `memberId` in attendanceRecords
+      const memberIds = attendanceRecords.map((record) => record.memberId);
+      const members = await memberModel.find({ _id: { $in: memberIds } });
+  
+      members.forEach((member) => {
+        memberDetailsMap.set(member._id.toString(), member);
+      });
+  
+      // Separate members who have attended and those who haven't
+      const attendedMemberIds = new Set(
+        attendanceRecords.map((record) => record.memberId.toString())
+      );
+  
+      const attendedMembers = attendanceRecords.map((record) => {
         const totalHours = record.totalWorkHours || 0;
         const status = record.punchOutTime ? 'present' : 'in-progress';
+        const memberDetail = memberDetailsMap.get(record.memberId.toString());
+  
         return {
           _id: record._id,
-          memberId: record.memberId._id,
-          name: memberDetail?.name,
-          email: memberDetail?.email,
+          memberId: record.memberId,
+          name: memberDetail?.name || 'Unknown',
+          email: memberDetail?.email || 'Unknown',
           punchInTime: record.punchInTime,
           punchOutTime: record.punchOutTime,
           totalWorkHours: totalHours,
@@ -505,10 +519,23 @@ module.exports = {
           status,
         };
       });
-
+  
+      // Filter out members who have not marked attendance
+      const notMarkedAttendance = allMembers
+        .filter((member) => !attendedMemberIds.has(member._id.toString()))
+        .map((member) => ({
+          memberId: member._id,
+          name: member.name,
+          email: member.email,
+          status: 'not-marked',
+        }));
+  
+      // Combine attended and not marked attendance
+      const allAttendance = [...attendedMembers, ...notMarkedAttendance];
+  
       return res.status(200).json({
         success: true,
-        attendance: formattedAttendance,
+        attendance: allAttendance,
       });
     } catch (error) {
       console.error('Error fetching today\'s attendance:', error);
@@ -518,8 +545,7 @@ module.exports = {
       });
     }
   }
-
-
+  
 
 
 

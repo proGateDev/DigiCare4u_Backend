@@ -380,22 +380,22 @@ module.exports = {
           $sort: { count: -1 } // Sort by count in descending order
         }
       ]);
-      
+
       const resultWithDates = locationsGroupedByLocality.map(group => ({
         ...group,
         averageTimestamp: new Date(group.averageTimestamp).toISOString() // Convert to ISO Date string
       }));
-      
+
       console.log(resultWithDates);
 
-
+      let finalData = resultWithDates.filter(item => item._id != null)
 
       console.log(locationsGroupedByLocality);
-      
+
       res.json({
         status: 200,
         count: locationsGroupedByLocality.length,
-        data: resultWithDates,
+        data: finalData,
         message: "Location found successfully"
       });
     } catch (error) {
@@ -499,14 +499,14 @@ module.exports = {
   getTodayAttendance_: async (req, res) => {
     try {
       const parentId = req.userId; // Assuming user info is added to the request via middleware
-  
+
       // Get today's start and end time
       const startOfDay = moment().startOf('day').toDate();
       const endOfDay = moment().endOf('day').toDate();
-  
+
       // Fetch all members belonging to the parent user
       const allMembers = await memberModel.find({ parentUser: parentId });
-  
+
       // Fetch attendance records for today for these members
       const attendanceRecords = await attendanceModel
         .find({
@@ -514,28 +514,28 @@ module.exports = {
           punchInTime: { $gte: startOfDay, $lte: endOfDay },
         })
         .sort({ punchInTime: 1 });
-  
+
       // Fetch member details for attendance records
       const memberDetailsMap = new Map();
-  
+
       // Query member details for all `memberId` in attendanceRecords
       const memberIds = attendanceRecords.map((record) => record.memberId);
       const members = await memberModel.find({ _id: { $in: memberIds } });
-  
+
       members.forEach((member) => {
         memberDetailsMap.set(member._id.toString(), member);
       });
-  
+
       // Separate members who have attended and those who haven't
       const attendedMemberIds = new Set(
         attendanceRecords.map((record) => record.memberId.toString())
       );
-  
+
       const attendedMembers = attendanceRecords.map((record) => {
         const totalHours = record.totalWorkHours || 0;
         const status = record.punchOutTime ? 'present' : 'in-progress';
         const memberDetail = memberDetailsMap.get(record.memberId.toString());
-  
+
         return {
           _id: record._id,
           memberId: record.memberId,
@@ -549,7 +549,7 @@ module.exports = {
           status,
         };
       });
-  
+
       // Filter out members who have not marked attendance
       const notMarkedAttendance = allMembers
         .filter((member) => !attendedMemberIds.has(member._id.toString()))
@@ -559,10 +559,10 @@ module.exports = {
           email: member.email,
           status: 'not-marked',
         }));
-  
+
       // Combine attended and not marked attendance
       const allAttendance = [...attendedMembers, ...notMarkedAttendance];
-  
+
       return res.status(200).json({
         success: true,
         attendance: allAttendance,
@@ -575,7 +575,7 @@ module.exports = {
       });
     }
   }
-  
+
 
 
 

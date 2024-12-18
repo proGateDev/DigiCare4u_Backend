@@ -14,7 +14,7 @@ const generateToken = (id, type) => {
     throw new Error("Internal server error. Missing environment configuration.");
   }
 
-  return jwt.sign({ userId: id, type }, process.env.JWT_SECRET, { expiresIn: '360m' });
+  return jwt.sign({ userId: id, type }, process.env.JWT_SECRET, { expiresIn: '7d' });
 };
 
 const sendErrorResponse = (res, status, message) => {

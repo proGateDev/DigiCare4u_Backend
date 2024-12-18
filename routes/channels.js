@@ -8,6 +8,7 @@ router.get("/", checkUserToken,controller.getChannels);  //-------> fetch user-c
 
 router.get("/members", checkUserToken,controller.getChannelMembers); //-------> fetched user-created channel's members
 router.post("/members", checkUserToken,controller.addMemberToChannel); //-------> adding members to user-created channel
+router.get("/members/attendance", checkUserToken,controller.getChannelAttendance); //-------> 
 
 
 module.exports = router;

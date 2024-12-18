@@ -23,6 +23,7 @@ router.post('/activity-frequency_', checkUserToken,controller.getUserMemberDaily
 
 
 router.post("/attendance", checkUserToken, controller.getTodayAttendance_);
+router.get("/attendance/records", checkUserToken, controller.getChannelMembersAttendance);
 
 
 module.exports = router;

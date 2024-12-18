@@ -495,25 +495,28 @@ module.exports = {
 
 
 
-
   getTodayAttendance_: async (req, res) => {
     try {
       const parentId = req.userId; // Assuming user info is added to the request via middleware
 
-      // Get today's start and end time
-      const startOfDay = moment().startOf('day').toDate();
-      const endOfDay = moment().endOf('day').toDate();
+      // Get today's start and end time using new Date()
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0); // Set to start of the day (00:00:00)
+
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999); // Set to end of the day (23:59:59)
+      console.log(startOfDay, endOfDay);
 
       // Fetch all members belonging to the parent user
       const allMembers = await memberModel.find({ parentUser: parentId });
 
-      // Fetch attendance records for today for these members
+      // Fetch attendance records for today for these members based on `createdAt`
       const attendanceRecords = await attendanceModel
         .find({
           parentId,
-          punchInTime: { $gte: startOfDay, $lte: endOfDay },
+          createdAt: { $gte: startOfDay, $lte: endOfDay },
         })
-        .sort({ punchInTime: 1 });
+        .sort({ createdAt: 1 }); // Sort by createdAt to get records in chronological order
 
       // Fetch member details for attendance records
       const memberDetailsMap = new Map();
@@ -568,13 +571,125 @@ module.exports = {
         attendance: allAttendance,
       });
     } catch (error) {
-      console.error('Error fetching today\'s attendance:', error);
+      console.error("Error fetching today's attendance:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Unable to fetch attendance data.",
+      });
+    }
+  },
+
+
+
+   getChannelMembersAttendance : async (req, res) => {
+    try {
+      const parentId = req.userId; // Assuming user info is added to the request via middleware
+      const { startDate, endDate, channelId } = req.query;
+  
+      // Validate if channelId is provided
+      if (!channelId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Channel ID is required.',
+        });
+      }
+  
+      let startOfDay, endOfDay;
+  
+      // If the date range is provided, use it; otherwise, default to today's date
+      if (startDate && endDate) {
+        startOfDay = new Date(startDate);
+        endOfDay = new Date(endDate);
+      } else {
+        // Default to today's date range if no date range is provided
+        startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0); // Start of the day (00:00:00)
+        
+        endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999); // End of the day (23:59:59)
+      }
+  
+      console.log('Start Date:', startOfDay, 'End Date:', endOfDay, 'Channel ID:', channelId);
+  
+      // Fetch all members belonging to the parent user and the specified channel
+      const channelMembers = await memberModel.find({
+        parentUser: parentId,
+        channelId, // Filter by channel ID
+      });
+  
+      if (!channelMembers.length) {
+        return res.status(404).json({
+          success: false,
+          message: 'No members found for the specified channel.',
+        });
+      }
+  
+      // Fetch attendance records for the given date range for these members
+      const memberIds = channelMembers.map((member) => member._id);
+      const attendanceRecords = await attendanceModel
+        .find({
+          parentId,
+          memberId: { $in: memberIds },
+          createdAt: { $gte: startOfDay, $lte: endOfDay },
+        })
+        .sort({ createdAt: 1 }); // Sort by createdAt to get records in chronological order
+  
+      // Map member details for attendance records
+      const memberDetailsMap = new Map();
+      channelMembers.forEach((member) => {
+        memberDetailsMap.set(member._id.toString(), member);
+      });
+  
+      // Separate members who have attended and those who haven't
+      const attendedMemberIds = new Set(
+        attendanceRecords.map((record) => record.memberId.toString())
+      );
+  
+      const attendedMembers = attendanceRecords.map((record) => {
+        const totalHours = record.totalWorkHours || 0;
+        const status = record.punchOutTime ? 'present' : 'in-progress';
+        const memberDetail = memberDetailsMap.get(record.memberId.toString());
+  
+        return {
+          _id: record._id,
+          memberId: record.memberId,
+          name: memberDetail?.name || 'Unknown',
+          email: memberDetail?.email || 'Unknown',
+          punchInTime: record.punchInTime,
+          punchOutTime: record.punchOutTime,
+          totalWorkHours: totalHours,
+          locationDuringPunchIn: record.locationDuringPunchIn,
+          locationDuringPunchOut: record.locationDuringPunchOut,
+          status,
+        };
+      });
+  
+      // Filter out members who have not marked attendance
+      const notMarkedAttendance = channelMembers
+        .filter((member) => !attendedMemberIds.has(member._id.toString()))
+        .map((member) => ({
+          memberId: member._id,
+          name: member.name,
+          email: member.email,
+          status: 'absent',
+        }));
+  
+      // Combine attended and not marked attendance
+      const allAttendance = [...attendedMembers, ...notMarkedAttendance];
+  
+      return res.status(200).json({
+        success: true,
+        attendance: allAttendance,
+      });
+    } catch (error) {
+      console.error('Error fetching channel attendance data:', error);
       return res.status(500).json({
         success: false,
         message: 'Unable to fetch attendance data.',
       });
     }
   }
+  
 
 
 

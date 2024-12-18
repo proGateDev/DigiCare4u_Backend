@@ -3,9 +3,11 @@
 
 const { message } = require("../admin/validation/superAdminCreation");
 const memberModel = require("../member/models/profile");
+const attendanceModel = require("../member/models/attendance");
 const channelModel = require("../model/channels");
 const channelMemberModel = require("../model/channelsMembers");
 const userModel = require("../user/models/profile");
+const moment = require('moment'); // For date manipulation, optional but helps for date formatting
 
 
 module.exports = {
@@ -200,6 +202,63 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
+
+
+
+
+
+
+  // Controller to get the attendance data
+  getChannelAttendance: async (req, res) => {
+    try {
+      // Get the date range from query parameters (if provided)
+      const { startDate, endDate } = req.query;
+
+      // Get the current date (start of the day for today)
+      const todayStart = moment().startOf('day').toDate();
+      const todayEnd = moment().endOf('day').toDate();
+
+      // Prepare the date range query
+      let dateFilter = {};
+
+      if (startDate && endDate) {
+        // If start and end date are provided in query params, use them
+        dateFilter.createdAt = {
+          $gte: moment(startDate).startOf('day').toDate(),
+          $lte: moment(endDate).endOf('day').toDate()
+        };
+      } else {
+        // If no date range is provided, fetch today's data
+        dateFilter.createdAt = {
+          $gte: todayStart,
+          $lte: todayEnd
+        };
+      }
+      console.log('dateFilter', dateFilter);
+
+      // Fetch the attendance data using the date filter
+      const attendanceData = await attendanceModel.find(dateFilter)
+        // .populate('member', 'name email') // Populate member details (optional)
+        // .populate('parentId', 'name') // Populate user (parent) details (optional)
+        .sort({ createdAt: -1 }); // Sort by latest attendance
+
+      // Return the fetched data
+      res.status(200).json({
+        success: true,
+        data: attendanceData,
+        count: attendanceData.length
+      });
+    } catch (error) {
+      console.error("Error fetching attendance data:", error);
+      res.status(500).json({
+        success: false,
+        message: "Server Error"
+      });
+    }
+  }
+
+
+
 }
 
 

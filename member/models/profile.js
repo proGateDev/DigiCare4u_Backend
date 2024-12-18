@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
   mobile: String,
   password: String,
   userType: { type: String, default: 'member' },
-  groupType: { type: String, default: 'none' },
+  channelId: { type: String, default: 'none' }, // Changed from groupType to channelId
 
   // Use geospatial data type for location
   location: {

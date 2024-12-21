@@ -23,7 +23,7 @@ router.use('/sos', sosRoutes);
 router.use('/jwt', jwtDecryptRoutes);
 router.use('/auth', authRoutes);
 router.use('/track', trackRoutes);
-router.use('/assign', assignRoutes);
+router.use('/assignment', assignRoutes);
 router.post('/contact-us', contactUs);
 
 router.use('/channels', channelsRoutes);

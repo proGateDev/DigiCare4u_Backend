@@ -72,7 +72,7 @@ module.exports = {
 
     patchAssignment: async (req, res) => {
         try {
-            console.log('Updating task status...', req.body);
+            console.log('Updating task status ------------------...', req.body);
 
             const { taskId, status } = req.body;
 
@@ -118,6 +118,66 @@ module.exports = {
             res.status(500).json({ error: 'Failed to update task status' });
         }
     },
+
+
+
+    getMemberAssignments: async (req, res) => {
+        try {
+            const { startDate, endDate } = req.params; // Get startDate and endDate from request params
+            const memberId = req?.userId;
+
+            // Ensure startDate and endDate are in a valid format
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            console.log('-____ DATES _______:', start, end);
+
+            if (isNaN(start) || isNaN(end)) {
+                return res.status(400).json({ message: 'Invalid date format' });
+            }
+
+            console.log('Getting assignments for member:', memberId);
+
+            // Fetch the assignments within the date range
+            const memberAssignments = await assignmentModel.find({
+                memberId: memberId,
+                assignedAt: { $gte: start, $lte: end }, // Filter by assignmentDate within the date range
+            });
+
+            if (!memberAssignments || memberAssignments.length === 0) {
+                return res.status(404).json({ message: 'No assignments found for the given period' });
+            }
+
+            // Prepare the member's general information
+            const memberInfo = {
+                id: memberId,
+                name: 'Rohit Kushwaha', // Replace with actual member's name
+                totalTasks: memberAssignments.length,
+                pendingTasks: memberAssignments.filter(task => task.status === 'pending').length,
+                completedTasks: memberAssignments.filter(task => task.status === 'completed').length,
+                imageUrl: 'https://via.placeholder.com/150', // Replace with actual member image URL
+                // address: 'Gomati Nagar, Lucknow, Uttar Pradesh, 226011', // Replace with actual member address
+                tasks: memberAssignments.map(task => ({
+                    taskId: task._id.toString(),
+                    taskName: task.taskName,
+                    status: task.status,
+                    location: task.coordinates,
+                    dateTime: task.assignedAt.toISOString(),
+                })),
+            };
+            // console.log('mil to ghaya ------------------');
+
+            res.status(200).json({
+                message: 'Assignments found successfully',
+                member: memberInfo,
+            });
+
+        } catch (error) {
+            console.error('Error fetching user assignments:', error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
+
+
 
 
 }

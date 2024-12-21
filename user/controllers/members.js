@@ -16,6 +16,8 @@ const mongoose = require("mongoose");
 const trackingHistoryModel = require("../../model/trackingHistory");
 const attendanceModel = require("../../member/models/attendance");
 const moment = require('moment'); // For handling date calculations
+const assignmentModel = require("../../model/assignment");
+const channelMemberModel = require("../../model/channelsMembers");
 
 //==================================================
 module.exports = {
@@ -497,6 +499,7 @@ module.exports = {
 
   getTodayAttendance_: async (req, res) => {
     try {
+      console.log('parentId');
       const parentId = req.userId; // Assuming user info is added to the request via middleware
 
       // Get today's start and end time using new Date()
@@ -581,11 +584,13 @@ module.exports = {
 
 
 
-   getChannelMembersAttendance : async (req, res) => {
+  getChannelMembersAttendance: async (req, res) => {
+    const { ObjectId } = require('mongoose').Types;
+
     try {
       const parentId = req.userId; // Assuming user info is added to the request via middleware
       const { startDate, endDate, channelId } = req.query;
-  
+
       // Validate if channelId is provided
       if (!channelId) {
         return res.status(400).json({
@@ -593,9 +598,9 @@ module.exports = {
           message: 'Channel ID is required.',
         });
       }
-  
+
       let startOfDay, endOfDay;
-  
+
       // If the date range is provided, use it; otherwise, default to today's date
       if (startDate && endDate) {
         startOfDay = new Date(startDate);
@@ -604,52 +609,48 @@ module.exports = {
         // Default to today's date range if no date range is provided
         startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0); // Start of the day (00:00:00)
-        
+
         endOfDay = new Date();
         endOfDay.setHours(23, 59, 59, 999); // End of the day (23:59:59)
       }
-  
-      console.log('Start Date:', startOfDay, 'End Date:', endOfDay, 'Channel ID:', channelId);
-  
+
       // Fetch all members belonging to the parent user and the specified channel
-      const channelMembers = await memberModel.find({
-        parentUser: parentId,
-        channelId, // Filter by channel ID
-      });
-  
+      const channelMembers = await channelMemberModel
+        .find({ addedBy: parentId, channelId })
+        .populate('memberId');
+
       if (!channelMembers.length) {
         return res.status(404).json({
           success: false,
           message: 'No members found for the specified channel.',
         });
       }
-  
+
+      // Extract member IDs for attendance query
+      const memberIds = channelMembers.map((member) => ObjectId(member.memberId._id));
+
       // Fetch attendance records for the given date range for these members
-      const memberIds = channelMembers.map((member) => member._id);
-      const attendanceRecords = await attendanceModel
-        .find({
-          parentId,
-          memberId: { $in: memberIds },
-          createdAt: { $gte: startOfDay, $lte: endOfDay },
-        })
-        .sort({ createdAt: 1 }); // Sort by createdAt to get records in chronological order
-  
+      const attendanceRecords = await attendanceModel.find({
+        parentId,
+        memberId: { $in: memberIds },
+        punchInTime: { $gte: startOfDay, $lte: endOfDay },
+      });
+
       // Map member details for attendance records
       const memberDetailsMap = new Map();
       channelMembers.forEach((member) => {
-        memberDetailsMap.set(member._id.toString(), member);
+        const { _id, name, email } = member.memberId;
+        memberDetailsMap.set(_id.toString(), { name, email });
       });
-  
+
       // Separate members who have attended and those who haven't
       const attendedMemberIds = new Set(
         attendanceRecords.map((record) => record.memberId.toString())
       );
-  
+
       const attendedMembers = attendanceRecords.map((record) => {
-        const totalHours = record.totalWorkHours || 0;
-        const status = record.punchOutTime ? 'present' : 'in-progress';
         const memberDetail = memberDetailsMap.get(record.memberId.toString());
-  
+
         return {
           _id: record._id,
           memberId: record.memberId,
@@ -657,28 +658,31 @@ module.exports = {
           email: memberDetail?.email || 'Unknown',
           punchInTime: record.punchInTime,
           punchOutTime: record.punchOutTime,
-          totalWorkHours: totalHours,
+          totalWorkHours: record.totalWorkHours || 0,
           locationDuringPunchIn: record.locationDuringPunchIn,
           locationDuringPunchOut: record.locationDuringPunchOut,
-          status,
+          status: record.punchOutTime ? 'present' : 'in-progress',
         };
       });
-  
-      // Filter out members who have not marked attendance
+
       const notMarkedAttendance = channelMembers
-        .filter((member) => !attendedMemberIds.has(member._id.toString()))
-        .map((member) => ({
-          memberId: member._id,
-          name: member.name,
-          email: member.email,
-          status: 'absent',
-        }));
-  
+        .filter((member) => !attendedMemberIds.has(member.memberId._id.toString()))
+        .map((member) => {
+          const { _id, name, email } = member.memberId;
+          return {
+            memberId: _id,
+            name: name || 'Unknown',
+            email: email || 'Unknown',
+            status: 'absent',
+          };
+        });
+
       // Combine attended and not marked attendance
       const allAttendance = [...attendedMembers, ...notMarkedAttendance];
-  
+
       return res.status(200).json({
         success: true,
+        count: allAttendance.length,
         attendance: allAttendance,
       });
     } catch (error) {
@@ -688,9 +692,68 @@ module.exports = {
         message: 'Unable to fetch attendance data.',
       });
     }
-  }
-  
+  },  
 
+
+
+  getChannelMembersDailyAssignments: async (req, res) => {
+    try {
+      const userId = req.userId; // Assuming `checkUserToken` middleware attaches the user ID
+      const channelId = req.params.channelId
+      const currentDate = new Date().toISOString().split('T')[0];
+
+      // 1. Get all members for the user
+
+      const members = await channelMemberModel.find({ addedBy: userId, channelId }).populate('memberId')
+      console.log(userId, channelId, 'refp---------', members);
+      // const members = await memberModel.find({parentUser: userId });
+
+      if (!members.length) {
+        return res.status(404).json({
+          success: false,
+          message: "No members found for the user.",
+        });
+      }
+
+      // Extract member IDs
+      const memberIds = members.map(member => member._id);
+
+      // 2. Get assignments for the current date for these members
+      const assignments = await assignmentModel.find({
+        memberId: { $in: memberIds },
+        assignedAt: {
+          $gte: new Date(`${currentDate}T00:00:00.000Z`),
+          $lte: new Date(`${currentDate}T23:59:59.999Z`),
+        },
+      });
+
+      // 3. Prepare the response
+      const response = members.map(member => {
+        const memberAssignments = assignments.filter(
+          assignment => assignment.memberId.toString() === member._id.toString()
+        );
+
+        return {
+          name: member.memberId?.name, // Assuming `Member` model has a `name` field
+          totalAssignments: memberAssignments.length,
+          pending: memberAssignments.filter(a => a.status === 'Pending').length,
+          completed: memberAssignments.filter(a => a.status === 'Completed').length,
+        };
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: response,
+
+      });
+    } catch (error) {
+      console.error("Error fetching daily assignments:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Server error. Please try again later.",
+      });
+    }
+  }
 
 
 

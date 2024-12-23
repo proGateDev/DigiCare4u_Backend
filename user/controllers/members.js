@@ -373,7 +373,8 @@ module.exports = {
             _id: "$locality", // Group by locality
             // entries: { $push: "$$ROOT" }, // Include all documents in the group
             count: { $sum: 1 }, // Count the number of entries for each locality
-            averageTimestamp: { $avg: { $toLong: "$timestamp" } } // Calculate average timestamp
+            averageTimestamp: { $avg: { $toLong: "$timestamp" } },// Calculate average timestamp
+            locations: { $push: "$location.coordinates" }, // Include all location coordinates
 
           }
         },
@@ -692,8 +693,251 @@ module.exports = {
         message: 'Unable to fetch attendance data.',
       });
     }
-  },  
+  },
 
+  // getChannelMembersAttendance_new: async (req, res) => {
+  //   const { ObjectId } = require('mongoose').Types;
+
+  //   try {
+  //     const parentId = req.userId; // Assuming user info is added to the request via middleware
+  //     const { startDate, endDate, channelId } = req.query;
+
+  //     // Validate if channelId is provided
+  //     if (!channelId) {
+  //       return res.status(400).json({
+  //         success: false,
+  //         message: 'Channel ID is required.',
+  //       });
+  //     }
+
+  //     let startOfDay, endOfDay;
+
+  //     // If the date range is provided, use it; otherwise, default to today's date
+  //     if (startDate && endDate) {
+  //       startOfDay = new Date(startDate);
+  //       endOfDay = new Date(endDate);
+  //     } else {
+  //       // Default to today's date range if no date range is provided
+  //       startOfDay = new Date();
+  //       startOfDay.setHours(0, 0, 0, 0); // Start of the day (00:00:00)
+
+  //       endOfDay = new Date();
+  //       endOfDay.setHours(23, 59, 59, 999); // End of the day (23:59:59)
+  //     }
+
+  //     // Fetch all members belonging to the parent user and the specified channel
+  //     const channelMembers = await channelMemberModel
+  //       .find({ addedBy: parentId, channelId })
+  //       .populate('memberId');
+
+  //     if (!channelMembers.length) {
+  //       return res.status(404).json({
+  //         success: false,
+  //         message: 'No members found for the specified channel.',
+  //       });
+  //     }
+
+  //     // Extract member IDs for attendance query
+  //     const memberIds = channelMembers.map((member) => ObjectId(member.memberId._id));
+
+  //     // Fetch attendance records for the given date range for these members
+  //     const attendanceRecords = await attendanceModel.find({
+  //       parentId,
+  //       memberId: { $in: memberIds },
+  //       punchInTime: { $gte: startOfDay, $lte: endOfDay },
+  //     });
+
+  //     // Generate an array of dates for the specified range
+  //     const getDateArray = (start, end) => {
+  //       const dateArray = [];
+  //       let currentDate = new Date(start);
+  //       while (currentDate <= end) {
+  //         dateArray.push(new Date(currentDate));
+  //         currentDate.setDate(currentDate.getDate() + 1);
+  //       }
+  //       return dateArray;
+  //     };
+
+  //     const dateArray = getDateArray(startOfDay, endOfDay);
+
+  //     // Map member details with attendance data
+  //     const result = channelMembers.map((member) => {
+  //       const { _id, name, email } = member.memberId;
+
+  //       // Filter attendance records for the current member
+  //       const memberAttendance = attendanceRecords.filter(
+  //         (record) => record.memberId.toString() === _id.toString()
+  //       );
+
+  //       let totalPresent = 0;
+  //       let totalAbsent = 0;
+
+  //       // Create attendance data for each date in the range
+  //       const records = dateArray.map((date) => {
+  //         const formattedDate = date.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+  //         const attendanceForDate = memberAttendance.find(
+  //           (record) => new Date(record.punchInTime).toISOString().split('T')[0] === formattedDate
+  //         );
+
+  //         if (attendanceForDate) {
+  //           totalPresent++;
+  //         } else {
+  //           totalAbsent++;
+  //         }
+
+  //         return {
+  //           date: formattedDate,
+  //           status: attendanceForDate ? 'present' : 'absent',
+  //         };
+  //       });
+
+  //       return {
+  //         memberId: _id,
+  //         name: name || 'Unknown',
+  //         email: email || 'Unknown',
+  //         totalPresent,
+  //         totalAbsent,
+  //         data: records,
+  //       };
+  //     });
+
+  //     return res.status(200).json({
+  //       success: true,
+  //       count: result.length,
+  //       attendance: result,
+  //     });
+  //   } catch (error) {
+  //     console.error('Error fetching channel attendance data:', error);
+  //     return res.status(500).json({
+  //       success: false,
+  //       message: 'Unable to fetch attendance data.',
+  //     });
+  //   }
+  // },  
+
+
+  getChannelMembersAttendance_new: async (req, res) => {
+    const { ObjectId } = require('mongoose').Types;
+
+    try {
+      const parentId = req.userId; // Assuming user info is added to the request via middleware
+      const { startDate, endDate, channelId } = req.query;
+
+      // Validate if channelId is provided
+      if (!channelId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Channel ID is required.',
+        });
+      }
+
+      let startOfDay, endOfDay;
+
+      // If the date range is provided, use it; otherwise, default to today's date
+      if (startDate && endDate) {
+        startOfDay = new Date(startDate);
+        endOfDay = new Date(endDate);
+      } else {
+        // Default to today's date range if no date range is provided
+        startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0); // Start of the day (00:00:00)
+
+        endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999); // End of the day (23:59:59)
+      }
+
+      // Fetch all members belonging to the parent user and the specified channel
+      const channelMembers = await channelMemberModel
+        .find({ addedBy: parentId, channelId })
+        .populate('memberId');
+
+      if (!channelMembers.length) {
+        return res.status(404).json({
+          success: false,
+          message: 'No members found for the specified channel.',
+        });
+      }
+
+      // Extract member IDs for attendance query
+      const memberIds = channelMembers.map((member) => ObjectId(member.memberId._id));
+
+      // Fetch attendance records for the given date range for these members
+      const attendanceRecords = await attendanceModel.find({
+        parentId,
+        memberId: { $in: memberIds },
+        punchInTime: { $gte: startOfDay, $lte: endOfDay },
+      });
+
+      // Generate an array of dates for the specified range
+      const getDateArray = (start, end) => {
+        const dateArray = [];
+        let currentDate = new Date(start);
+        while (currentDate <= end) {
+          dateArray.push(new Date(currentDate));
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+        return dateArray;
+      };
+
+      const dateArray = getDateArray(startOfDay, endOfDay);
+
+      // Map member details with attendance data
+      const result = channelMembers.map((member) => {
+        const { _id, name, email } = member.memberId;
+
+        // Filter attendance records for the current member
+        const memberAttendance = attendanceRecords.filter(
+          (record) => record.memberId.toString() === _id.toString()
+        );
+
+        let totalPresent = 0;
+        let totalAbsent = 0;
+
+        // Create attendance data for each date in the range
+        const records = dateArray.map((date) => {
+          const formattedDate = date.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+          const attendanceForDate = memberAttendance.find(
+            (record) => new Date(record.punchInTime).toISOString().split('T')[0] === formattedDate
+          );
+
+          if (attendanceForDate) {
+            totalPresent++;
+          } else {
+            totalAbsent++;
+          }
+
+          return {
+            date: formattedDate,
+            status: attendanceForDate ? 'present' : 'absent',
+            time: attendanceForDate
+              ? new Date(attendanceForDate.punchInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              : null,
+          };
+        });
+
+        return {
+          memberId: _id,
+          name: name || 'Unknown',
+          email: email || 'Unknown',
+          totalPresent,
+          totalAbsent,
+          data: records,
+        };
+      });
+
+      return res.status(200).json({
+        success: true,
+        count: result.length,
+        attendance: result,
+      });
+    } catch (error) {
+      console.error('Error fetching channel attendance data:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Unable to fetch attendance data.',
+      });
+    }
+  },
 
 
   getChannelMembersDailyAssignments: async (req, res) => {
@@ -748,6 +992,96 @@ module.exports = {
       });
     } catch (error) {
       console.error("Error fetching daily assignments:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Server error. Please try again later.",
+      });
+    }
+  },
+
+
+
+  getChannelMembersAssignmentsByDateRange: async (req, res) => {
+    try {
+      const userId = req.userId; // Assuming `checkUserToken` middleware attaches the user ID
+      const channelId = req.params.channelId;
+      const { startDate, endDate } = req.query;
+
+      // Validate `startDate` and `endDate`
+      if (!startDate || !endDate) {
+        return res.status(400).json({
+          success: false,
+          message: "Start date and end date are required.",
+        });
+      }
+
+      // Parse the date range
+      const startOfRange = new Date(`${startDate}`);
+      const endOfRange = new Date(`${endDate}`);
+
+      // 1. Get all members for the user within the specified channel
+      const members = await channelMemberModel
+        .find({ addedBy: userId, channelId })
+        .populate("memberId");
+
+      // console.log('members', members);
+
+
+
+
+      if (!members.length) {
+        return res.status(404).json({
+          success: false,
+          message: "No members found for the user in the specified channel.",
+        });
+      }
+
+      // Extract member IDs
+      const memberIds = members?.map((member) => member?.memberId?._id);
+
+      // console.log('membersmemberIds ',members[0], memberIds );
+      // 2. Get assignments for the specified date range for these members
+      const assignments = await assignmentModel.find({
+        memberId: { $in: memberIds },
+        assignedAt: {
+          $gte: new Date(`${startOfRange}`),
+          $lte: new Date(`${endOfRange}`),
+        },
+        // assignedAt: {
+        //   $gte: startOfRange,
+        //   $lte: endOfRange,
+        // },
+      });
+
+      // 3. Prepare the response
+      const response = members.map((member) => {
+        // console.log('members=================',member.memberId._id );
+        const memberAssignments = assignments.filter((assignment) => {
+          // console.log("assignment.memberId ===", assignment.memberId);
+          // console.log("member._id ===", member._id);
+      
+          return assignment.memberId.toString() === member.memberId._id.toString();
+          // return assignment.memberId=== member.memberId._id;
+        });
+      
+        // console.log("memberAssignments ===", memberAssignments);
+      
+        // Count the total, pending, and completed assignments for the member
+        return {
+          name: member.memberId?.name || "Unknown", // Fallback for name
+          totalAssignments: memberAssignments.length,
+          pending: memberAssignments.filter((a) => a.status === "Pending").length,
+          completed: memberAssignments.filter((a) => a.status === "Completed").length,
+        };
+      });
+      
+      // Send the response
+      return res.status(200).json({
+        success: true,
+        data: response,
+      });
+    } catch (error) {
+      console.error("Error fetching assignments for the specified date range:", error);
       return res.status(500).json({
         success: false,
         message: "Server error. Please try again later.",

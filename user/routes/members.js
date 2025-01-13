@@ -18,8 +18,8 @@ router.get("/list", checkUserToken, controller.getUserMembers);
 router.get('/:memberId', checkUserToken, controller.getUserMemberById);
 router.delete('/:memberId', controller.deleteUserMemberById);
 router.get('/:memberId/daily-transit', controller.getUserMemberDailyTransit);
-router.post('/activity-frequency', checkUserToken,controller.getUserMemberDailyTransitActivityFrequency);
-router.post('/activity-frequency_', checkUserToken,controller.getUserMemberDailyTransitActivityFrequency_);
+router.post('/activity-frequency', checkUserToken, controller.getUserMemberDailyTransitActivityFrequency);
+router.post('/activity-frequency_', checkUserToken, controller.getUserMemberDailyTransitActivityFrequency_);
 
 
 router.get("/attendance/today", checkUserToken, controller.getTodayAttendance_);
@@ -29,6 +29,23 @@ router.get("/attendance/records_new", checkUserToken, controller.getChannelMembe
 
 router.get("/daily-assignments/:channelId", checkUserToken, controller.getChannelMembersDailyAssignments);
 router.post("/assignments-records/:channelId", checkUserToken, controller.getChannelMembersAssignmentsByDateRange);
+router.get("/assignments/:assignmentId/:memberId", checkUserToken, controller.getUsersMemberAssignmentById);
+// ================== NOTIFICATIONs ============================================
+
+router.post("/sos", checkUserToken, controller.sendSosToMembers);
+router.post("/request-live-location", checkUserToken, controller.requestLiveLocationForSelectedMembers);
+
+// ==============================================================
+
+router.get('/:memberId/live-tracking', controller.getUserMemberLiveTracking);
+
+
+
+router.get("/live-location-tracking/:memberId/:selectedDate", checkUserToken, controller.fetchUserLiveLocation);   // Update
+router.get("/assignment-location-tracking/:memberId/:selectedDate", checkUserToken, controller.fetchUserAssignmentLocation);   // Update
+
+router.post("/live-location-tracking-insight-report", checkUserToken, controller.fetchUserLiveLocationInsightReport);   // Update
+
 
 
 module.exports = router;

@@ -12,7 +12,7 @@ module.exports = {
     try {
       console.log("--------  started User signup ----------");
 
-      const { name, email, password, mobile } = req.body;
+      const { name, email, password, mobile,fcmToken } = req.body;
 
       // Validate input
       if (!name) {
@@ -59,6 +59,8 @@ module.exports = {
       const newUser = new model({
         name,
         email,
+        fcmToken,
+
         mobile,
         password: hashedPassword,
         createdBy: "system", // or replace with appropriate user ID if needed
@@ -77,10 +79,12 @@ module.exports = {
 
       // Create default channels
       const defaultChannels = [
-        { name: 'IT', description: 'Default IT channel' },
-        { name: 'HR', description: 'Default HR channel' },
-        { name: 'SALES', description: 'Default Sales channel' },
+        { name: 'Friends', description: 'Laughter, memories, connection' },
+        { name: 'Family', description: 'Love, support, togetherness' },
+        { name: 'Work', description: 'Collaboration, productivity, success' },
       ];
+      
+      console.log('saved users id -------------------', newUser._id);
 
       const channelPromises = defaultChannels.map(channel => {
         return new channelModel({

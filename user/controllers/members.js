@@ -18,6 +18,7 @@ const attendanceModel = require("../../member/models/attendance");
 const moment = require('moment'); // For handling date calculations
 const assignmentModel = require("../../model/assignment");
 const channelMemberModel = require("../../model/channelsMembers");
+const admin = require('firebase-admin');
 
 //==================================================
 module.exports = {
@@ -161,6 +162,7 @@ module.exports = {
       const passwordEncrypted = await bcrypt.hash(password, 10);
 
 
+      console.log('membersData', membersData);
 
       for (const memberData of membersData) {
         if (!memberData?.name || !memberData?.email || !memberData?.mobile) {
@@ -177,6 +179,7 @@ module.exports = {
             parentUser: userId,
             password: passwordEncrypted
           });
+          // console.log('newMember', newMember);
 
           const notifyTo = await notificationModel.create({
             userId,
@@ -186,12 +189,34 @@ module.exports = {
 
           });
 
-          createdMembers.push(newMember);
 
-          if (newMember && notifyTo) {
+          const addingToMemberToChannel = await channelMemberModel.create({
+            channelId: newMember?.channelId,
+            memberId: newMember?._id,
+            addedBy: newMember?.parentUser,
+            addedByModel: 'user',
+            message: `You have added a new member: ${memberData?.name}`,
+
+
+
+          });
+
+
+
+          createdMembers.push(newMember);
+          const parentUser = await userModel.findOne({ _id: userId });
+          // console.log('parentUser',userId, parentUser?.name);
+
+          if (newMember && notifyTo && addingToMemberToChannel) {
 
             const verificationToken = jwt.sign(
-              { email: memberData.email, userId: newMember._id }, // Payload
+              {
+                email: memberData?.email,
+                userId: newMember?._id,
+                parentUserId: userId,
+                parentUserName: parentUser?.name,
+                memberName: newMember?.name
+              },
               process.env.JWT_SECRET, // Secret key from your environment variables
               { expiresIn: '360m' } // Token expiration time
             );
@@ -238,7 +263,8 @@ module.exports = {
             };
 
             await sendMail(messageData);
-            // await sendMail();
+            // console.log('verification link ----:', verificationLink);
+
 
             // sendNotification(userId, `You have added a new member: ${memberData?.name}`);
             // sendServerDetailToClient(` --------- server se aaya mera DOST ---------------- : ${memberData?.name}`);
@@ -257,7 +283,15 @@ module.exports = {
 
           // console.log(` ---------- Email sent ----------------- `,memberData.email);
         } catch (emailError) {
+
           console.error(`Failed to send email to ${memberData.email}:`, emailError);
+          if (emailError.code === 11000 && emailError.keyPattern?.email) {
+            console.error(`Duplicate email error for ${memberData.email}`);
+            return res.status(409).json({
+              status: 409,
+              message: `The email address "${memberData.email}" is already in use.`,
+            });
+          }
         }
       }
 
@@ -860,6 +894,7 @@ module.exports = {
 
       // Extract member IDs for attendance query
       const memberIds = channelMembers.map((member) => ObjectId(member.memberId._id));
+      console.log('memberIds', memberIds);
 
       // Fetch attendance records for the given date range for these members
       const attendanceRecords = await attendanceModel.find({
@@ -1003,11 +1038,10 @@ module.exports = {
 
   getChannelMembersAssignmentsByDateRange: async (req, res) => {
     try {
-      const userId = req.userId; // Assuming `checkUserToken` middleware attaches the user ID
+      const userId = req.userId;
       const channelId = req.params.channelId;
       const { startDate, endDate } = req.query;
 
-      // Validate `startDate` and `endDate`
       if (!startDate || !endDate) {
         return res.status(400).json({
           success: false,
@@ -1019,12 +1053,10 @@ module.exports = {
       const startOfRange = new Date(`${startDate}`);
       const endOfRange = new Date(`${endDate}`);
 
-      // 1. Get all members for the user within the specified channel
       const members = await channelMemberModel
         .find({ addedBy: userId, channelId })
         .populate("memberId");
 
-      // console.log('members', members);
 
 
 
@@ -1036,11 +1068,9 @@ module.exports = {
         });
       }
 
-      // Extract member IDs
       const memberIds = members?.map((member) => member?.memberId?._id);
+      console.log('memberIds', memberIds);
 
-      // console.log('membersmemberIds ',members[0], memberIds );
-      // 2. Get assignments for the specified date range for these members
       const assignments = await assignmentModel.find({
         memberId: { $in: memberIds },
         assignedAt: {
@@ -1052,33 +1082,36 @@ module.exports = {
         //   $lte: endOfRange,
         // },
       });
-
-      // 3. Prepare the response
       const response = members.map((member) => {
-        // console.log('members=================',member.memberId._id );
+        // Filter assignments for the current member
         const memberAssignments = assignments.filter((assignment) => {
-          // console.log("assignment.memberId ===", assignment.memberId);
-          // console.log("member._id ===", member._id);
-      
           return assignment.memberId.toString() === member.memberId._id.toString();
-          // return assignment.memberId=== member.memberId._id;
         });
-      
-        // console.log("memberAssignments ===", memberAssignments);
-      
-        // Count the total, pending, and completed assignments for the member
+
+        // Group assignments by status
+        const pendingAssignments = memberAssignments.filter((a) => a.status === "pending");
+        const completedAssignments = memberAssignments.filter((a) => a.status === "completed");
+
         return {
-          name: member.memberId?.name || "Unknown", // Fallback for name
+          name: member.memberId?.name || "Unknown",
           totalAssignments: memberAssignments.length,
-          pending: memberAssignments.filter((a) => a.status === "Pending").length,
-          completed: memberAssignments.filter((a) => a.status === "Completed").length,
+          pending: {
+            count: pendingAssignments.length,
+            details: pendingAssignments,
+          },
+          completed: {
+            count: completedAssignments.length,
+            details: completedAssignments,
+          },
         };
       });
-      
+
       // Send the response
       return res.status(200).json({
         success: true,
         data: response,
+        // count: assignments.length,
+        // assignments
       });
     } catch (error) {
       console.error("Error fetching assignments for the specified date range:", error);
@@ -1087,8 +1120,577 @@ module.exports = {
         message: "Server error. Please try again later.",
       });
     }
-  }
+  },
 
+
+
+  getMemberAssignmentById: async (req, res) => {
+    try {
+      const { assignmentId } = req.params; // Get startDate and endDate from request params
+
+      const memberId = req?.userId;
+
+
+
+      if ((!memberId)) {
+        return res.status(400).json({ message: 'Invalid memberId' });
+      }
+
+      // console.log('Getting assignments for member:', memberId);
+
+      // Fetch the assignments within the date range
+      const memberAssignments = await assignmentModel.find({
+        _id: assignmentId,
+      })
+
+      if (!memberAssignments || memberAssignments.length === 0) {
+        return res.status(404).json({ message: 'No assignments found ' });
+      }
+
+
+      res.status(200).json({
+        status: 200,
+        message: 'Assignment found successfully',
+        assignment: memberAssignments,
+      });
+
+    } catch (error) {
+      console.error('Error fetching user assignments:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  },
+  getUsersMemberAssignmentById: async (req, res) => {
+    try {
+      const { assignmentId, memberId } = req.params; // Get startDate and endDate from request params
+
+      // const memberId = req?.userId;
+      console.log(' assignmentId,memberId ---', req.params, assignmentId, memberId);
+
+
+
+      if ((!memberId)) {
+        return res.status(400).json({ message: 'Invalid memberId' });
+      }
+
+      // console.log('Getting assignments for member:', memberId);
+
+      // Fetch the assignments within the date range
+      const memberAssignments = await assignmentModel.find({
+        _id: assignmentId,
+      })
+
+      if (!memberAssignments || memberAssignments.length === 0) {
+        return res.status(404).json({ message: 'No assignments found ' });
+      }
+
+
+      res.status(200).json({
+        status: 200,
+        message: 'Assignment found successfully',
+        assignment: memberAssignments,
+      });
+
+    } catch (error) {
+      console.error('Error fetching user assignments:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  },
+
+
+
+
+
+
+
+
+
+  sendSosToMembers: async (req, res) => {
+    try {
+      console.log('req.body', req.body);
+
+      const { memberIds } = req.body;
+      const userId = req.userId;
+      const parentUserDetails = await userModel.findOne({ _id: userId });
+
+
+      // Validate request
+      if (!memberIds || !Array.isArray(memberIds) || memberIds.length === 0) {
+        return res.status(400).json({ error: 'Invalid or missing memberIds' });
+      }
+
+
+      // Prepare the FCM message payload
+      // {
+      //   "to": "<FCM_TOKEN>",
+      //   "data": {
+      //     "action": "startTracking"
+      //   },
+      //   "priority": "high", // Necessary for immediate background processing
+      //   "content_available": true
+      // }
+
+      const payload = {
+        notification: {
+          title: 'SOS Alert',
+          body: `${parentUserDetails?.name} Is Seding SOS To You`,
+        },
+        data: {
+          type: 'SOS',
+        },
+      };
+
+      // Loop over each memberId and send SOS individually
+      let successCount = 0;
+      let failureCount = 0;
+      const responses = [];
+
+      for (const memberId of memberIds) {
+        // Fetch FCM token for each member
+        const member = await memberModel.findOne({ _id: memberId }, { fcmToken: 1 });
+
+        if (member && member.fcmToken) {
+          try {
+            // Send notification to the member
+            const response = await admin.messaging().send({
+              token: member.fcmToken,
+              ...payload,
+            });
+
+            // Increment success count
+            successCount++;
+            responses.push({ memberId, success: true, response });
+          } catch (error) {
+            // Increment failure count
+            failureCount++;
+            responses.push({ memberId, success: false, error: error.message });
+          }
+        } else {
+          failureCount++;
+          responses.push({ memberId, success: false, error: 'No valid FCM token' });
+        }
+      }
+
+      return res.status(200).json({
+        message: `SOS sent to ${successCount} members. ${failureCount} failed.`,
+        details: responses,
+      });
+    } catch (error) {
+      console.error('Error sending SOS:', error);
+      return res.status(500).json({ error: 'Failed to send SOS notification', details: error.message });
+    }
+  },
+
+
+  requestLiveLocationForSelectedMembers: async (req, res) => {
+    try {
+      console.log('req.body', req.body);
+
+      const { memberIds } = req.body;
+      const userId = req.userId;
+      const parentUserDetails = await userModel.findOne({ _id: userId });
+
+
+      // Validate request
+      if (!memberIds || !Array.isArray(memberIds) || memberIds.length === 0) {
+        return res.status(400).json({ error: 'Invalid or missing memberIds' });
+      }
+
+
+      // Prepare the FCM message payload
+      // {
+      //   "to": "<FCM_TOKEN>",
+      //   "data": {
+      //     "action": "startTracking"
+      //   },
+      //   "priority": "high", // Necessary for immediate background processing
+      //   "content_available": true
+      // }
+
+      const payload = {
+        notification: {
+          title: 'Live Location',
+          body: `${parentUserDetails?.name} Is Requesting Your Live Location .`,
+        },
+        data: {
+          type: 'LiveLocationSharing',
+        },
+      };
+
+      // Loop over each memberId and send SOS individually
+      let successCount = 0;
+      let failureCount = 0;
+      const responses = [];
+
+      for (const memberId of memberIds) {
+        // Fetch FCM token for each member
+        const member = await memberModel.findOne({ _id: memberId }, { fcmToken: 1 });
+
+        if (member && member.fcmToken) {
+          try {
+            // Send notification to the member
+            const response = await admin.messaging().send({
+              token: member.fcmToken,
+              ...payload,
+            });
+
+            // Increment success count
+            successCount++;
+            responses.push({ memberId, success: true, response });
+          } catch (error) {
+            // Increment failure count
+            failureCount++;
+            responses.push({ memberId, success: false, error: error.message });
+          }
+        } else {
+          failureCount++;
+          responses.push({ memberId, success: false, error: 'No valid FCM token' });
+        }
+      }
+
+      return res.status(200).json({
+        message: `Requested Live Location to ${successCount} members. ${failureCount} failed.`,
+        details: responses,
+      });
+    } catch (error) {
+      console.error('Error sending requesting location:', error);
+      return res.status(500).json({ error: 'Failed to request location notification', details: error.message });
+    }
+  },
+
+
+
+
+
+
+
+
+
+
+
+  getUserMemberLiveTracking: async (req, res) => {
+    const { memberId } = req.params;
+    const { date } = req.query;
+
+
+
+    if (!memberId || !date) {
+      return res.status(400).json({ error: "Member ID and date are required" });
+    }
+
+    try {
+      // Parse the date and get the start and end of the day
+      const startOfDay = new Date(date);
+      startOfDay.setUTCHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(date);
+      endOfDay.setUTCHours(23, 59, 59, 999);
+
+      // Query database for locations within the specified date range
+      const locationsGroupedByLocality = await trackingHistoryModel.aggregate([
+        // Step 1: Match entries for the given memberId and day range
+        {
+          $match: {
+            memberId: mongoose.Types.ObjectId(memberId),
+            timestamp: { $gte: startOfDay, $lte: endOfDay }
+          }
+        },
+        // Step 2: Group by locality
+        {
+          $group: {
+            _id: "$locality", // Group by locality
+            // entries: { $push: "$$ROOT" }, // Include all documents in the group
+            count: { $sum: 1 }, // Count the number of entries for each locality
+            averageTimestamp: { $avg: { $toLong: "$timestamp" } },// Calculate average timestamp
+            locations: { $push: "$location.coordinates" }, // Include all location coordinates
+
+          }
+        },
+        // Step 3: Sort the groups by count or other criteria
+        {
+          $sort: { count: -1 } // Sort by count in descending order
+        }
+      ]);
+
+      const resultWithDates = locationsGroupedByLocality.map(group => ({
+        ...group,
+        averageTimestamp: new Date(group.averageTimestamp).toISOString() // Convert to ISO Date string
+      }));
+
+      console.log(resultWithDates);
+
+      let finalData = resultWithDates.filter(item => item._id != null)
+
+      console.log(locationsGroupedByLocality);
+
+      res.json({
+        status: 200,
+        count: locationsGroupedByLocality.length,
+        data: finalData,
+        message: "Location found successfully"
+      });
+    } catch (error) {
+      console.error("Error fetching locations: ", error);
+      res.status(500).json({ error: "An error occurred while fetching locations." });
+    }
+  },
+
+
+
+
+  fetchUserLiveLocation: async (req, res) => {
+    try {
+
+      const userId = req.userId; // Get the user ID from the request (assuming it's available in the request object)
+
+      const { memberId, selectedDate } = req.params; // Get the user ID from the request (assuming it's available in the request object)
+      console.log(' selectedDate -----', selectedDate);
+
+
+
+      const givenDate = new Date(selectedDate); // Replace with your desired date
+      const nextDay = new Date(givenDate);
+      nextDay.setDate(nextDay.getDate() + 1); // Calculate the next day
+      const liveLocation = await trackingHistoryModel
+        .find({
+          memberId,
+          trackingType: 'live',
+          timestamp: {
+            $gte: givenDate,
+            $lt: nextDay // Less than the start of the next day
+          }
+        })
+        .sort({ timestamp: -1 })
+
+
+      if (!liveLocation) {
+        return res.status(404).json({ error: 'Live location not found for this member' });
+      }
+
+      // Return the live location tracking data
+      res.status(200).json({
+        message: 'Live location fetched successfully',
+        count: liveLocation.length,
+
+        liveLocation
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  },
+
+
+
+
+
+
+  // fetchUserAssignmentLocation: async (req, res) => {
+  //   try {
+
+  //     const userId = req.userId; // Get the user ID from the request (assuming it's available in the request object)
+
+  //     const { memberId ,selectedDate} = req.params; // Get the user ID from the request (assuming it's available in the request object)
+  //     console.log(' selectedDate -----', selectedDate);
+
+  //     const givenDate = new Date(selectedDate); // Replace with your desired date
+  //     const nextDay = new Date(givenDate);
+  //     nextDay.setDate(nextDay.getDate() + 1); // Calculate the next day
+  //           const assignmentLocation = await trackingHistoryModel
+  //     .find({
+  //         memberId,
+  //         trackingType: 'scheduled',
+  //         timestamp: {
+  //             $gte: givenDate,
+  //             $lt: nextDay // Less than the start of the next day
+  //         }
+  //     })
+  //     .sort({ timestamp: -1 })
+  //     .populate('assignmentId');
+
+  //     if (!assignmentLocation) {
+  //       return res.status(404).json({ error: 'Assignments location not found for this member' });
+  //     }
+
+  //     // Return the live location tracking data
+  //     res.status(200).json({
+  //       message: 'Assignments location fetched successfully',
+  //       count:assignmentLocation.length,
+  //       assignmentLocation,
+  //     });
+  //   } catch (error) {
+  //     console.error(error);
+  //     res.status(500).json({ error: 'Internal server error' });
+  //   }
+  // }
+
+  fetchUserAssignmentLocation: async (req, res) => {
+    try {
+      const userId = req.userId; // Get the user ID from the request
+      const { memberId, selectedDate, payload } = req.params; // Get memberId and selectedDate from request parameters
+      console.log('selectedDate -----', selectedDate);
+
+      const givenDate = new Date(selectedDate); // Replace with your desired date
+      const nextDay = new Date(givenDate);
+      nextDay.setDate(nextDay.getDate() + 1); // Calculate the next day
+
+      // Fetch assignments' locations for the member within the selected date range
+      const assignmentLocation = await trackingHistoryModel
+        .find({
+          memberId,
+          trackingType: 'scheduled',
+          timestamp: {
+            $gte: givenDate,
+            $lt: nextDay // Less than the start of the next day
+          }
+        })
+        .sort({ timestamp: -1 })
+        .populate('assignmentId'); // Populating the assignmentId to get assignment details
+
+      if (!assignmentLocation || assignmentLocation.length === 0) {
+        return res.status(404).json({ error: 'Assignments location not found for this member' });
+      }
+
+      // Group the coordinates by assignmentId and merge them into one assignment object
+      const groupedAssignments = assignmentLocation.reduce((acc, item) => {
+        const assignmentId = item.assignmentId._id;
+        if (!acc[assignmentId]) {
+          acc[assignmentId] = {
+            assignmentId: assignmentId,
+            eventName: item.assignmentId.eventName,
+            trackingCoordinates: []
+          };
+        }
+        acc[assignmentId].trackingCoordinates.push(item.location.coordinates);
+        return acc;
+      }, {});
+
+      // Convert the groupedAssignments object to an array
+      const assignmentDetails = Object.values(groupedAssignments);
+
+      // Return the assignment location data with assignment details and tracking locations
+      res.status(200).json({
+        message: 'Assignments location fetched successfully',
+        assignmentDetails, // Including assignment details with tracking coordinates
+      });
+
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  },
+
+
+
+
+
+  fetchUserLiveLocationInsightReport: async (req, res) => {
+    try {
+      const userId = req.userId; // Assuming userId is available in the request object
+      const { memberId, selectedDate, locationType } = req.body; // Extract memberId and selectedDate from request params
+
+      console.log('Selected Date:', selectedDate);
+
+      // Parse the given date and calculate the next day
+      const givenDate = new Date(selectedDate);
+      const nextDay = new Date(givenDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      const memberDetails = await memberModel
+        .findOne({ _id: memberId })
+      // Fetch live location data from the database
+      const liveLocation = await trackingHistoryModel
+        .find({
+          memberId,
+          trackingType: 'live',
+          timestamp: {
+            $gte: givenDate, // Greater than or equal to the given date
+            $lt: nextDay,    // Less than the start of the next day
+          },
+        })
+        .sort({ timestamp: -1 }) // Sort in descending order by timestamp
+
+
+
+
+      const downloadReportData = liveLocation.map((item) => {
+        const formattedTimestamp = new Intl.DateTimeFormat("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        }).format(new Date(item.timestamp));
+        return {
+
+          address: item.addressDetails.address,
+          locality: item.addressDetails.locality,
+          street: item.addressDetails.street,
+          neighborhood: item.addressDetails.neighborhood,
+          region: item.addressDetails.region,
+          district: item.addressDetails.district,
+          country: item.addressDetails.country,
+          timestamp: formattedTimestamp,
+        };
+      });
+
+
+
+
+      // Handle case where no live location data is found
+      if (!liveLocation || liveLocation.length === 0) {
+        return res.status(404).json({ error: 'Live location not found for this member' });
+      }
+
+      const counts = liveLocation.reduce((acc, location) => {
+        // Check based on locationType
+        console.log('locationType', locationType);
+
+        if (locationType === 'locality') {
+          // Use locality if locationType is 'locality'
+          const locality = location.addressDetails?.locality || 'Unknown'; // Default to 'Unknown' if locality is missing
+          acc[locality] = (acc[locality] || 0) + 1;
+        } else if (locationType === 'district') {
+          // Use district if locationType is 'district'
+          const district = location.addressDetails?.district || 'Unknown'; // Default to 'Unknown' if district is missing
+          acc[district] = (acc[district] || 0) + 1;
+        } else if (locationType === 'street') {
+          // Use district if locationType is 'district'
+          const district = location.addressDetails?.street || 'Unknown'; // Default to 'Unknown' if district is missing
+          acc[district] = (acc[district] || 0) + 1;
+        } else if (locationType === 'neighborhood') {
+          // Use district if locationType is 'district'
+          const district = location.addressDetails?.neighborhood || 'Unknown'; // Default to 'Unknown' if district is missing
+          acc[district] = (acc[district] || 0) + 1;
+        }
+
+
+        return acc;
+      }, {});
+
+      const totalCount = liveLocation.length;
+
+      const pieChartData = Object.entries(counts).map(([country, count]) => ({
+        name: country,
+        count, // Include the frequency of this country
+        percentage: ((count / totalCount) * 100).toFixed(2), // Convert count to percentage
+        color: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // Random color
+        legendFontColor: '#333',
+        legendFontSize: 14,
+      }));
+
+      // Return the live location tracking data along with pie chart data
+      res.status(200).json({
+        message: 'Live location fetched successfully',
+        pieChartData,
+        downloadReportData
+
+      });
+    } catch (error) {
+      console.error('Error fetching live location:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  },
 
 
 
@@ -1097,8 +1699,3 @@ module.exports = {
 
 
 }
-
-
-
-
-

@@ -6,7 +6,9 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['super-admin', 'user', 'member'], default: 'member' },
   parentUser: { type: mongoose.Schema.Types.ObjectId, ref: 'user' }, // User who added this member
 
-  email: { type: String },
+  email: { type: String, unique: true },
+  fcmToken: { type: String, default: 'null' },
+
   mobile: String,
   password: String,
   userType: { type: String, default: 'member' },

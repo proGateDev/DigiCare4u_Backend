@@ -5,12 +5,14 @@ const cors = require("cors");
 require("dotenv").config();
 require("./database");
 const routes = require('./routes');
-const { default: axios } = require("axios");
 
 const { socketService } = require('./service/socket'); // Import the socket service
 
 //====================================================
-
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+// });
+//====================================================
 // Use the session middleware
 
 app.use(

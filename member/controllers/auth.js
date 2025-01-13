@@ -2,7 +2,18 @@ const memberModel = require("../models/profile");
 const { checkEncryptedPassword } = require('../../util/auth')
 const jwt = require('jsonwebtoken');
 const { onMemberVerified } = require("../../service/socket");
+const admin = require("firebase-admin");
+const userModel = require("../../user/models/profile");
+require("dotenv").config();
+
+
 //==================================================
+// var serviceAccount_ = require("./service-account-key.json");
+const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY);
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+})
+
 
 module.exports = {
   login: async (req, res) => {
@@ -140,16 +151,18 @@ module.exports = {
       // Verify the token first
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const memberId = decoded.userId;
+      const parentUserId = decoded.parentUserId;
       // console.log(memberId);
+      const parentUser = await userModel.findById({_id : parentUserId});
+      console.log('------ parentUser  ------------>', parentUser?.fcmToken);
 
 
       // const memberId = req.body.memberId;
-      console.log('------ memberId  ------------>', memberId);
       // const userId = req.body.userId; // The user who added the member
       const member = await memberModel.findById(memberId);
 
       // if (member && !member.isApproved) {
-        if (member ) {
+      if (member) {
         member.isApproved = true;
         await member.save();
 
@@ -161,9 +174,24 @@ module.exports = {
           memberId: member._id,
         }
         onMemberVerified(memberVerifyingMessage)
+
         // console.log(' chala', chala);
-
-
+        const sendNotification = async (token) => {
+          try {
+            await admin.messaging().send({
+              token: token,
+              notification: {
+                title: "Verification Complete",
+                body: `${member?.name} has successfully verified their account!`,
+              },
+            });
+            console.log("Notification sent successfully!");
+          } catch (error) {
+            console.error("Error sending notification:", error);
+          }
+        };
+        
+        sendNotification(parentUser?.fcmToken)
         return res.status(200).send('Member verified and notification sent');
       } else {
         return res.status(400).send('Member already approved');

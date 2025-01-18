@@ -7,9 +7,10 @@ const checkUserToken = require("../../middleware/jwt");
 
 router.put("/",checkUserToken, controller.updateMemberLocation); 
 router.post("/records",checkUserToken, controller.postMemberLocation); 
-router.get("/records",checkUserToken, controller.getMemberLocations); 
+router.get("/records",checkUserToken, controller.getMemberLocationsRecords); 
+router.get("/records-for-map",checkUserToken, controller.getMemberLocationsRecordsForMap); 
 
-router.get("/records",checkUserToken, controller.getMemberLocations); 
+// router.get("/records",checkUserToken, controller.getMemberLocations); 
 
 
 

@@ -15,25 +15,50 @@ router.post(
     controller.createUserMember
 );
 router.get("/list", checkUserToken, controller.getUserMembers);
+
+
+
+
+
+
+
 router.get('/:memberId', checkUserToken, controller.getUserMemberById);
 router.delete('/:memberId', controller.deleteUserMemberById);
 router.get('/:memberId/daily-transit', controller.getUserMemberDailyTransit);
 router.post('/activity-frequency', checkUserToken, controller.getUserMemberDailyTransitActivityFrequency);
 router.post('/activity-frequency_', checkUserToken, controller.getUserMemberDailyTransitActivityFrequency_);
 
+// ================== ATTENDANCEs ============================================
 
 router.get("/attendance/today", checkUserToken, controller.getTodayAttendance_);
 router.get("/attendance/records", checkUserToken, controller.getChannelMembersAttendance);
 router.get("/attendance/records_new", checkUserToken, controller.getChannelMembersAttendance_new);
 
 
+
+// ================== ASSIGNMENTs ============================================
+
+
+
 router.get("/daily-assignments/:channelId", checkUserToken, controller.getChannelMembersDailyAssignments);
 router.post("/assignments-records/:channelId", checkUserToken, controller.getChannelMembersAssignmentsByDateRange);
 router.get("/assignments/:assignmentId/:memberId", checkUserToken, controller.getUsersMemberAssignmentById);
+
+router.get('/assignments_/:startDate/:endDate/:memberId', checkUserToken,controller.getUsersMemberAssignments);
+
+
+
+
+
+
+
 // ================== NOTIFICATIONs ============================================
 
 router.post("/sos", checkUserToken, controller.sendSosToMembers);
 router.post("/request-live-location", checkUserToken, controller.requestLiveLocationForSelectedMembers);
+
+router.get("/sos/:memberId", checkUserToken, controller.sendSosToMemberById);
+router.get("/request-live-location/:memberId", checkUserToken, controller.requestLiveLocationForMemberById);
 
 // ==============================================================
 
@@ -46,6 +71,13 @@ router.get("/assignment-location-tracking/:memberId/:selectedDate", checkUserTok
 
 router.post("/live-location-tracking-insight-report", checkUserToken, controller.fetchUserLiveLocationInsightReport);   // Update
 
+
+
+
+
+//============ Get members last location =====================================
+
+router.post("/last-location", checkUserToken, controller.getUserMembersLastLocation);
 
 
 module.exports = router;

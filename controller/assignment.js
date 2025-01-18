@@ -5,6 +5,7 @@ const userModel = require('../user/models/profile');
 const memberModel = require('../member/models/profile');
 
 const admin = require("firebase-admin");
+const trackingHistoryModel = require('../model/trackingHistory');
 
 
 
@@ -345,16 +346,31 @@ module.exports = {
 
     getMemberAssignments: async (req, res) => {
         try {
+
             const { startDate, endDate } = req.params; // Get startDate and endDate from request params
             const memberId = req?.userId;
 
             // Ensure startDate and endDate are in a valid format
             const start = new Date(startDate);
             const end = new Date(endDate);
-            // console.log('-____ DATES _______:', start, end);
+            console.log('-____ DATES _______:', startDate, endDate, start, end);
 
             if (isNaN(start) || isNaN(end)) {
                 return res.status(400).json({ message: 'Invalid date format' });
+            }
+            const memberDetails = await memberModel.findById(memberId);
+            if (!memberDetails) {
+                return res.status(404).json({ error: 'Member not found' });
+            }
+
+            // Fetch parent user details (optional check if member has a parent user)
+            if (!memberDetails.parentUser) {
+                return res.status(404).json({ error: 'Parent user not found for this member' });
+            }
+
+            const parentUser = await userModel.findById(memberDetails.parentUser);
+            if (!parentUser || !parentUser.fcmToken) {
+                return res.status(404).json({ error: 'Parent user or FCM token not found' });
             }
 
             // console.log('Getting assignments for member:', memberId);
@@ -362,6 +378,7 @@ module.exports = {
             // Fetch the assignments within the date range
             const memberAssignments = await assignmentModel.find({
                 memberId: memberId,
+                userId: parentUser?.id,
                 assignedAt: { $gte: start, $lte: end }, // Filter by assignmentDate within the date range
                 type: { $ne: 'daily' }, // Exclude tasks where type is 'daily'
 
@@ -369,7 +386,7 @@ module.exports = {
             // console.log('memberAssignments', memberId);
 
             if (!memberAssignments || memberAssignments.length === 0) {
-                return res.status(404).json({ message: 'No assignments found for the given period' });
+                return res.status(200).json({ message: 'No assignments found for the given period' });
             }
             // console.log('memberAssignments', memberAssignments);
 
@@ -406,34 +423,46 @@ module.exports = {
     },
     getMemberAssignmentById: async (req, res) => {
         try {
-            const { assignmentId } = req.params; // Get startDate and endDate from request params
-
+            const { assignmentId } = req.params; // Get assignmentId from request params
             const memberId = req?.userId;
 
-
-
-            if ((!memberId)) {
+            if (!memberId) {
                 return res.status(400).json({ message: 'Invalid memberId' });
             }
 
-            // console.log('Getting assignments for member:', memberId);
-
-            // Fetch the assignments within the date range
-            const memberAssignments = await assignmentModel.find({
+            // Fetch the assignment by ID and memberId
+            const memberAssignment = await assignmentModel.findOne({
+                memberId,
                 _id: assignmentId,
-            })
-
-            if (!memberAssignments || memberAssignments.length === 0) {
-                return res.status(404).json({ message: 'No assignments found ' });
-            }
-
-
-            res.status(200).json({
-                status: 200,
-                message: 'Assignment found successfully',
-                assignment: memberAssignments,
             });
 
+            if (!memberAssignment) {
+                return res.status(404).json({ message: 'Assignment not found' });
+            }
+
+            // Prepare the response object
+            let response = {
+                status: 200,
+                message: 'Assignment found successfully',
+                assignment: memberAssignment,
+            };
+
+            // Check if the assignment status is 'completed'
+            if (memberAssignment.status === 'completed') {
+                // Fetch trackingHistory data for the assignment
+                const trackingHistory = await trackingHistoryModel.find({
+                    assignmentId,
+                });
+
+                // Include trackingHistory in the response
+                response.trackingHistory = trackingHistory?.map((history) => ({
+                    coordinates: [history.location.coordinates[0], history.location.coordinates[1]],
+                    locality: history?.addressDetails.locality,
+                    timestamp: history?.timestamp,
+                }));
+            }
+
+            res.status(200).json(response);
         } catch (error) {
             console.error('Error fetching user assignments:', error);
             res.status(500).json({ error: 'Internal Server Error' });
@@ -611,7 +640,55 @@ module.exports = {
             console.error("Error assigning location:", error);
             return res.status(500).json({ error: 'Failed to assign location' });
         }
+    },
+
+
+
+
+
+    
+    memberStopLiveTracker: async (req, res) => {
+        try {
+            const memberId = req.userId;  // Get the memberId from the authenticated user
+
+
+
+
+            // Fetch member details
+            const memberDetails = await memberModel.findById(memberId);
+            if (!memberDetails) {
+                return res.status(404).json({ error: 'Member not found' });
+            }
+
+            // Fetch parent user details (optional check if member has a parent user)
+            if (!memberDetails.parentUser) {
+                return res.status(404).json({ error: 'Parent user not found for this member' });
+            }
+
+            const parentUser = await userModel.findById(memberDetails.parentUser);
+            if (!parentUser || !parentUser.fcmToken) {
+                return res.status(404).json({ error: 'Parent user or FCM token not found' });
+            }
+
+            // Send notification to the parent user
+            sendFirebaseNotification({
+                fcmToken: parentUser.fcmToken,
+                title: `${memberDetails.name} Has Stopped Thier Live Tracker !`,
+                body: `${memberDetails.name}'s background is being stopped . `,
+            });
+
+            // Return success response
+            return res.status(200).json({
+                message: 'Notification sent successfully',
+
+            });
+
+        } catch (error) {
+            console.error("Error assigning location:", error);
+            return res.status(500).json({ error: 'Failed to assign location' });
+        }
     }
+
 
 
 

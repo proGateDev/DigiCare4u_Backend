@@ -50,85 +50,54 @@ module.exports = {
   //     res.status(500).json({ error: "Internal Server Error" });
   //   }
   // },
-
   getUserMembers: async (req, res) => {
     try {
       const userId = mongoose.Types.ObjectId(req.userId); // Convert the userId to ObjectId
-
-      // Fetch members associated with the userId using aggregate
-      const userData = await memberModel.aggregate([
-        {
-          $match: {
-            parentUser: userId, // Filter by the user's ID
-          },
-        },
-        {
-          $lookup: {
-            from: "trackinghistories", // Collection name in lowercase
-            localField: "_id", // Field from member model (member's _id)
-            foreignField: "memberId", // Field from trackingHistories model (memberId)
-            as: "trackingHistories", // Output array field
-          },
-        },
-        {
-          $unwind: {
-            path: "$trackingHistories",
-            preserveNullAndEmptyArrays: true, // Keep members even if they have no tracking history
-          },
-        },
-        {
-          $sort: {
-            "location.updatedAt": -1, // Sort by location.updatedAt first
-          },
-        },
-        {
-          $group: {
-            _id: "$_id",
-            name: { $first: "$name" },
-            email: { $first: "$email" },
-            mobile: { $first: "$mobile" },
-            groupType: { $first: "$groupType" },
-            location: { $first: "$location" },
-            latestTracking: { $first: "$trackingHistories" }, // Get the latest tracking history
-          },
-        },
-        {
-          $project: {
-            _id: 1,
-            name: 1,
-            email: 1,
-            mobile: 1,
-            groupType: 1,
-            location: 1,
-            latestTracking: {
-              $cond: {
-                if: { $ne: ["$latestTracking", null] }, // Check if latestTracking is not null
-                then: "$latestTracking",
-                else: null, // or some default value
-              },
-            },
-          },
-        },
-      ]);
-
-      if (!userData.length) {
+  
+      // Fetch all members for the user
+      const members = await memberModel.find({ parentUser: userId }, "name mobile locationStatus channelId");
+  
+      if (!members.length) {
         return res.status(404).json({
           status: 404,
           message: "No members added yet, please add members to track them.",
         });
       }
-
+  
+      // Fetch the latest tracking history for each member
+      const membersWithLastLocation = await Promise.all(
+        members.map(async (member) => {
+          const latestTracking = await trackingHistoryModel
+            .findOne({ memberId: member._id })
+            .sort({ timestamp: -1 }) // Sort by updatedAt in descending order
+            .select("addressDetails.locality timestamp"); // Only fetch location and updatedAt fields
+  
+          return {
+            name: member.name,
+            mobile: member.mobile,
+            locationStatus: member.locationStatus,
+            channelId: member.channelId,
+            location: member.location,
+            // lastLocation: latestTracking ? latestTracking.location : null,
+            lastUpdated: latestTracking ? latestTracking?.timestamp : null,
+            lastLocation: latestTracking ? latestTracking?.addressDetails?.locality : null,
+          };
+        })
+      );
+  
       res.status(200).json({
         status: 200,
         message: "Members found successfully",
-        members: userData,
-        count: userData.length,
+        members: membersWithLastLocation,
+        count: membersWithLastLocation.length,
       });
     } catch (error) {
       console.error("Error fetching user data:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
+  
+  
 
   createUserMember: async (req, res) => {
     try {
@@ -2165,6 +2134,64 @@ module.exports = {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   },
+
+
+
+
+
+
+
+
+
+
+
+  getUserMembersWithoutDailyTasks: async (req, res) => {
+    try {
+      console.log('Fetching members without daily geo-fenced tasks');
+
+      // Extract user ID from the token (assumes middleware sets req.userId)
+      const userId = req.userId;
+
+      // Find all members associated with the user
+      const members = await memberModel.find({ parentUser: userId });
+      console.log('=========== || ===================', members.length);
+
+      // Get all member IDs
+      const memberIds = members.map((member) => member._id);
+
+      // Find all members who are assigned daily geo-fenced tasks
+      const assignedMembers = await assignmentModel.find({
+        memberId: { $in: memberIds },
+        type: 'daily', // Filtering by the type 'daily'
+      });
+
+      // Get the member IDs that have daily tasks assigned
+      const assignedMemberIds = assignedMembers.map((assignment) => assignment.memberId.toString());
+
+      // Filter out members who are not assigned a daily geo-fenced task
+      const unassignedMembers = members.filter((member) =>
+        !assignedMemberIds.includes(member._id.toString())
+      );
+
+      // Return the list of unassigned members
+      return res.status(200).json({
+        success: 200,
+        message: 'Successfully fetched members without geo-fenced tasks',
+        count: unassignedMembers.length,
+        data: unassignedMembers,
+      });
+    } catch (error) {
+      console.error("Error fetching members without daily geo-fenced tasks:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch members without daily geo-fenced tasks.",
+      });
+    }
+  },
+
+
+
+
 
 
 };

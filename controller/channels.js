@@ -4,6 +4,7 @@
 const { message } = require("../admin/validation/superAdminCreation");
 const memberModel = require("../member/models/profile");
 const attendanceModel = require("../member/models/attendance");
+const trackingHistoryModel = require("../model/trackingHistory");
 const channelModel = require("../model/channels");
 const channelMemberModel = require("../model/channelsMembers");
 const userModel = require("../user/models/profile");
@@ -93,61 +94,61 @@ module.exports = {
 
   getChannelMembers: async (req, res) => {
     try {
-
       const userId = req.userId; // Extracted from JWT middleware
       const { channelId } = req.query;
-      console.log('fetching channeld : ', channelId, userId);
-      // console.log(channelId);
-
-      // Step 1: Find all members in channels created by the logged-in user
+  
+      
+      // Step 1: Find all members in the channel created by the logged-in user
       const channelMembers = await channelMemberModel
-        .find({ addedBy: userId, channelId: channelId })
-        .populate("channelId", "name description") // Populate channel details
-        .populate("memberId") // Populate member details
-        // .select("channelId memberId role addedBy addedByModel joinedAt "); // Select specific fields
-      console.log('channelMembers', channelMembers);
-
-      // const channelMembers_ = await channelMemberModel
-      //   .find({ id: channelId })
-      // console.log('channelMembers_', channelMembers_);
-
-
+      .find({ addedBy: userId, channelId: channelId })
+      .populate("channelId", "name description") // Populate channel details
+      .populate("memberId", "id name mobile locationStatus") // Populate member details
+      .exec();
+      // console.log("channelMembers:", channelMembers[0].memberId.name);
+  
       if (!channelMembers.length) {
         return res.status(404).json({
           status: 404,
           message: "No members found for channels added by the user.",
         });
       }
-
-      // Step 2: Format the response data
-      const result = channelMembers
-      .filter((channelMember) => channelMember.memberId?._id) // Filter out entries where memberId is null or undefined
-      .map((channelMember) => ({
-        channelId: channelMember.channelId?._id,
-        channelName: channelMember.channelId?.name,
-        channelDescription: channelMember.channelId?.description,
-        memberId: channelMember.memberId?._id, // Ensure you're accessing the memberId properly
-        memberName: channelMember.memberId?.name,
-        memberEmail: channelMember.memberId?.email,
-        memberMobile: channelMember.memberId?.mobile,
-        role: channelMember.role,
-        addedBy: channelMember.addedBy,
-        addedByModel: channelMember.addedByModel,
-        joinedAt: channelMember.joinedAt,
-      }));
-    
-
+  
+      // Step 2: Fetch the latest tracking history for each member
+      const membersWithLastLocation = await Promise.all(
+        channelMembers.map(async (channelMember) => {
+          const member = channelMember.memberId; // Extract member details
+          const latestTracking = await trackingHistoryModel
+            .findOne({ memberId: member?.id })
+            .sort({ updatedAt: -1 }) // Sort by updatedAt in descending order
+            .select("addressDetails.locality timestamp"); // Only fetch location and updatedAt fields
+  
+          return {
+            channelId: channelMember.channelId._id,
+            channelName: channelMember.channelId.name,
+            channelDescription: channelMember.channelId.description,
+            memberId: channelMember?.memberId?.id,
+            name: member?.name,
+            mobile: member?.mobile,
+            locationStatus: member?.locationStatus,
+            lastUpdated: latestTracking ? latestTracking?.timestamp : null,
+            lastLocation: latestTracking ? latestTracking?.addressDetails?.locality : null,
+          };
+        })
+      );
+  
+      // Step 3: Respond with the processed data
       res.status(200).json({
         status: 200,
         message: "Members fetched successfully.",
-        data: channelMembers,
-        totalMembers: result.length,
+        data: membersWithLastLocation,
+        totalMembers: membersWithLastLocation.length,
       });
     } catch (error) {
       console.error("Error fetching channel members:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
+  
 
 
 

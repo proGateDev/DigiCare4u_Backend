@@ -155,15 +155,15 @@ module.exports = {
     assignmentGeoFencing: async (req, res) => {
         try {
             const userId = req.userId;
-            const { dateTime, eventName, type } = req.body;
+            const { dateTime, eventName, type, assignedMembers } = req.body;
 
+            console.log(' ---- dateTime-----------', dateTime);
             // Get the parent user details and their members
             const parentUserDetails = await userModel.findById({ _id: userId });
             const parentUserMembers = await memberModel.find({ parentUser: parentUserDetails?._id });
 
             // Calculate the average coordinates of the parent user’s geo-fenced area
             const avgCoordinates = getAverageCoordinates(parentUserDetails?.geoFenced?.coordinates);
-            console.log(' ---- parentUserMembers length -----------', parentUserMembers.length);
 
             // Get the location name from the average coordinates
             let locationNameDecodedResponse = await getAddress(avgCoordinates[0], avgCoordinates[1]);
@@ -176,11 +176,13 @@ module.exports = {
 
             // Iterate over all members and create a new assignment for each one
             const assignments = [];
-            for (const member of parentUserMembers) {
+            for (const member of assignedMembers) {
+                console.log('ids -------', member);
+
                 // Check if an assignment with type 'daily' already exists for this member
                 const existingDailyAssignment = await assignmentModel.findOne({
-                    memberId: member._id,
-                    type: 'daily'
+                    memberId: member,
+                    type: 'geo-fenced'
                 });
 
                 // If an assignment with type 'daily' exists, skip creating a new one for this member
@@ -188,21 +190,39 @@ module.exports = {
                     console.log(`Daily assignment already exists for member ${member._id}.Skipping.`);
                     continue; // Skip to the next member
                 }
+                const memberDetails = await memberModel.findOne({ _id: member })
+                console.log('memberDetails', memberDetails);
 
+
+                let time = dateTime?.startTime + '-' + dateTime?.endTime
                 // Create a new assignment
                 const newAssignment = new assignmentModel({
-                    memberId: member._id,  // Set member ID for each assignment
+                    memberId: member,  // Set member ID for each assignment
                     userId,
                     locationName: locationNameDecoded,
                     coordinates: { lat: avgCoordinates[0], lng: avgCoordinates[1] },
                     assignedAt: dateTime?.date,
-                    time: dateTime?.time,
+                    time: time,
                     eventName,
                     type: type || 'default',  // Set a default type if not provided
                 });
 
                 // Add the new assignment to the assignments array
                 assignments.push(newAssignment);
+
+
+
+                sendFirebaseNotification({
+                    fcmToken: memberDetails?.fcmToken,
+
+                    title: `${parentUserDetails?.name} has setup geo-fenced for you !`,
+                    body: `${locationNameDecoded} is your geo-fenced zone`
+                })
+
+
+
+
+
             }
 
             // Save all the assignments to the database
@@ -499,7 +519,7 @@ module.exports = {
             const memberAssignments = await assignmentModel.find({
                 memberId: userId,
                 // assignedAt: { $gte: start, $lte: end }, // Filter by assignmentDate within the date range
-                type: 'daily', // Only fetch assignments with type 'Daily'
+                type: 'geo-fenced', // Only fetch assignments with type 'Daily'
             });
             // console.log('memberAssignments', memberAssignments);
 
@@ -646,7 +666,7 @@ module.exports = {
 
 
 
-    
+
     memberStopLiveTracker: async (req, res) => {
         try {
             const memberId = req.userId;  // Get the memberId from the authenticated user

@@ -45,6 +45,8 @@ const assignmentSchema = new mongoose.Schema({
     },
     type: {
         type: String,
+        enum: [ 'scheduled', 'geo-fenced', 'live'],
+
         default: 'null',
     },
 

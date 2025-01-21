@@ -2,11 +2,33 @@ const assignmentModel = require("../../model/assignment");
 const trackingHistoryModel = require("../../model/trackingHistory");
 const getAddressFromCoordinates = require("../../service/geoCode");
 const userModel = require("../../user/models/profile");
+const attendanceModel = require("../models/attendance");
 const memberModel = require("../models/profile");
 const superAdminCreationValidation = require("../validation/superAdminCreation")
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+
 //==================================================
+// const turf = require('@turf/turf');
+
+
+function isPointWithinGeofence(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // Radius of the earth in meters
+  const dLat = (lat2 - lat1) * Math.PI / 180; // Convert degrees to radians
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c; // Distance in meters
+  return distance; // This will be in meters
+};
+
+
+
+//==================================================
+
+
 
 module.exports = {
 
@@ -150,16 +172,72 @@ module.exports = {
   },
 
 
+  // userLiveLocationUpdate: async (req, res) => {
+  //   try {
+  //     const memberId = req.userId; // Get the user ID from the request (assuming it's available in the request object)
+
+  //     const {
+  //       latitude,
+  //       longitude,
+  //       addressDetails,
+  //       notes
+  //     } = req.body;
+
+  //     // Ensure the member exists
+  //     const member = await memberModel.findById(memberId);
+  //     if (!member) {
+  //       return res.status(404).json({ error: 'Member not found' });
+  //     }
+
+  //     // Create the location object
+  //     const location = {
+  //       type: 'Point',
+  //       coordinates: [latitude,longitude ], // Ensure [longitude, latitude] order
+  //     };
+
+  //     // Create or update tracking history for the live location
+  //     const trackingData = {
+  //       memberId,
+  //       location,
+  //       addressDetails: {
+  //         preferredAddress: addressDetails?.preferredAddress || 'NOT FOUND',
+  //         address: addressDetails?.address || 'NOT FOUND',
+  //         locality: addressDetails?.locality || 'NOT FOUND',
+  //         street: addressDetails?.street || 'NOT FOUND',
+  //         neighborhood: addressDetails?.neighborhood || 'NOT FOUND',
+  //         region: addressDetails?.region || 'NOT FOUND',
+  //         district: addressDetails?.district || 'NOT FOUND',
+  //         country: addressDetails?.country || 'NOT FOUND',
+  //         postcode: addressDetails?.postcode || 'NOT FOUND',
+  //         landmarks: addressDetails?.landmarks || [],
+  //       },
+  //       timestamp: new Date(),
+  //       trackingType: 'live',
+  //       notes: notes || '',
+  //       isWithinGeofence: false, // Default; update logic for geofence if applicable
+  //     };
+
+  //     // Save the tracking history
+  //     const trackingHistory = new trackingHistoryModel(trackingData);
+  //     await trackingHistory.save();
+
+  //     res.status(201).json({
+  //       message: 'Live location updated successfully',
+  //       trackingHistory,
+  //     });
+  //   } catch (error) {
+  //     console.error(error);
+  //     res.status(500).json({ error: 'Internal server error' });
+  //   }
+  // },
+
+
+
   userLiveLocationUpdate: async (req, res) => {
     try {
-      const memberId = req.userId; // Get the user ID from the request (assuming it's available in the request object)
 
-      const {
-        latitude,
-        longitude,
-        addressDetails,
-        notes
-      } = req.body;
+      const memberId = req.userId; // Get the user ID from the request (assuming it's available in the request object)
+      const { latitude, longitude, addressDetails, notes } = req.body;
 
       // Ensure the member exists
       const member = await memberModel.findById(memberId);
@@ -167,11 +245,84 @@ module.exports = {
         return res.status(404).json({ error: 'Member not found' });
       }
 
+      // Fetch assigned geofence and punch-out time for the member
+      const assignedTask = await assignmentModel.findOne({
+        memberId,
+        type: 'geo-fenced'
+      });
+      if (!assignedTask) {
+        return res.status(404).json({ error: 'No assigned task with geofence found for the member' });
+      }
+
+      const { coordinates, time } = assignedTask;
+
       // Create the location object
       const location = {
         type: 'Point',
-        coordinates: [latitude,longitude ], // Ensure [longitude, latitude] order
+        coordinates: [longitude, latitude], // Ensure [longitude, latitude] order
       };
+
+      // const geofence = {
+      //   type: 'Point',
+      //   coordinates: [coordinates.lng, coordinates.lat], // Ensure [longitude, latitude] order
+      // };
+
+      // Check if the member is within the geofence
+      const isWithinGeofence = isPointWithinGeofence(latitude, longitude, coordinates.lat, coordinates.lng);
+
+      // Determine if punch-out conditions are met
+      const currentTime = new Date();
+      let punchOutRecorded = false;
+
+      // Parse punch-out time from the `time.split('-')[1]`
+      const punchOutTimeString = time.split('-')[1]; // Assuming the format is 'HH:mm'
+      const [hours, minutes] = punchOutTimeString.split(':').map(Number); // Extract hours and minutes
+
+      // Create a Date object for today's punch-out time
+      const punchOutTime = new Date(currentTime);
+      punchOutTime.setHours(hours, minutes, 0, 0); // Set punch-out hours and minutes to today's date
+
+      // Add 15 minutes to the punch-out time for grace period
+      const punchOutGraceTime = new Date(punchOutTime);
+      punchOutGraceTime.setMinutes(punchOutTime.getMinutes() + 30);
+
+      console.log('currentTime:', currentTime);
+      console.log('punchOutTime:', punchOutTime);
+      console.log('punchOutGraceTime:', punchOutGraceTime, isWithinGeofence);
+
+      // Check if current time has exceeded the punch-out time (including grace period)
+      // Check if current time has exceeded the punch-out time (including grace period)
+      if (isWithinGeofence < 20 && currentTime >= punchOutTime && currentTime <= punchOutGraceTime) {
+        punchOutRecorded = true;
+        
+        // Update the attendance record for the member for today
+        const todayDate = new Date();
+        console.log('Punch-out conditions met');
+        todayDate.setHours(0, 0, 0, 0); // Set to start of the day
+
+        const _punchOutUpdate = await attendanceModel.findOne({
+          memberId: req.userId, // Match the member
+          punchInTime: { $lt: todayDate }, // Ensure punchInTime is less than todayDate
+          // punchInTime: todayDate, // Ensure it's for today
+        },)
+        // console.log('_punchOutUpdate',_punchOutUpdate,assignedTask?.id);
+        const punchOutUpdate = await attendanceModel.findOneAndUpdate(
+          {
+            // _id: assignedTask._id,
+            memberId: req.userId, // Match the member
+            punchInTime: { $gt: todayDate }, // Ensure punchInTime is less than todayDate
+          },
+          {
+            $set: { punchOutTime: currentTime }, // Update the punch-out time
+          },
+
+        );
+
+        console.log('Updated attendance record:', punchOutUpdate);
+      }
+
+      console.log('Punch-out recorded:', punchOutRecorded);
+
 
       // Create or update tracking history for the live location
       const trackingData = {
@@ -189,10 +340,11 @@ module.exports = {
           postcode: addressDetails?.postcode || 'NOT FOUND',
           landmarks: addressDetails?.landmarks || [],
         },
-        timestamp: new Date(),
+        timestamp: currentTime,
         trackingType: 'live',
         notes: notes || '',
-        isWithinGeofence: false, // Default; update logic for geofence if applicable
+        isWithinGeofence: isWithinGeofence ? true : false,
+        punchOutTime: punchOutRecorded ? currentTime : null, // Record punch-out time if conditions are met
       };
 
       // Save the tracking history

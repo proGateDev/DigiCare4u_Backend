@@ -34,6 +34,7 @@ exports.markAttendance = async (req, res) => {
             memberId,
             parentId, // Include parentId when creating the new record
             punchInTime: new Date(),
+            punchOutTime: new Date(),
             locationDuringPunchIn: { latitude, longitude }
         });
 

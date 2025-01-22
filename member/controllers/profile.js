@@ -259,7 +259,7 @@ module.exports = {
       // Create the location object
       const location = {
         type: 'Point',
-        coordinates: [longitude, latitude], // Ensure [longitude, latitude] order
+        coordinates: [latitude,longitude], // Ensure [longitude, latitude] order
       };
 
       // const geofence = {

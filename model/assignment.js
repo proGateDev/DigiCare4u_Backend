@@ -47,7 +47,7 @@ const assignmentSchema = new mongoose.Schema({
         type: String,
         enum: [ 'scheduled', 'geo-fenced', 'live'],
 
-        default: 'null',
+        default: 'scheduled',
     },
 
     // Optional field for tracking if the member entered or exited the assigned location

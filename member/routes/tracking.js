@@ -12,6 +12,7 @@ router.get("/records-for-map",checkUserToken, controller.getMemberLocationsRecor
 
 // router.get("/records",checkUserToken, controller.getMemberLocations); 
 
+router.get("/live-location-tracking-insight-report",checkUserToken, controller.fetchMemberLiveLocationInsightReport); 
 
 
 module.exports = router;

@@ -73,6 +73,7 @@ module.exports = {
             .select("addressDetails.locality timestamp"); // Only fetch location and updatedAt fields
   
           return {
+            memberId: member.id,
             name: member.name,
             mobile: member.mobile,
             locationStatus: member.locationStatus,
@@ -1855,7 +1856,7 @@ module.exports = {
       // Handle case where no live location data is found
       if (!liveLocation || liveLocation.length === 0) {
         return res
-          .status(404)
+          .status(200)
           .json({ error: "Live location not found for this member" });
       }
 

@@ -249,8 +249,8 @@ module.exports = {
 
     fetchMemberLiveLocationInsightReport: async (req, res) => {
         try {
-          const userId = req.userId; // Assuming userId is available in the request object
-          const { memberId, selectedDate, locationType } = req.body; // Extract memberId and selectedDate from request params
+          const memberId = req.userId; // Assuming userId is available in the request object
+          const {  selectedDate, locationType } = req.body; // Extract memberId and selectedDate from request params
     
           console.log("Selected Date:", selectedDate);
     

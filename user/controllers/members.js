@@ -53,17 +53,17 @@ module.exports = {
   getUserMembers: async (req, res) => {
     try {
       const userId = mongoose.Types.ObjectId(req.userId); // Convert the userId to ObjectId
-  
+
       // Fetch all members for the user
       const members = await memberModel.find({ parentUser: userId }, "name mobile locationStatus channelId");
-  
+
       if (!members.length) {
         return res.status(404).json({
           status: 404,
           message: "No members added yet, please add members to track them.",
         });
       }
-  
+
       // Fetch the latest tracking history for each member
       const membersWithLastLocation = await Promise.all(
         members.map(async (member) => {
@@ -71,7 +71,7 @@ module.exports = {
             .findOne({ memberId: member._id })
             .sort({ timestamp: -1 }) // Sort by updatedAt in descending order
             .select("addressDetails.locality timestamp"); // Only fetch location and updatedAt fields
-  
+
           return {
             memberId: member.id,
             name: member.name,
@@ -85,7 +85,7 @@ module.exports = {
           };
         })
       );
-  
+
       res.status(200).json({
         status: 200,
         message: "Members found successfully",
@@ -97,8 +97,8 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
-  
-  
+
+
 
   createUserMember: async (req, res) => {
     try {
@@ -839,7 +839,7 @@ module.exports = {
         .populate("memberId");
 
       if (!channelMembers.length) {
-        return res.status(404).json({
+        return res.status(200).json({
           success: false,
           message: "No members found for the specified channel.",
         });
@@ -849,7 +849,7 @@ module.exports = {
       const memberIds = channelMembers.map((member) =>
         ObjectId(member.memberId._id)
       );
-      console.log("memberIds", memberIds);
+      // console.log("memberIds", memberIds);
 
       // Fetch attendance records for the given date range for these members
       const attendanceRecords = await attendanceModel.find({
@@ -891,6 +891,9 @@ module.exports = {
               new Date(record.punchInTime).toISOString().split("T")[0] ===
               formattedDate
           );
+          const attendanceForDatePunchOut = memberAttendance.find(
+            (record) =>
+              new Date(record.punchOutTime))
 
           if (attendanceForDate) {
             totalPresent++;
@@ -901,12 +904,20 @@ module.exports = {
           return {
             date: formattedDate,
             status: attendanceForDate ? "present" : "absent",
-            time: attendanceForDate
+            punchIn: attendanceForDate
               ? new Date(attendanceForDate.punchInTime).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
               })
               : null,
+              punchOut: attendanceForDatePunchOut
+              ? new Date(attendanceForDatePunchOut.punchOutTime).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+              : null
+            
+              
           };
         });
 
@@ -999,9 +1010,10 @@ module.exports = {
 
   getChannelMembersAssignmentsByDateRange: async (req, res) => {
     try {
+
       const userId = req.userId;
-      const channelId = req.params.channelId;
-      const { startDate, endDate } = req.query;
+      const { startDate, endDate, channelId } = req.body;
+      console.log('-------------------- }}}------------------------>', startDate, endDate, channelId);
 
       if (!startDate || !endDate) {
         return res.status(400).json({
@@ -1019,14 +1031,21 @@ module.exports = {
         .populate("memberId");
 
       if (!members.length) {
-        return res.status(404).json({
+        return res.status(200).json({
           success: false,
           message: "No members found for the user in the specified channel.",
         });
       }
 
-      const memberIds = members?.map((member) => member?.memberId?._id);
-      console.log("memberIds", memberIds);
+      const memberIds = members?.map((member) => member?.memberId?.id);
+      // console.log("memberIds", memberIds);
+
+      if (!memberIds || memberIds.length === 0) {
+        return res.status(200).json({
+          success: false,
+          message: "No valid member IDs found for the specified channel.",
+        });
+      }
 
       const assignments = await assignmentModel.find({
         memberId: { $in: memberIds },
@@ -1034,11 +1053,8 @@ module.exports = {
           $gte: new Date(`${startOfRange}`),
           $lte: new Date(`${endOfRange}`),
         },
-        // assignedAt: {
-        //   $gte: startOfRange,
-        //   $lte: endOfRange,
-        // },
       });
+
       const response = members.map((member) => {
         // Filter assignments for the current member
         const memberAssignments = assignments.filter((assignment) => {
@@ -1073,8 +1089,6 @@ module.exports = {
       return res.status(200).json({
         success: true,
         data: response,
-        // count: assignments.length,
-        // assignments
       });
     } catch (error) {
       console.error(
@@ -1087,6 +1101,60 @@ module.exports = {
       });
     }
   },
+
+  getInvalidChannelMembers: async (req, res) => {
+    try {
+      const { channelId } = req.body;
+
+      if (!channelId) {
+        return res.status(400).json({
+          success: false,
+          message: "Channel ID is required.",
+        });
+      }
+
+      // Fetch all channel members for the given channel
+      const channelMembers = await channelMemberModel.find({ channelId });
+
+      if (!channelMembers.length) {
+        return res.status(404).json({
+          success: false,
+          message: "No members found in the specified channel.",
+        });
+      }
+
+      // Extract member IDs from channel members
+      const channelMemberIds = channelMembers.map((member) => member.memberId);
+
+      // Fetch valid member IDs from the member model
+      const validMembers = await memberModel.find({
+        _id: { $in: channelMemberIds },
+      });
+
+      const validMemberIds = validMembers.map((member) => member._id.toString());
+
+      // Find IDs that are in channelMemberModel but not in memberModel
+      const invalidMemberIds = channelMemberIds.filter(
+        (id) => !validMemberIds.includes(id.toString())
+      );
+
+      // Response
+      return res.status(200).json({
+        success: true,
+        invalidMemberIds,
+        message: invalidMemberIds.length
+          ? "Invalid member IDs found."
+          : "All members are valid.",
+      });
+    } catch (error) {
+      console.error("Error fetching invalid channel members:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Server error. Please try again later.",
+      });
+    }
+  },
+
 
   getMemberAssignmentById: async (req, res) => {
     try {

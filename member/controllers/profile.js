@@ -102,10 +102,11 @@ module.exports = {
       const {
         latitude,
         longitude,
-        addressDetails,
+        locationDetails,
         assignmentId,
         notes
       } = req.body;
+      console.log('locationDetails====', locationDetails);
 
       // if (!assignmentId || !memberId || !userId || !location || !location.coordinates) {
       //   return res.status(400).json({ error: 'Missing required fields' });
@@ -139,16 +140,16 @@ module.exports = {
         // userId,
         location,
         addressDetails: {
-          preferredAddress: addressDetails?.preferredAddress || 'NOT FOUND',
-          address: addressDetails?.address || 'NOT FOUND',
-          locality: addressDetails?.locality || 'NOT FOUND',
-          street: addressDetails?.street || 'NOT FOUND',
-          neighborhood: addressDetails?.neighborhood || 'NOT FOUND',
-          region: addressDetails?.region || 'NOT FOUND',
-          district: addressDetails?.district || 'NOT FOUND',
-          country: addressDetails?.country || 'NOT FOUND',
-          postcode: addressDetails?.postcode || 'NOT FOUND',
-          landmarks: addressDetails?.landmarks || [],
+          preferredAddress: locationDetails?.preferredAddress || 'NOT FOUND',
+          address: locationDetails?.address || 'NOT FOUND',
+          locality: locationDetails?.locality || 'NOT FOUND',
+          street: locationDetails?.street || 'NOT FOUND',
+          neighborhood: locationDetails?.neighborhood || 'NOT FOUND',
+          region: locationDetails?.region || 'NOT FOUND',
+          district: locationDetails?.district || 'NOT FOUND',
+          country: locationDetails?.country || 'NOT FOUND',
+          postcode: locationDetails?.postcode || 'NOT FOUND',
+          landmarks: locationDetails?.landmarks || [],
         },
         timestamp: new Date(),
         trackingType: 'scheduled',

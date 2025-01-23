@@ -41,7 +41,8 @@ router.get("/attendance/records_new", checkUserToken, controller.getChannelMembe
 
 
 router.get("/daily-assignments/:channelId", checkUserToken, controller.getChannelMembersDailyAssignments);
-router.post("/assignments-records/:channelId", checkUserToken, controller.getChannelMembersAssignmentsByDateRange);
+router.post("/assignments-records", checkUserToken, controller.getChannelMembersAssignmentsByDateRange);
+router.post("/getInvalidChannelMembers", checkUserToken, controller.getInvalidChannelMembers);
 router.get("/assignments/:assignmentId/:memberId", checkUserToken, controller.getUsersMemberAssignmentById);
 
 router.get('/assignments_/:startDate/:endDate/:memberId', checkUserToken,controller.getUsersMemberAssignments);

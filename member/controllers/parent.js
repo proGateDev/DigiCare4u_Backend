@@ -55,7 +55,7 @@ module.exports = {
   
       const memberParentUserDetails = await userModel.findById(memberDetails?.parentUser);
       const geofenceCoordinates = memberParentUserDetails?.geoFenced?.coordinates; // Should be GeoJSON
-      console.log('Original geofenceCoordinates',  JSON.stringify(geofenceCoordinates, null, 2));
+      // console.log('Original geofenceCoordinates',  JSON.stringify(geofenceCoordinates, null, 2));
   
       if (!geofenceCoordinates || geofenceCoordinates.length === 0) {
         return res.status(404).json({
@@ -71,22 +71,22 @@ module.exports = {
         )
       : [geofenceCoordinates.map(([lat, lng]) => [lng, lat])];
     
-      console.log('Corrected geofenceCoordinates', JSON.stringify(correctedCoordinates, null, 2));
+      // console.log('Corrected geofenceCoordinates', JSON.stringify(correctedCoordinates, null, 2));
   
       const userPoint = {
         type: "Point",
         coordinates: [parseFloat(longitude), parseFloat(latitude)], // Correct order
       };
-      console.log('userPoint', JSON.stringify(userPoint, null, 2));
+      // console.log('userPoint', JSON.stringify(userPoint, null, 2));
   
       const polygon = {
         type: "Polygon",
         coordinates: correctedCoordinates, // Correct format
       };
-      console.log('polygon', JSON.stringify(polygon, null, 2));
+      // console.log('polygon', JSON.stringify(polygon, null, 2));
   
       const isWithin = geojsonUtils.pointInPolygon(userPoint, polygon);
-      console.log('isWithin', isWithin);
+      // console.log('isWithin', isWithin);
   
       return res.status(200).json({
         status: 200,

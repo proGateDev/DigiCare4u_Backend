@@ -364,70 +364,121 @@ module.exports = {
 
 
 
+      // const { coordinates, time } = assignedTask;
+      console.log('assignedTask', assignedTask);
       if (assignedTask) {
-        // If an assigned task is found, handle the geofence logic
-        const { coordinates, time } = assignedTask;
+        if (assignedTask) {
+          const startOfToday = new Date();
+          startOfToday.setHours(0, 0, 0, 0); // Set to the start of the day (midnight)
 
-        // Create the location object
-        const location = {
-          type: 'Point',
-          coordinates: [latitude, longitude], // Ensure [longitude, latitude] order
-        };
+          // Query to find attendance records created after the start of today
+          const attendanceToday = await attendanceModel.findOne({
+            memberId: req.userId,
+            createdAt: { $gte: startOfToday }, // Use $gte to include records from midnight onwards
+          });
+          console.log('attendanceToday', attendanceToday);
 
-        // Check if the member is within the geofence
-        const isWithinGeofence = isPointWithinGeofence(latitude, longitude, coordinates.lat, coordinates.lng);
+          const { coordinates, time } = assignedTask;
 
-        // Punch-out time logic and other conditions remain the same as before
-        const currentTime = new Date();
-        let punchOutRecorded = false;
+          // Parse the assigned task's time range (e.g., "09:00-17:00")
+          const [startTime, endTime] = time.split('-').map(t => {
+            const [hours, minutes] = t.split(':').map(Number);
+            const parsedTime = new Date();
+            parsedTime.setHours(hours, minutes, 0, 0); // Set hours and minutes
+            return parsedTime;
+          });
 
-        const punchOutTimeString = time.split('-')[1]; // Assuming the format is 'HH:mm'
-        const [hours, minutes] = punchOutTimeString.split(':').map(Number); // Extract hours and minutes
+          const currentTime = new Date();
+          const startGraceTime = new Date(startTime);
+          startGraceTime.setMinutes(startTime.getMinutes() + 60); // Grace period for punch-in (1 hour)
 
-        const punchOutTime = new Date(currentTime);
-        punchOutTime.setHours(hours, minutes, 0, 0); // Set punch-out hours and minutes to today's date
+          const endGraceTime = new Date(endTime);
+          endGraceTime.setMinutes(endTime.getMinutes() + 60); // Grace period for punch-out (1 hour)
 
-        const punchOutGraceTime = new Date(punchOutTime);
-        punchOutGraceTime.setMinutes(punchOutTime.getMinutes() + 30);
+          const location = {
+            type: 'Point',
+            coordinates: [latitude, longitude], // Ensure [longitude, latitude] order
+          };
 
-        if (isWithinGeofence < 20 && currentTime >= punchOutTime && currentTime <= punchOutGraceTime) {
-          punchOutRecorded = true;
+          const isWithinGeofence = isPointWithinGeofence(latitude, longitude, coordinates.lat, coordinates.lng);
 
-          const todayDate = new Date();
-          todayDate.setHours(0, 0, 0, 0); // Set to start of the day
+          let punchInRecorded = false;
+          let punchOutRecorded = false;
 
-          await attendanceModel.findOneAndUpdate(
-            {
-              memberId: req.userId,
-              punchInTime: { $gt: todayDate },
-            },
-            {
-              $set: { punchOutTime: currentTime },
+
+
+          // Punch-in logic
+          if (isWithinGeofence && currentTime >= startTime && currentTime <= startGraceTime) {
+            punchInRecorded = true;
+
+            if (!attendanceToday) {
+              // Record punch-in time
+              const newAttendance = new attendanceModel({
+                memberId: req.userId,
+                parentId: member?.parentUser,
+                punchInTime: currentTime,
+              });
+              await newAttendance.save();
+            } else if (!attendanceToday.punchInTime) {
+              // Update existing attendance record with punch-in time
+              await attendanceModel.findOneAndUpdate(
+                { memberId: req.userId, createdAt: { $gte: startOfToday } },
+                { $set: { punchInTime: currentTime } }
+              );
             }
-          );
+          }
+
+          console.log('conditions ---', isWithinGeofence,
+            currentTime >= endTime,
+            currentTime <= endGraceTime);
+
+
+
+          // Punch-out logic
+          if (isWithinGeofence && currentTime >= endTime && currentTime <= endGraceTime) {
+            punchOutRecorded = true;
+
+            if (attendanceToday && attendanceToday.punchInTime) {
+              // Update punch-out time
+              await attendanceModel.findOneAndUpdate(
+                { memberId: req.userId, createdAt: { $gte: startOfToday } },
+                { $set: { punchOutTime: currentTime } }
+              );
+            }
+          }
+
+          // Handle the live location tracking history for assigned task
+          const trackingData = {
+            memberId,
+            location,
+            addressDetails,
+            timestamp: currentTime,
+            trackingType: 'live',
+            notes,
+            isWithinGeofence: isWithinGeofence ? true : false,
+            punchInTime: punchInRecorded ? currentTime : null,
+            punchOutTime: punchOutRecorded ? currentTime : null,
+          };
+
+          const trackingHistory = new trackingHistoryModel(trackingData);
+          await trackingHistory.save();
+
+          res.status(201).json({
+            message: 'Live location updated successfully with geofence and time range handling',
+            trackingHistory,
+          });
+        } else {
+          console.log('Current time is outside the assigned task time range');
+
+          // Optional: Handle case where the current time is outside the range
+          res.status(400).json({
+            error: 'Current time is outside the assigned task time range',
+          });
         }
 
-        // Handle the live location tracking history for assigned task
-        const trackingData = {
-          memberId,
-          location,
-          addressDetails,
-          timestamp: currentTime,
-          trackingType: 'live',
-          notes,
-          isWithinGeofence: isWithinGeofence ? true : false,
-          punchOutTime: punchOutRecorded ? currentTime : null,
-        };
+      }
 
-        const trackingHistory = new trackingHistoryModel(trackingData);
-        await trackingHistory.save();
-
-        res.status(201).json({
-          message: 'Live location updated successfully with geofence handling',
-          trackingHistory,
-        });
-
-      } else {
+      else {
         // If no assigned task is found, proceed with normal posting (without geofence)
         const location = {
           type: 'Point',

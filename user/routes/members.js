@@ -81,6 +81,7 @@ router.post("/live-location-tracking-insight-report", checkUserToken, controller
 router.post("/last-location", checkUserToken, controller.getUserMembersLastLocation);
 //============ Get members Who are not assigned Daily Tasked =====================================
 router.get("/geo-fence-task/unassigned", checkUserToken, controller.getUserMembersWithoutDailyTasks);
+router.post("/geo-fence-task/delete", checkUserToken, controller.deleteAssignmentsForMembers);
 
 
 module.exports = router;

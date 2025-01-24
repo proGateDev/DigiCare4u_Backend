@@ -910,14 +910,14 @@ module.exports = {
                 minute: "2-digit",
               })
               : null,
-              punchOut: attendanceForDatePunchOut
+            punchOut: attendanceForDatePunchOut
               ? new Date(attendanceForDatePunchOut.punchOutTime).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
               })
               : null
-            
-              
+
+
           };
         });
 
@@ -2231,7 +2231,7 @@ module.exports = {
       // Find all members who are assigned daily geo-fenced tasks
       const assignedMembers = await assignmentModel.find({
         memberId: { $in: memberIds },
-        type: 'daily', // Filtering by the type 'daily'
+        type: 'geo-fenced', // Filtering by the type 'daily'
       });
 
       // Get the member IDs that have daily tasks assigned
@@ -2257,6 +2257,54 @@ module.exports = {
       });
     }
   },
+
+
+
+  deleteAssignmentsForMembers: async (req, res) => {
+    try {
+
+      // Extract memberIds and parentId from the request body
+      const parentId = req.userId;
+      // console.log('Deleting geo-fenced assignments for specified member IDs',parentId);
+
+      // Check if memberIds is provided and is an array
+
+      // Check if parentId is provided
+      if (!parentId) {
+        return res.status(200).json({
+          success: false,
+          message: 'Invalid parentId. Please provide the parentId.',
+        });
+      }
+
+      // Iterate over memberIds and delete geo-fenced assignments
+
+      // Find and delete assignments with type 'geo-fenced' and the specific parentId
+      const result = await assignmentModel.deleteMany({
+
+        userId: parentId,
+        type: 'geo-fenced',
+      });
+      console.log(`Deleted geo-fenced assignments for member ID:`);
+
+
+
+      return res.status(200).json({
+        success: true,
+        message: 'Processed deletion of geo-fenced assignments for the specified member IDs',
+        
+      
+      });
+    } catch (error) {
+      console.error('Error deleting geo-fenced assignments for members:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to delete geo-fenced assignments for members.',
+      });
+    }
+  }
+
+
 
 
 

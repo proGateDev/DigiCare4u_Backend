@@ -106,7 +106,7 @@ module.exports = {
         assignmentId,
         notes
       } = req.body;
-      console.log('locationDetails====', locationDetails);
+      // console.log('locationDetails====', locationDetails);
 
       // if (!assignmentId || !memberId || !userId || !location || !location.coordinates) {
       //   return res.status(400).json({ error: 'Missing required fields' });
@@ -159,8 +159,10 @@ module.exports = {
       };
 
       // Save the tracking history
+      console.log('saving ...............', assignmentId);
       const trackingHistory = new trackingHistoryModel(trackingData);
       await trackingHistory.save();
+      console.log('saved !');
 
       res.status(201).json({
         message: 'Tracking history updated successfully',
@@ -479,31 +481,31 @@ module.exports = {
       // }
 
 
-        // If no assigned task is found, proceed with normal posting (without geofence)
-        const location = {
-          type: 'Point',
-          coordinates: [latitude, longitude], // Ensure [longitude, latitude] order
-        };
+      // If no assigned task is found, proceed with normal posting (without geofence)
+      const location = {
+        type: 'Point',
+        coordinates: [latitude, longitude], // Ensure [longitude, latitude] order
+      };
 
-        // Create and save the location tracking history without geofence logic
-        const trackingData = {
-          memberId,
-          location,
-          addressDetails,
-          timestamp: new Date(),
-          trackingType: 'live',
-          notes,
-          isWithinGeofence: false, // No geofence logic here
-        };
+      // Create and save the location tracking history without geofence logic
+      const trackingData = {
+        memberId,
+        location,
+        addressDetails,
+        timestamp: new Date(),
+        trackingType: 'live',
+        notes,
+        isWithinGeofence: false, // No geofence logic here
+      };
 
-        const trackingHistory = new trackingHistoryModel(trackingData);
-        await trackingHistory.save();
+      const trackingHistory = new trackingHistoryModel(trackingData);
+      await trackingHistory.save();
 
-        res.status(201).json({
-          message: 'Live location updated successfully without geofence handling',
-          trackingHistory,
-        });
-      
+      res.status(201).json({
+        message: 'Live location updated successfully without geofence handling',
+        trackingHistory,
+      });
+
 
       //==========================================================
     } catch (error) {

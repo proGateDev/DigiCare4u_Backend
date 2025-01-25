@@ -1189,10 +1189,10 @@ module.exports = {
   },
   getUsersMemberAssignmentById: async (req, res) => {
     try {
-      console.log('------------------------- |||');
+      // console.log('------------------------- |||');
 
       const { assignmentId, memberId } = req.params; // Get assignmentId and memberId from request params
-      console.log("assignmentId, memberId ---", req.params, assignmentId, memberId);
+      // console.log("assignmentId, memberId ---", req.params, assignmentId, memberId);
 
       if (!memberId) {
         return res.status(400).json({ message: "Invalid memberId" });
@@ -1217,9 +1217,11 @@ module.exports = {
             });
 
             // Map tracking history to the desired format
+            console.log('trackingHistory', trackingHistory[0])
             const mappedTrackingHistory = trackingHistory.map((history) => ({
+
               coordinates: [history.location.coordinates[0], history.location.coordinates[1]],
-              locality: history.locality || "NOT FOUND",
+              locality: history?.addressDetails?.locality || "NOT FOUND",
               timestamp: history.timestamp,
             }));
 
@@ -2292,8 +2294,8 @@ module.exports = {
       return res.status(200).json({
         success: true,
         message: 'Processed deletion of geo-fenced assignments for the specified member IDs',
-        
-      
+
+
       });
     } catch (error) {
       console.error('Error deleting geo-fenced assignments for members:', error);

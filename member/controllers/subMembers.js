@@ -342,7 +342,10 @@ module.exports = {
   fetchTeamMemberLiveLocationInsightReport: async (req, res) => {
     try {
       // const mem = req.userId; // Assuming userId is available in the request object
-      const { selectedDate, locationType, memberId } = req.body; // Extract memberId and selectedDate from request params
+      const { selectedDate, locationType } = req.body; // Extract memberId and selectedDate from request params
+      let { memberId } = req.body; // Extract memberId and selectedDate from request params
+      // console.log('memberId', memberId);
+      if (memberId === 'null') { memberId = req?.userId }
 
       console.log("Selected Date:", selectedDate);
 
@@ -449,20 +452,27 @@ module.exports = {
 
   getMemberTeamAssignments: async (req, res) => {
     try {
+      console.log('- getMemberTeamAssignments ------------->>>');
 
-      const { startDate, endDate, teamMemberId } = req.params; // Get startDate and endDate from request params
-      const memberDetail= await memberModel.findOne({ _id: teamMemberId });
+      const { startDate, endDate, } = req.params; // Get startDate and endDate from request params
+
+      let { teamMemberId } = req.params; // Extract memberId and selectedDate from request params
+      // console.log('memberId', memberId);
+      if (teamMemberId === 'null') { teamMemberId = req?.userId }
+      console.log('- teamMemberId:', teamMemberId);
+
+
+      const memberDetail = await memberModel.findOne({ _id: teamMemberId });
       const parentId = memberDetail?.parentUser;
-      console.log('- memberDetail:',parentId._id);
 
       const start = new Date(startDate);
       const end = new Date(endDate);
-      
+
       // console.log('- ||||||||||||||| _______:',memberDetail.parentUser);
       if (isNaN(start) || isNaN(end)) {
         return res.status(400).json({ message: 'Invalid date format' });
       }
-     
+
       const memberAssignments = await assignmentModel.find({
         memberId: teamMemberId,
         userId: parentId,

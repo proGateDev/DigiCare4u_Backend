@@ -876,6 +876,7 @@ module.exports = {
         const { _id, name, email } = member.memberId;
 
         // Filter attendance records for the current member
+        console.log('attendanceRecords', attendanceRecords);
         const memberAttendance = attendanceRecords.filter(
           (record) => record.memberId.toString() === _id.toString()
         );
@@ -934,6 +935,8 @@ module.exports = {
       return res.status(200).json({
         success: true,
         count: result.length,
+        // attendanceRecords,
+        // memberIds
         attendance: result,
       });
     } catch (error) {

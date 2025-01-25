@@ -2,48 +2,138 @@
 // Punch-in for a member
 const Attendance = require('../models/attendance'); // Import the attendance model
 const memberModel = require('../../member/models/profile'); // Import the attendance model
+const assignmentModel = require('../../model/assignment'); // Import the attendance model
+const attendanceModel = require('../models/attendance');
+const trackingHistoryModel = require('../../model/trackingHistory');
 
 exports.markAttendance = async (req, res) => {
     try {
         const memberId = req.userId;
         const { parentId, latitude, longitude } = req.body;
-
-        console.log('req.body--------', parentId);
+        const isWithinGeofence = true
 
         // Get today's date (ignoring time)
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Set to the beginning of the day
-        const memberParent = await memberModel.findOne({ })
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0); // Set to the start of the day (midnight)
 
-        // Check if attendance for today already exists
-        const existingAttendance = await Attendance.findOne({
+        // Find assigned task for the member
+        // console.log('memberId--------', memberId);
+        const assignedTask = await assignmentModel.findOne({
             memberId,
-            parentId, // Ensure attendance is unique per member and user
-            createdAt: { $gte: today } // Check attendance for today
+            type: 'geo-fenced'
+
+        });
+        if (!assignedTask) {
+            return res.status(200).json({ message: 'No assigned task found for the member.' });
+        }
+
+        const { coordinates, time } = assignedTask;
+        console.log('time--------', time);
+        const [startTime, endTime] = time.split('-').map(t => {
+            const [hours, minutes] = t.split(':').map(Number);
+            const parsedTime = new Date();
+            parsedTime.setHours(hours, minutes, 0, 0); // Set hours and minutes
+            return parsedTime;
         });
 
-        if (existingAttendance) {
-            // If attendance already exists, return a response
-            return res.status(200).json({
-                message: 'Attendance already marked for today.',
-                existingAttendance,
-                alreadyMarked: true,
-            });
+        const currentTime = new Date();
+        const startGraceTime = new Date(startTime);
+        startGraceTime.setMinutes(startTime.getMinutes() + 360); // Grace period for punch-in (1 hour)
+
+        const endGraceTime = new Date(endTime);
+        endGraceTime.setMinutes(endTime.getMinutes() + 60); // Grace period for punch-out (1 hour)
+
+        const location = {
+            type: 'Point',
+            coordinates: [longitude, latitude], // Ensure [longitude, latitude] order
+        };
+
+
+        // Query to find attendance records created after the start of today
+        const attendanceToday = await attendanceModel.findOne({
+            memberId,
+            parentId,
+            createdAt: { $gte: startOfToday },
+        });
+
+        let punchInRecorded = false;
+        let punchOutRecorded = false;
+
+        // Punch-in logic
+        if (isWithinGeofence && currentTime >= startTime && currentTime <= startGraceTime) {
+            punchInRecorded = true;
+
+            if (!attendanceToday) {
+                // Record punch-in time
+                const newAttendance = new attendanceModel({
+                    memberId,
+                    parentId,
+                    punchInTime: currentTime,
+                });
+                await newAttendance.save();
+            } else if (!attendanceToday.punchInTime) {
+                console.log('!attendanceToday.punchInTime', attendanceToday.punchInTime);
+
+                // Update existing attendance record with punch-in time
+                await attendanceModel.findOneAndUpdate(
+                    { memberId, createdAt: { $gte: startOfToday } },
+                    { $set: { punchInTime: currentTime } }
+                );
+            }
+
+            // let punchInTime = attendanceToday?.punchInTime
+
         }
 
-        // If no attendance and no latitude/longitude, prompt user to enable tracker
-        if (!existingAttendance) {
-            return res.status(200).json({
-                message: 'Please turn on your tracker to mark your presence.',
-                alreadyMarked: false
-            });
+        // Punch-out logic
+        if (isWithinGeofence && currentTime >= endTime && currentTime <= endGraceTime) {
+            punchOutRecorded = true;
+
+            if (attendanceToday && attendanceToday.punchInTime) {
+                // Update punch-out time
+                await attendanceModel.findOneAndUpdate(
+                    { memberId, createdAt: { $gte: startOfToday } },
+                    { $set: { punchOutTime: currentTime } }
+                );
+            }
         }
 
+        // Handle the live location tracking history for assigned task
+        const trackingData = {
+            memberId,
+            location,
+            addressDetails: "", // Add logic to fetch address details if needed
+            timestamp: currentTime,
+            trackingType: 'geo-fenced',
+            isWithinGeofence,
+            punchInTime: punchInRecorded ? currentTime : null,
+            punchOutTime: punchOutRecorded ? currentTime : null,
+        };
+
+        const trackingHistory = new trackingHistoryModel(trackingData);
+        await trackingHistory.save();
+
+        return res.status(201).json({
+            message: 'Attendance and live location updated successfully.',
+            // trackingHistory,
+            attendanceDetails: {
+
+                punchInRecorded: {
+
+                    punchInTime: punchInRecorded ?  attendanceToday?.punchInTime : null,
+                },
+                punchOutRecorded: {
+
+                    punchOutTime: punchOutRecorded ? currentTime : null,
+                },
+            }
+        });
     } catch (error) {
         console.error('Error during attendance check:', error); // Log the error for debugging
         return res.status(500).json({ message: 'Error during attendance check', error: error.message });
     }
 };
+
 
 
 

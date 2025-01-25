@@ -364,121 +364,121 @@ module.exports = {
 
 
 
-      // const { coordinates, time } = assignedTask;
-      console.log('assignedTask', assignedTask);
-      if (assignedTask) {
-        if (assignedTask) {
-          const startOfToday = new Date();
-          startOfToday.setHours(0, 0, 0, 0); // Set to the start of the day (midnight)
+      // // const { coordinates, time } = assignedTask;
+      // console.log('assignedTask', assignedTask);
+      // if (assignedTask) {
+      //   if (assignedTask) {
+      //     const startOfToday = new Date();
+      //     startOfToday.setHours(0, 0, 0, 0); // Set to the start of the day (midnight)
 
-          // Query to find attendance records created after the start of today
-          const attendanceToday = await attendanceModel.findOne({
-            memberId: req.userId,
-            createdAt: { $gte: startOfToday }, // Use $gte to include records from midnight onwards
-          });
-          console.log('attendanceToday', attendanceToday);
+      //     // Query to find attendance records created after the start of today
+      //     const attendanceToday = await attendanceModel.findOne({
+      //       memberId: req.userId,
+      //       createdAt: { $gte: startOfToday }, // Use $gte to include records from midnight onwards
+      //     });
+      //     console.log('attendanceToday', attendanceToday);
 
-          const { coordinates, time } = assignedTask;
+      //     const { coordinates, time } = assignedTask;
 
-          // Parse the assigned task's time range (e.g., "09:00-17:00")
-          const [startTime, endTime] = time.split('-').map(t => {
-            const [hours, minutes] = t.split(':').map(Number);
-            const parsedTime = new Date();
-            parsedTime.setHours(hours, minutes, 0, 0); // Set hours and minutes
-            return parsedTime;
-          });
+      //     // Parse the assigned task's time range (e.g., "09:00-17:00")
+      //     const [startTime, endTime] = time.split('-').map(t => {
+      //       const [hours, minutes] = t.split(':').map(Number);
+      //       const parsedTime = new Date();
+      //       parsedTime.setHours(hours, minutes, 0, 0); // Set hours and minutes
+      //       return parsedTime;
+      //     });
 
-          const currentTime = new Date();
-          const startGraceTime = new Date(startTime);
-          startGraceTime.setMinutes(startTime.getMinutes() + 60); // Grace period for punch-in (1 hour)
+      //     const currentTime = new Date();
+      //     const startGraceTime = new Date(startTime);
+      //     startGraceTime.setMinutes(startTime.getMinutes() + 60); // Grace period for punch-in (1 hour)
 
-          const endGraceTime = new Date(endTime);
-          endGraceTime.setMinutes(endTime.getMinutes() + 60); // Grace period for punch-out (1 hour)
+      //     const endGraceTime = new Date(endTime);
+      //     endGraceTime.setMinutes(endTime.getMinutes() + 60); // Grace period for punch-out (1 hour)
 
-          const location = {
-            type: 'Point',
-            coordinates: [latitude, longitude], // Ensure [longitude, latitude] order
-          };
+      //     const location = {
+      //       type: 'Point',
+      //       coordinates: [latitude, longitude], // Ensure [longitude, latitude] order
+      //     };
 
-          const isWithinGeofence = isPointWithinGeofence(latitude, longitude, coordinates.lat, coordinates.lng);
+      //     const isWithinGeofence = isPointWithinGeofence(latitude, longitude, coordinates.lat, coordinates.lng);
 
-          let punchInRecorded = false;
-          let punchOutRecorded = false;
-
-
-
-          // Punch-in logic
-          if (isWithinGeofence && currentTime >= startTime && currentTime <= startGraceTime) {
-            punchInRecorded = true;
-
-            if (!attendanceToday) {
-              // Record punch-in time
-              const newAttendance = new attendanceModel({
-                memberId: req.userId,
-                parentId: member?.parentUser,
-                punchInTime: currentTime,
-              });
-              await newAttendance.save();
-            } else if (!attendanceToday.punchInTime) {
-              // Update existing attendance record with punch-in time
-              await attendanceModel.findOneAndUpdate(
-                { memberId: req.userId, createdAt: { $gte: startOfToday } },
-                { $set: { punchInTime: currentTime } }
-              );
-            }
-          }
-
-          console.log('conditions ---', isWithinGeofence,
-            currentTime >= endTime,
-            currentTime <= endGraceTime);
+      //     let punchInRecorded = false;
+      //     let punchOutRecorded = false;
 
 
 
-          // Punch-out logic
-          if (isWithinGeofence && currentTime >= endTime && currentTime <= endGraceTime) {
-            punchOutRecorded = true;
+      //     // Punch-in logic
+      //     if (isWithinGeofence && currentTime >= startTime && currentTime <= startGraceTime) {
+      //       punchInRecorded = true;
 
-            if (attendanceToday && attendanceToday.punchInTime) {
-              // Update punch-out time
-              await attendanceModel.findOneAndUpdate(
-                { memberId: req.userId, createdAt: { $gte: startOfToday } },
-                { $set: { punchOutTime: currentTime } }
-              );
-            }
-          }
+      //       if (!attendanceToday) {
+      //         // Record punch-in time
+      //         const newAttendance = new attendanceModel({
+      //           memberId: req.userId,
+      //           parentId: member?.parentUser,
+      //           punchInTime: currentTime,
+      //         });
+      //         await newAttendance.save();
+      //       } else if (!attendanceToday.punchInTime) {
+      //         // Update existing attendance record with punch-in time
+      //         await attendanceModel.findOneAndUpdate(
+      //           { memberId: req.userId, createdAt: { $gte: startOfToday } },
+      //           { $set: { punchInTime: currentTime } }
+      //         );
+      //       }
+      //     }
 
-          // Handle the live location tracking history for assigned task
-          const trackingData = {
-            memberId,
-            location,
-            addressDetails,
-            timestamp: currentTime,
-            trackingType: 'live',
-            notes,
-            isWithinGeofence: isWithinGeofence ? true : false,
-            punchInTime: punchInRecorded ? currentTime : null,
-            punchOutTime: punchOutRecorded ? currentTime : null,
-          };
+      //     console.log('conditions ---', isWithinGeofence,
+      //       currentTime >= endTime,
+      //       currentTime <= endGraceTime);
 
-          const trackingHistory = new trackingHistoryModel(trackingData);
-          await trackingHistory.save();
 
-          res.status(201).json({
-            message: 'Live location updated successfully with geofence and time range handling',
-            trackingHistory,
-          });
-        } else {
-          console.log('Current time is outside the assigned task time range');
 
-          // Optional: Handle case where the current time is outside the range
-          res.status(400).json({
-            error: 'Current time is outside the assigned task time range',
-          });
-        }
+      //     // Punch-out logic
+      //     if (isWithinGeofence && currentTime >= endTime && currentTime <= endGraceTime) {
+      //       punchOutRecorded = true;
 
-      }
+      //       if (attendanceToday && attendanceToday.punchInTime) {
+      //         // Update punch-out time
+      //         await attendanceModel.findOneAndUpdate(
+      //           { memberId: req.userId, createdAt: { $gte: startOfToday } },
+      //           { $set: { punchOutTime: currentTime } }
+      //         );
+      //       }
+      //     }
 
-      else {
+      //     // Handle the live location tracking history for assigned task
+      //     const trackingData = {
+      //       memberId,
+      //       location,
+      //       addressDetails,
+      //       timestamp: currentTime,
+      //       trackingType: 'live',
+      //       notes,
+      //       isWithinGeofence: isWithinGeofence ? true : false,
+      //       punchInTime: punchInRecorded ? currentTime : null,
+      //       punchOutTime: punchOutRecorded ? currentTime : null,
+      //     };
+
+      //     const trackingHistory = new trackingHistoryModel(trackingData);
+      //     await trackingHistory.save();
+
+      //     res.status(201).json({
+      //       message: 'Live location updated successfully with geofence and time range handling',
+      //       trackingHistory,
+      //     });
+      //   } else {
+      //     console.log('Current time is outside the assigned task time range');
+
+      //     // Optional: Handle case where the current time is outside the range
+      //     res.status(400).json({
+      //       error: 'Current time is outside the assigned task time range',
+      //     });
+      //   }
+
+      // }
+
+
         // If no assigned task is found, proceed with normal posting (without geofence)
         const location = {
           type: 'Point',
@@ -503,7 +503,7 @@ module.exports = {
           message: 'Live location updated successfully without geofence handling',
           trackingHistory,
         });
-      }
+      
 
       //==========================================================
     } catch (error) {

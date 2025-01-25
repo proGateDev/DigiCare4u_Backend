@@ -41,7 +41,7 @@ const locationHistorySchema = new mongoose.Schema({
   // Type of tracking (scheduled or live)
   trackingType: {
     type: String,
-    enum: ['scheduled', 'live'],
+    enum: ['scheduled', 'live','geo-fenced'],
     default: 'live', // Default is live tracking
   },
 

@@ -17,12 +17,12 @@ exports.markAttendance = async (req, res) => {
         startOfToday.setHours(0, 0, 0, 0); // Set to the start of the day (midnight)
 
         // Find assigned task for the member
-        // console.log('memberId--------', memberId);
         const assignedTask = await assignmentModel.findOne({
             memberId,
             type: 'geo-fenced'
-
+            
         });
+        // console.log('assignedTask --------', assignedTask );
         if (!assignedTask) {
             return res.status(200).json({ message: 'No assigned task found for the member.' });
         }

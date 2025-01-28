@@ -1844,11 +1844,11 @@ module.exports = {
 
       // Group the coordinates by assignmentId and merge them into one assignment object
       const groupedAssignments = uniqueRecords.reduce((acc, item) => {
-        const assignmentId = item.assignmentId._id;
+        const assignmentId = item.assignmentId?._id;
         if (!acc[assignmentId]) {
           acc[assignmentId] = {
             assignmentId: assignmentId,
-            eventName: item.assignmentId.eventName,
+            eventName: item?.assignmentId?.eventName,
             trackingCoordinates: [],
           };
         }

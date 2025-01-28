@@ -129,16 +129,18 @@ module.exports = {
             //     default:
             //         return res.status(400).json({ message: "Invalid interval" });
             // }
-            console.log('dateLimit', interval);
-
+            
             // Fetch the member's tracking history sorted by timestamp
             const trackingHistory = await trackingHistoryModel
-                .find({
-                    memberId,
-                    timestamp: { $gte: new Date(interval) },
-                })
-                .sort({ timestamp: -1 })
-                .populate('assignmentId'); // Ensure this is correctly populated
+            .find({
+                memberId,
+                timestamp: { $gte: new Date(interval) },
+                trackingType: { $ne: 'geo-fenced' }, // Exclude records where type is 'geofenced'
+                
+            })
+            .sort({ timestamp: -1 })
+            .populate('assignmentId'); // Ensure this is correctly populated
+            console.log('trackingHistory', trackingHistory.length);
 
             if (!trackingHistory || trackingHistory.length === 0) {
                 return res.status(200).json({ message: "No locations found for this member" });
@@ -171,7 +173,7 @@ module.exports = {
             res.status(200).json({
                 message: "Locations fetched successfully",
                 count: filteredLocations.length, // Return the array with only one record per locality
-                filteredLocations,
+                filteredLocations
             });
         } catch (error) {
             console.error("Error fetching locations:", error);

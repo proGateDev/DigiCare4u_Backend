@@ -10,7 +10,7 @@ exports.markAttendance = async (req, res) => {
     try {
         const memberId = req.userId;
         const { parentId, latitude, longitude } = req.body;
-        const isWithinGeofence = true
+        const isWithinGeofence = true;
 
         // Get today's date (ignoring time)
         const startOfToday = new Date();
@@ -20,15 +20,13 @@ exports.markAttendance = async (req, res) => {
         const assignedTask = await assignmentModel.findOne({
             memberId,
             type: 'geo-fenced'
-            
         });
-        // console.log('assignedTask --------', assignedTask );
+
         if (!assignedTask) {
             return res.status(200).json({ message: 'No assigned task found for the member.' });
         }
 
         const { coordinates, time } = assignedTask;
-        console.log('time--------', time);
         const [startTime, endTime] = time.split('-').map(t => {
             const [hours, minutes] = t.split(':').map(Number);
             const parsedTime = new Date();
@@ -38,7 +36,7 @@ exports.markAttendance = async (req, res) => {
 
         const currentTime = new Date();
         const startGraceTime = new Date(startTime);
-        startGraceTime.setMinutes(startTime.getMinutes() + 360); // Grace period for punch-in (1 hour)
+        startGraceTime.setMinutes(startTime.getMinutes() + 360); // Grace period for punch-in (6 hours)
 
         const endGraceTime = new Date(endTime);
         endGraceTime.setMinutes(endTime.getMinutes() + 60); // Grace period for punch-out (1 hour)
@@ -47,7 +45,6 @@ exports.markAttendance = async (req, res) => {
             type: 'Point',
             coordinates: [longitude, latitude], // Ensure [longitude, latitude] order
         };
-
 
         // Query to find attendance records created after the start of today
         const attendanceToday = await attendanceModel.findOne({
@@ -59,20 +56,11 @@ exports.markAttendance = async (req, res) => {
         let punchInRecorded = false;
         let punchOutRecorded = false;
 
-        // Punch-in logic
-        if (isWithinGeofence && currentTime >= startTime && currentTime <= startGraceTime) {
-            punchInRecorded = true;
-
-            if (!attendanceToday) {
-                // Record punch-in time
-                const newAttendance = new attendanceModel({
-                    memberId,
-                    parentId,
-                    punchInTime: currentTime,
-                });
-                await newAttendance.save();
-            } else if (!attendanceToday.punchInTime) {
-                console.log('!attendanceToday.punchInTime', attendanceToday.punchInTime);
+        // Check if attendance record exists
+        if (attendanceToday) {
+            // Punch-in logic
+            if (isWithinGeofence && !attendanceToday.punchInTime && currentTime >= startTime && currentTime <= startGraceTime) {
+                punchInRecorded = true;
 
                 // Update existing attendance record with punch-in time
                 await attendanceModel.findOneAndUpdate(
@@ -81,24 +69,32 @@ exports.markAttendance = async (req, res) => {
                 );
             }
 
-            // let punchInTime = attendanceToday?.punchInTime
+            // Punch-out logic
+            if (isWithinGeofence && attendanceToday.punchInTime && !attendanceToday.punchOutTime && currentTime >= endTime && currentTime <= endGraceTime) {
+                punchOutRecorded = true;
 
-        }
-
-        // Punch-out logic
-        if (isWithinGeofence && currentTime >= endTime && currentTime <= endGraceTime) {
-            punchOutRecorded = true;
-
-            if (attendanceToday && attendanceToday.punchInTime) {
-                // Update punch-out time
+                // Update existing attendance record with punch-out time
                 await attendanceModel.findOneAndUpdate(
                     { memberId, createdAt: { $gte: startOfToday } },
                     { $set: { punchOutTime: currentTime } }
                 );
             }
+        } else {
+            // If no attendance record exists, handle punch-in logic
+            if (isWithinGeofence && currentTime >= startTime && currentTime <= startGraceTime) {
+                punchInRecorded = true;
+
+                // Create a new attendance record with punch-in time
+                const newAttendance = new attendanceModel({
+                    memberId,
+                    parentId,
+                    punchInTime: currentTime,
+                });
+                await newAttendance.save();
+            }
         }
 
-        // Handle the live location tracking history for assigned task
+        // Handle the live location tracking history for the assigned task
         const trackingData = {
             memberId,
             location,
@@ -115,16 +111,12 @@ exports.markAttendance = async (req, res) => {
 
         return res.status(201).json({
             message: 'Attendance and live location updated successfully.',
-            // trackingHistory,
             attendanceDetails: {
-
                 punchInRecorded: {
-
-                    punchInTime: punchInRecorded ?  attendanceToday?.punchInTime : null,
+                    punchInTime: attendanceToday?.punchInTime || (punchInRecorded ? currentTime : null),
                 },
                 punchOutRecorded: {
-
-                    punchOutTime: punchOutRecorded ? currentTime : null,
+                    punchOutTime: attendanceToday?.punchOutTime || (punchOutRecorded ? currentTime : null),
                 },
             }
         });

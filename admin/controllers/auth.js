@@ -1,6 +1,8 @@
 const model = require("../models/profile");
 const checkEncryptedPassword = require('../../util/auth')
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+
 //==================================================
 
 module.exports = {
@@ -37,9 +39,10 @@ module.exports = {
       }
 
       // Compare provided password with hashed password in the database
-      console.log('-----> ', password, user?.password);
+      // console.log('-----> ', password, user?.password);
+    const isPasswordValid = await bcrypt.compare(password, user?.password);
 
-      const isPasswordValid = await checkEncryptedPassword(password, user?.password);
+      // const isPasswordValid = await checkEncryptedPassword(password, user?.password);
       console.log('--------->', isPasswordValid);
 
       if (!isPasswordValid) {
@@ -53,7 +56,7 @@ module.exports = {
       const token = jwt.sign(
         { userId: user._id },
         process.env.JWT_SECRET,
-        { expiresIn: '120m' } // Token expires in 1 day
+        { expiresIn: '360m' } // Token expires in 1 day
       );
 
       // Send response with the token

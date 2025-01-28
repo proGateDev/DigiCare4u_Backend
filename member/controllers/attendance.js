@@ -9,8 +9,9 @@ const trackingHistoryModel = require('../../model/trackingHistory');
 exports.markAttendance = async (req, res) => {
     try {
         const memberId = req.userId;
-        const { parentId, latitude, longitude } = req.body;
+        const { latitude, longitude } = req.body;
         const isWithinGeofence = true;
+        const memberDetail = await memberModel.findOne({ _id: memberId })
 
         // Get today's date (ignoring time)
         const startOfToday = new Date();
@@ -49,17 +50,21 @@ exports.markAttendance = async (req, res) => {
         // Query to find attendance records created after the start of today
         const attendanceToday = await attendanceModel.findOne({
             memberId,
-            parentId,
+            parentId: memberDetail?.parentUser,
             createdAt: { $gte: startOfToday },
         });
 
         let punchInRecorded = false;
         let punchOutRecorded = false;
 
+
+
+
         // Check if attendance record exists
         if (attendanceToday) {
             // Punch-in logic
             if (isWithinGeofence && !attendanceToday.punchInTime && currentTime >= startTime && currentTime <= startGraceTime) {
+
                 punchInRecorded = true;
 
                 // Update existing attendance record with punch-in time
@@ -70,7 +75,12 @@ exports.markAttendance = async (req, res) => {
             }
 
             // Punch-out logic
-            if (isWithinGeofence && attendanceToday.punchInTime && !attendanceToday.punchOutTime && currentTime >= endTime && currentTime <= endGraceTime) {
+            if (isWithinGeofence && attendanceToday.punchInTime && attendanceToday.punchOutTime == 'null' && currentTime >= endTime && currentTime <= endGraceTime) {
+                console.log(isWithinGeofence,
+                    attendanceToday.punchInTime,
+                    attendanceToday.punchOutTime == 'null',
+                    currentTime >= endTime,
+                    currentTime <= endGraceTime);
                 punchOutRecorded = true;
 
                 // Update existing attendance record with punch-out time
@@ -87,7 +97,7 @@ exports.markAttendance = async (req, res) => {
                 // Create a new attendance record with punch-in time
                 const newAttendance = new attendanceModel({
                     memberId,
-                    parentId,
+                    parentId: memberDetail?.parentUser,
                     punchInTime: currentTime,
                 });
                 await newAttendance.save();

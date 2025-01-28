@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const channelSchema = new mongoose.Schema({
-  name: { type: String },
+  name: { type: String, required: true }, // Removed any unique constraints
   description: { type: String },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -15,6 +15,7 @@ const channelSchema = new mongoose.Schema({
   },
   createdAt: { type: Date, default: Date.now },
 });
+channelSchema.index({ name: 1, createdBy: 1 }, { unique: true });
 
 const channelModel = mongoose.model('Channel', channelSchema);
 module.exports = channelModel;

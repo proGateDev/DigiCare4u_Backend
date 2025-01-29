@@ -857,6 +857,7 @@ module.exports = {
         memberId: { $in: memberIds },
         punchInTime: { $gte: startOfDay, $lte: endOfDay },
       });
+      // console.log('attendanceRecords', attendanceRecords);
 
       // Generate an array of dates for the specified range
       const getDateArray = (start, end) => {
@@ -870,13 +871,13 @@ module.exports = {
       };
 
       const dateArray = getDateArray(startOfDay, endOfDay);
+      // console.log('dateArray', dateArray);
 
       // Map member details with attendance data
       const result = channelMembers.map((member) => {
         const { _id, name, email } = member.memberId;
 
         // Filter attendance records for the current member
-        console.log('attendanceRecords', attendanceRecords);
         const memberAttendance = attendanceRecords.filter(
           (record) => record.memberId.toString() === _id.toString()
         );
@@ -887,10 +888,14 @@ module.exports = {
         // Create attendance data for each date in the range
         const records = dateArray.map((date) => {
           const formattedDate = date.toISOString().split("T")[0]; // Get YYYY-MM-DD format
+
+
           const attendanceForDate = memberAttendance.find(
-            (record) =>
-              new Date(record.punchInTime).toISOString().split("T")[0] ===
-              formattedDate
+            (record) => {
+              // console.log(new Date(record.punchInTime).toISOString().split("T")[0] === formattedDate,new Date(record.punchInTime).toISOString().split("T")[0] ,formattedDate,);
+
+              return (new Date(record.punchInTime).toISOString().split("T")[0] === formattedDate)
+            }
           );
           const attendanceForDatePunchOut = memberAttendance.find(
             (record) =>
@@ -921,6 +926,10 @@ module.exports = {
 
           };
         });
+
+        // console.log('records', records);
+
+
 
         return {
           memberId: _id,

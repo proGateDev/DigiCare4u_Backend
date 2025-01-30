@@ -1697,7 +1697,7 @@ module.exports = {
       const lastRecord = liveLocation[totalRecords - 1];
 
       // Get up to 48 evenly spaced intermediate records
-      const interval = Math.ceil(totalRecords / 48);
+      const interval = Math.ceil(totalRecords / 70);
       const intermediateRecords = liveLocation.filter(
         (_, index) => index % interval === 0
       );

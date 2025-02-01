@@ -8,23 +8,25 @@ const trackingHistoryModel = require('../../model/trackingHistory');
 
 exports.markAttendance = async (req, res) => {
     try {
-        console.log('------ markAttendance chala !!!-----');
-
+        
         const memberId = req.userId;
         const { latitude, longitude } = req.body;
+        // console.log('------ req. payload -----',latitude, longitude ,memberId);
         const isWithinGeofence = true;
         const memberDetail = await memberModel.findOne({ _id: memberId })
-
+        // console.log('------ req. memberDetail -----',memberDetail);
+        
         // Get today's date (ignoring time)
         const startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0); // Set to the start of the day (midnight)
-
+        
         // Find assigned task for the member
         const assignedTask = await assignmentModel.findOne({
             memberId,
             type: 'geo-fenced'
         });
-
+        
+        // console.log('------ assignedTask -----',assignedTask);
         if (!assignedTask) {
             return res.status(200).json({ message: 'No assigned task found for the member.' });
         }
@@ -37,7 +39,19 @@ exports.markAttendance = async (req, res) => {
             return parsedTime;
         });
 
-        const currentTime = new Date();
+        // const currentTime = new Date();
+        const currentTimeUTC = new Date();
+        const currentTime = new Date(currentTimeUTC.getTime() + (5.5 * 60 * 60 * 1000)); // Add 5 hours 30 minutes
+        
+        // console.log("UTC Time:", currentTimeUTC.toISOString()); // Original UTC Time
+        // console.log("IST Time:", currentTimeIST.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })); // IST formatted
+        
+
+
+
+
+
+
         const startGraceTime = new Date(startTime);
         startGraceTime.setMinutes(startTime.getMinutes() + 360); // Grace period for punch-in (6 hours)
 

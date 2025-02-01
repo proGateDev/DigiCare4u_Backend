@@ -44,7 +44,7 @@ exports.markAttendance = async (req, res) => {
 
         const location = {
             type: 'Point',
-            coordinates: [latitude,longitude], // Ensure [longitude, latitude] order
+            coordinates: [latitude, longitude], // Ensure [longitude, latitude] order
         };
 
         // Query to find attendance records created after the start of today
@@ -59,6 +59,7 @@ exports.markAttendance = async (req, res) => {
 
 
 
+        console.log('------ hai to  !! -----', attendanceToday);
 
         // Check if attendance record exists
         if (attendanceToday) {
@@ -102,8 +103,8 @@ exports.markAttendance = async (req, res) => {
                 });
                 await newAttendance.save();
 
-                console.log('newAttendance',newAttendance);
-                
+                console.log('newAttendance', newAttendance);
+
             }
         }
 

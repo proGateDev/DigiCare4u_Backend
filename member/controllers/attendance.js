@@ -41,10 +41,10 @@ exports.markAttendance = async (req, res) => {
 
         // const currentTime = new Date();
         const currentTimeUTC = new Date();
-        const currentTime = new Date(currentTimeUTC.getTime() + (5.5 * 60 * 60 * 1000)); // Add 5 hours 30 minutes
+        const currentTime = new Date(currentTimeUTC.getTime() - (5.5 * 60 * 60 * 1000)); // Add 5 hours 30 minutes
         
         // console.log("UTC Time:", currentTimeUTC.toISOString()); // Original UTC Time
-        // console.log("IST Time:", currentTimeIST.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })); // IST formatted
+        // console.log("IST Time:", currentTime); // IST formatted
         
 
 

@@ -8,6 +8,8 @@ const trackingHistoryModel = require('../../model/trackingHistory');
 
 exports.markAttendance = async (req, res) => {
     try {
+        console.log('------ markAttendance chala !!!-----');
+
         const memberId = req.userId;
         const { latitude, longitude } = req.body;
         const isWithinGeofence = true;

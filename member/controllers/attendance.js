@@ -44,7 +44,7 @@ exports.markAttendance = async (req, res) => {
 
         const location = {
             type: 'Point',
-            coordinates: [longitude, latitude], // Ensure [longitude, latitude] order
+            coordinates: [latitude,longitude], // Ensure [longitude, latitude] order
         };
 
         // Query to find attendance records created after the start of today
@@ -101,6 +101,9 @@ exports.markAttendance = async (req, res) => {
                     punchInTime: currentTime,
                 });
                 await newAttendance.save();
+
+                console.log('newAttendance',newAttendance);
+                
             }
         }
 

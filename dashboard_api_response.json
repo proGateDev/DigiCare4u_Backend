@@ -38,5 +38,25 @@
         "violations": 5
       }
     ]
+  },
+  "geofencing_test": {
+    "total_geofence_alerts": 25,
+    "top_geofences": [
+      {
+        "name": "Office HQ",
+        "visits": 40
+      },
+      {
+        "name": "Warehouse",
+        "visits": 30
+      }
+    ],
+    "time_inside_geofence": "68%",
+    "frequent_violators": [
+      {
+        "member_id": "654",
+        "violations": 5
+      }
+    ]
   }
 }

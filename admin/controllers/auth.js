@@ -34,7 +34,7 @@ module.exports = {
       if (!user) {
         return res.status(401).json({
           status: 401,
-          message: "User is not registered with Digicare"
+          message: "Admin is not registered with Digicare"
         });
       }
 
@@ -62,8 +62,9 @@ module.exports = {
       // Send response with the token
       res.status(200).json({
         status: 200,
-        message: "User authenticated successfully",
+        message: "Admin authenticated successfully",
         token,
+        type:'superAdmin'
       });
 
     } catch (error) {

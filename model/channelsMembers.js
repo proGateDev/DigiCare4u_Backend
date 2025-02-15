@@ -29,7 +29,9 @@ const channelMemberSchema = new mongoose.Schema({
   joinedAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  isDeleted: { type: Boolean, default: false },
+
 });
 
 // Ensure no duplicate channel-member pair

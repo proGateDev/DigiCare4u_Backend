@@ -50,6 +50,9 @@ module.exports = {
   //     res.status(500).json({ error: "Internal Server Error" });
   //   }
   // },
+
+
+
   getUserMembers: async (req, res) => {
     try {
       const userId = mongoose.Types.ObjectId(req.userId); // Convert the userId to ObjectId
@@ -164,13 +167,13 @@ module.exports = {
 
           createdMembers.push(newMember);
           const parentUser = await userModel.findOne({ _id: userId });
-          // console.log('parentUser',userId, parentUser?.name);
+          console.log('parentUser',userId, parentUser);
 
           if (newMember && notifyTo && addingToMemberToChannel) {
             const verificationToken = jwt.sign(
               {
                 email: memberData?.email,
-                userId: newMember?._id,
+                // userId: newMember?._id,
                 parentUserId: userId,
                 parentUserName: parentUser?.name,
                 memberName: newMember?.name,
@@ -219,8 +222,8 @@ module.exports = {
                         `,
             };
 
-            await sendMail(messageData);
-            // console.log('verification link ----:', verificationLink);
+            // await sendMail(messageData);
+            console.log('verification link ----:', verificationLink);
 
             // sendNotification(userId, `You have added a new member: ${memberData?.name}`);
             // sendServerDetailToClient(` --------- server se aaya mera DOST ---------------- : ${memberData?.name}`);
@@ -301,30 +304,38 @@ module.exports = {
     try {
       const userId = req.userId; // Get the logged-in user's ID from the request
       const memberId = req?.params?.memberId; // Get the memberId from the route parameters
-
-      // Find and delete the member by ID, ensuring that it belongs to the user
-      const memberData = await memberModel.findOneAndDelete({
-        _id: memberId,
-        //  parentUser: userId
-      });
-
+  
+      // Find and update the member's isDeleted field
+      const memberData = await memberModel.findOneAndUpdate(
+        { _id: memberId },
+        { isDeleted: true },
+        { new: true }
+      );
+  
+      const memberChannelData = await channelMemberModel.findOneAndUpdate(
+        { memberId: memberId },
+        { isDeleted: true },
+        { new: true }
+      );
+  
       if (!memberData) {
         return res.status(404).json({
           status: 404,
           message: "Member not found or does not belong to the current user.",
         });
       }
-
+  
       res.status(200).json({
         status: 200,
-        message: "Member deleted successfully",
+        message: "Member marked as deleted successfully",
         member: memberData,
       });
     } catch (error) {
-      console.error("Error deleting member data:", error);
+      console.error("Error updating member data:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
+  
 
   getUserMemberDailyTransit: async (req, res) => {
     const { memberId } = req.params;
@@ -2315,6 +2326,40 @@ module.exports = {
         success: false,
         message: 'Failed to delete geo-fenced assignments for members.',
       });
+    }
+  },
+
+
+
+
+
+
+
+
+
+  
+  getUserMemberTeam: async (req, res) => {
+    try {
+      const { memberId } = req.params; // Get userId from URL params
+      const userId = req.userId; // Get userId from URL params
+      console.log(userId,memberId);
+
+      // const userData = await memberModel.findOne({ _id: memberId });
+      // if (!userData) {
+      //   return res.status(404).json({ message: "User not found" });
+      // }
+
+      const members = await memberModel.find({ parentUser: userId }); // Find members linked to user
+
+      res.status(200).json({
+        message: "User and members found successfully",
+        // user: userData,
+        count: members.length,
+        members: members,
+      });
+    } catch (error) {
+      console.error("Error fetching user and members:", error);
+      res.status(500).json({ error: "Internal Server Error" });
     }
   }
 

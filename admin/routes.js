@@ -1,15 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const adminProfileRoutes = require("./routes/profile");
-const adminProfilesListRoutes = require("./routes/profiles");
 const adminAuthRoutes = require("./routes/auth");
 const userRoutes = require("./routes/users");
+const dashboardRoutes = require("./routes/dashboard");
 
 
 
 router.use("/profile", adminProfileRoutes);  
 router.use("/auth", adminAuthRoutes);       
-router.use("/profile-list", adminProfilesListRoutes);     
 router.use("/user", userRoutes);     
+router.use("/dashboard", dashboardRoutes);     
 
 module.exports = router;

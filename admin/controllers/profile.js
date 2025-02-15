@@ -50,21 +50,6 @@ module.exports = {
     }
   },
 
-  getAllAdminProfiles: async (req, res) => {
-    try {
-      const data = await model.find({});
-      console.log("-------- data ----------", data);
-      jsonResponse = {
-        message: "user found successfully",
-        data,
-        count: data.length,
-      };
-      res.status(200).json(jsonResponse);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  },
 
 
 
@@ -175,7 +160,26 @@ module.exports = {
       console.error("Error deleting admin profile:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
-  }
+  },
+
+
+
+  getAllAdminProfiles: async (req, res) => {
+    try {
+      const data = await model.find({});
+      console.log("-------- data ----------", data);
+      jsonResponse = {
+        message: "user found successfully",
+        data,
+        count: data.length,
+      };
+      res.status(200).json(jsonResponse);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+
 
 
 };

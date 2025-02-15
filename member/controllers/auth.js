@@ -153,7 +153,7 @@ module.exports = {
       const memberId = decoded.userId;
       const parentUserId = decoded.parentUserId;
       // console.log(memberId);
-      const parentUser = await userModel.findById({_id : parentUserId});
+      const parentUser = await userModel.findById({ _id: parentUserId });
       console.log('------ parentUser  ------------>', parentUser?.fcmToken);
 
 
@@ -190,11 +190,19 @@ module.exports = {
             console.error("Error sending notification:", error);
           }
         };
-        
+
         sendNotification(parentUser?.fcmToken)
-        return res.status(200).send('Member verified and notification sent');
+        return res.status(200).send({
+          status: 200,
+          message: 'Your email has been successfully verified! You can now start using DigiCare4u.'
+        });
       } else {
-        return res.status(400).send('Member already approved');
+        return res.status(400).send(
+          {
+            status: 400,
+            message: 'Member already approved. You can start tracking !'
+          }
+        );
       }
     } catch (error) {
       res.status(500).send('Error verifying member');

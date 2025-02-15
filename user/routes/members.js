@@ -21,7 +21,6 @@ router.get("/list", checkUserToken, controller.getUserMembers);
 
 
 
-
 router.get('/:memberId', checkUserToken, controller.getUserMemberById);
 router.delete('/:memberId', controller.deleteUserMemberById);
 router.get('/:memberId/daily-transit', controller.getUserMemberDailyTransit);
@@ -82,6 +81,18 @@ router.post("/last-location", checkUserToken, controller.getUserMembersLastLocat
 //============ Get members Who are not assigned Daily Tasked =====================================
 router.get("/geo-fence-task/unassigned", checkUserToken, controller.getUserMembersWithoutDailyTasks);
 router.post("/geo-fence-task/delete", checkUserToken, controller.deleteAssignmentsForMembers);
+
+
+
+
+
+
+
+
+
+
+
+router.get("/teams/:memberId",checkUserToken, controller.getUserMemberTeam);    
 
 
 module.exports = router;

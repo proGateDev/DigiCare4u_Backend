@@ -310,8 +310,8 @@ module.exports = {
 
             // Check if the current status is already 'completed'
             if (existingTask.status === 'completed') {
-                return res.status(400).json({
-                    status: 400,
+                return res.status(200).json({
+                    status: 200,
                     message: 'Task is already marked as completed',
                 });
             }

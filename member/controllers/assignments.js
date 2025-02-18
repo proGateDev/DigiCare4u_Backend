@@ -12,26 +12,50 @@ const assignmentModel = require("../../model/assignment");
 module.exports = {
   memberHasGeoFencedSetup: async (req, res) => {
     try {
-      const memberId = req.userId; // Assuming you get memberId from the request parameters
+      const memberId = req.userId; // Assuming you get memberId from the request
+  
+      // Find the member to get parentUserId
+      const member = await memberModel.findById(memberId);
+      if (!member) {
+        return res.status(404).json({
+          message: "Member not found",
+          status: 404,
+        });
+      }
+  
+      const parentUserId = member.parentUser; // Get the parent user ID
+  
+      // Fetch the geoFenced field from userModel
+      const user = await userModel.findById(parentUserId).select("geoFenced");
+      if (!user) {
+        return res.status(404).json({
+          message: "Parent user not found",
+          status: 404,
 
-      // Check the assignmentModel for entries where type is 'geo-fenced' and memberId matches
+        });
+      }
+  
+      // Check for geo-fenced assignment
       const geoFencedAssignment = await assignmentModel.findOne({
         memberId: memberId,
-        type: 'geo-fenced',
-      })
-
+        type: "geo-fenced",
+      });
+  
       if (!geoFencedAssignment) {
         return res.status(200).json({
           message: "No geo-fenced setup found for the member",
-          data: {},
           status: 200,
-          type: 'not-setup'
-          
+          geoFencingSetup: false,
+          geoFenced: user.geoFenced || false, // Include geoFenced field from userModel
+          data: {},
         });
       }
-
+  
       res.status(200).json({
+        status: 200,
+        geoFencingSetup: true,
         message: "Geo-fenced setup retrieved successfully",
+        geoFenced: user.geoFenced || false, // Include geoFenced field from userModel
         data: geoFencedAssignment,
       });
     } catch (error) {
@@ -39,6 +63,7 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" });
     }
   }
+  
 
 
 

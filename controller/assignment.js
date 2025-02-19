@@ -98,7 +98,7 @@ module.exports = {
             // Check if all required fields are provided
             if (
                 !memberId ||
-                !userId ||
+                
                 // !locationName ||
                 !coordinates) {
                 return res.status(400).json({

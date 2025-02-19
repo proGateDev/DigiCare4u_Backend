@@ -95,4 +95,13 @@ router.post("/geo-fence-task/delete", checkUserToken, controller.deleteAssignmen
 router.get("/teams/:memberId",checkUserToken, controller.getUserMemberTeam);    
 
 
+
+
+
+
+
+
+
+router.get("/attendance/:memberId/:dateRange", checkUserToken, controller.getMemberAttendanceById);
+
 module.exports = router;

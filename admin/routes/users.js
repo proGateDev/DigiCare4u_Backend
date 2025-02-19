@@ -6,6 +6,8 @@ const checkUserToken = require("../../middleware/jwt");
 
 
 router.get("/list", checkUserToken, controller.getAllUsers);    
+router.get("/:userId", checkUserToken, controller.getUserById);    
 
+router.get("/members/list/:userId", checkUserToken, controller.getUserMembers);    
 
 module.exports = router;

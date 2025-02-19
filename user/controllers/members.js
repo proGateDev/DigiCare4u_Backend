@@ -167,7 +167,7 @@ module.exports = {
 
           createdMembers.push(newMember);
           const parentUser = await userModel.findOne({ _id: userId });
-          console.log('parentUser',userId, parentUser);
+          console.log('parentUser', userId, parentUser);
 
           if (newMember && notifyTo && addingToMemberToChannel) {
             const verificationToken = jwt.sign(
@@ -304,27 +304,27 @@ module.exports = {
     try {
       const userId = req.userId; // Get the logged-in user's ID from the request
       const memberId = req?.params?.memberId; // Get the memberId from the route parameters
-  
+
       // Find and update the member's isDeleted field
       const memberData = await memberModel.findOneAndUpdate(
         { _id: memberId },
         { isDeleted: true },
         { new: true }
       );
-  
+
       const memberChannelData = await channelMemberModel.findOneAndUpdate(
         { memberId: memberId },
         { isDeleted: true },
         { new: true }
       );
-  
+
       if (!memberData) {
         return res.status(404).json({
           status: 404,
           message: "Member not found or does not belong to the current user.",
         });
       }
-  
+
       res.status(200).json({
         status: 200,
         message: "Member marked as deleted successfully",
@@ -335,7 +335,7 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
-  
+
 
   getUserMemberDailyTransit: async (req, res) => {
     const { memberId } = req.params;
@@ -1730,7 +1730,7 @@ module.exports = {
       // Filter the response to include only required fields
       const filteredLocations = uniqueRecords.map((location) => ({
         coordinates: location.location.coordinates,
-        locality: location.addressDetails.locality,
+        locality: location.addressDetails.preferredAddress,
         timestamp: location.timestamp,
       }));
       const groupedData = Object.values(
@@ -2337,12 +2337,12 @@ module.exports = {
 
 
 
-  
+
   getUserMemberTeam: async (req, res) => {
     try {
       const { memberId } = req.params; // Get userId from URL params
       const userId = req.userId; // Get userId from URL params
-      console.log(userId,memberId);
+      console.log(userId, memberId);
 
       // const userData = await memberModel.findOne({ _id: memberId });
       // if (!userData) {
@@ -2361,7 +2361,93 @@ module.exports = {
       console.error("Error fetching user and members:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
-  }
+  },
+
+
+
+  getMemberAttendanceById: async (req, res) => {
+    try {
+      const { memberId, dateRange } = req.params; // Expecting MM-YYYY format
+  
+      // Validate input
+      if (!memberId || !dateRange) {
+        return res.status(400).json({ success: false, message: "Missing required parameters" });
+      }
+  
+      // Extract month and year from dateRange
+      const [month, year] = dateRange.split("-").map(Number); // Convert to numbers
+  
+      // Validate extracted values
+      if (!month || !year || month < 1 || month > 12) {
+        return res.status(400).json({ success: false, message: "Invalid date range format" });
+      }
+  
+      // Compute the first day of the given month
+      const start = new Date(year, month - 1, 1); // First day of the month
+  
+      // Determine the end date (current date if in the same month, else last day of the month)
+      const today = new Date();
+      let end;
+  
+      if (today.getFullYear() === year && today.getMonth() + 1 === month) {
+        // If it's the current month, set end to today's date
+        end = new Date(year, month - 1, today.getDate(), 23, 59, 59, 999);
+      } else {
+        // Otherwise, set end to the last day of the given month
+        end = new Date(year, month, 0, 23, 59, 59, 999);
+      }
+  
+      console.log(`Fetching attendance for memberId: ${memberId}, From: ${start}, To: ${end}`);
+  
+      // Fetch attendance records within the computed date range
+      const attendanceRecords = await attendanceModel.find({
+        memberId,
+        createdAt: { $gte: start, $lte: end },
+      }).sort({ createdAt: 1 });
+  
+      // Create a map of existing attendance records with full details
+      const attendanceMap = new Map(
+        attendanceRecords.map((record) => [
+          record.createdAt.toISOString().split("T")[0], // Format: YYYY-MM-DD
+          {
+            status: record.status || "present",
+            punchInTime: record.punchInTime || null, // Include check-in time if available
+            punchOutTime: record.punchOutTime || null, // Include check-out time if available
+          },
+        ])
+      );
+  
+      // Determine the number of days to loop through
+      const totalDays =
+        today.getFullYear() === year && today.getMonth() + 1 === month
+          ? today.getDate() // If current month, limit to today's date
+          : new Date(year, month, 0).getDate(); // Otherwise, use the full month's days
+  
+      // Generate full month data
+      const attendanceData = [];
+  
+      for (let day = 1; day <= totalDays; day++) {
+        const date = new Date(year, month - 1, day).toISOString().split("T")[0]; // Format YYYY-MM-DD
+  
+        if (attendanceMap.has(date)) {
+          // If present, return full details
+          attendanceData.push({ date, ...attendanceMap.get(date) });
+        } else {
+          // If absent, only return date and status
+          attendanceData.push({ date, status: "absent" });
+        }
+      }
+  
+      return res.status(200).json({ success: true, data: attendanceData });
+    } catch (error) {
+      console.error("Error fetching attendance:", error);
+      return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  },
+  
+
+
+
 
 
 

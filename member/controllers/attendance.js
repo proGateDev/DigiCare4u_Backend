@@ -6,134 +6,102 @@ const assignmentModel = require('../../model/assignment'); // Import the attenda
 const attendanceModel = require('../models/attendance');
 const trackingHistoryModel = require('../../model/trackingHistory');
 
+const moment = require('moment-timezone');
+
 exports.markAttendance = async (req, res) => {
     try {
-        
         const memberId = req.userId;
         const { latitude, longitude } = req.body;
-        // console.log('------ req. payload -----',latitude, longitude ,memberId);
         const isWithinGeofence = true;
-        const memberDetail = await memberModel.findOne({ _id: memberId })
-        // console.log('------ req. memberDetail -----',memberDetail);
-        
-        // Get today's date (ignoring time)
-        const startOfToday = new Date();
-        startOfToday.setHours(0, 0, 0, 0); // Set to the start of the day (midnight)
-        
-        // Find assigned task for the member
+
+        // Fetch member details
+        const memberDetail = await memberModel.findOne({ _id: memberId });
+
+        // Get today's date in UTC (start of day)
+        const startOfTodayUTC = moment().utc().startOf('day');
+
+        // Find assigned task
         const assignedTask = await assignmentModel.findOne({
             memberId,
             type: 'geo-fenced'
         });
-        
-        // console.log('------ assignedTask -----',assignedTask);
+
         if (!assignedTask) {
             return res.status(200).json({ message: 'No assigned task found for the member.' });
         }
 
         const { coordinates, time } = assignedTask;
-        const [startTime, endTime] = time.split('-').map(t => {
-            const [hours, minutes] = t.split(':').map(Number);
-            const parsedTime = new Date();
-            parsedTime.setHours(hours, minutes, 0, 0); // Set hours and minutes
-            return parsedTime;
-        });
+        const [startTimeStr, endTimeStr] = time.split('-');
 
-        // const currentTime = new Date();
-        const currentTimeUTC = new Date();
-        const currentTime = new Date(currentTimeUTC.getTime() - (5.5 * 60 * 60 * 1000)); // Add 5 hours 30 minutes
-        
-        // console.log("UTC Time:", currentTimeUTC.toISOString()); // Original UTC Time
-        // console.log("IST Time:", currentTime); // IST formatted
-        
+        // Convert task times to IST
+        const startTimeIST = moment.tz(startTimeStr, "HH:mm", "Asia/Kolkata");
+        const endTimeIST = moment.tz(endTimeStr, "HH:mm", "Asia/Kolkata");
 
+        // Convert IST times to UTC for comparison
+        const startTimeUTC = startTimeIST.clone().tz("UTC");
+        const endTimeUTC = endTimeIST.clone().tz("UTC");
 
+        // Add grace periods
+        const startGraceTimeUTC = startTimeUTC.clone().add(6, 'hours'); // 6-hour grace for punch-in
+        const endGraceTimeUTC = endTimeUTC.clone().add(1, 'hour'); // 1-hour grace for punch-out
 
+        // Get current time in UTC
+        const currentTimeUTC = moment().utc();
 
-
-
-        const startGraceTime = new Date(startTime);
-        startGraceTime.setMinutes(startTime.getMinutes() + 360); // Grace period for punch-in (6 hours)
-
-        const endGraceTime = new Date(endTime);
-        endGraceTime.setMinutes(endTime.getMinutes() + 60); // Grace period for punch-out (1 hour)
-
-        const location = {
-            type: 'Point',
-            coordinates: [latitude, longitude], // Ensure [longitude, latitude] order
-        };
-
-        // Query to find attendance records created after the start of today
+        // Check today's attendance record
         const attendanceToday = await attendanceModel.findOne({
             memberId,
             parentId: memberDetail?.parentUser,
-            createdAt: { $gte: startOfToday },
+            createdAt: { $gte: startOfTodayUTC },
         });
 
         let punchInRecorded = false;
         let punchOutRecorded = false;
 
-
-
-        console.log('------ hai to  !! -----', attendanceToday);
-
-        // Check if attendance record exists
         if (attendanceToday) {
             // Punch-in logic
-            if (isWithinGeofence && !attendanceToday.punchInTime && currentTime >= startTime && currentTime <= startGraceTime) {
-
+            if (isWithinGeofence && !attendanceToday.punchInTime && currentTimeUTC.isBetween(startTimeUTC, startGraceTimeUTC)) {
                 punchInRecorded = true;
-
-                // Update existing attendance record with punch-in time
                 await attendanceModel.findOneAndUpdate(
-                    { memberId, createdAt: { $gte: startOfToday } },
-                    { $set: { punchInTime: currentTime } }
+                    { memberId, createdAt: { $gte: startOfTodayUTC } },
+                    { $set: { punchInTime: currentTimeUTC.toISOString() } }
                 );
             }
 
             // Punch-out logic
-            if (isWithinGeofence && attendanceToday.punchInTime && attendanceToday.punchOutTime == 'null' && currentTime >= endTime && currentTime <= endGraceTime) {
-                console.log(isWithinGeofence,
-                    attendanceToday.punchInTime,
-                    attendanceToday.punchOutTime == 'null',
-                    currentTime >= endTime,
-                    currentTime <= endGraceTime);
+            if (isWithinGeofence && attendanceToday.punchInTime && !attendanceToday.punchOutTime && currentTimeUTC.isBetween(endTimeUTC, endGraceTimeUTC)) {
                 punchOutRecorded = true;
-
-                // Update existing attendance record with punch-out time
                 await attendanceModel.findOneAndUpdate(
-                    { memberId, createdAt: { $gte: startOfToday } },
-                    { $set: { punchOutTime: currentTime } }
+                    { memberId, createdAt: { $gte: startOfTodayUTC } },
+                    { $set: { punchOutTime: currentTimeUTC.toISOString() } }
                 );
             }
         } else {
-            // If no attendance record exists, handle punch-in logic
-            if (isWithinGeofence && currentTime >= startTime && currentTime <= startGraceTime) {
+            // Create new attendance record if punching in for the first time
+            if (isWithinGeofence && currentTimeUTC.isBetween(startTimeUTC, startGraceTimeUTC)) {
                 punchInRecorded = true;
-
-                // Create a new attendance record with punch-in time
                 const newAttendance = new attendanceModel({
                     memberId,
                     parentId: memberDetail?.parentUser,
-                    punchInTime: currentTime,
+                    punchInTime: currentTimeUTC.toISOString(),
                 });
                 await newAttendance.save();
-
-                console.log('newAttendance', newAttendance);
-
             }
         }
 
-        // Handle the live location tracking history for the assigned task
+        // Save tracking data
         const trackingData = {
             memberId,
-            location,
-            addressDetails: "", // Add logic to fetch address details if needed
-            timestamp: currentTime,
+            location: {
+                type: 'Point',
+                coordinates: [latitude, longitude],
+            },
+            addressDetails: "", // Can add address fetching logic here
+            timestamp: currentTimeUTC.toISOString(),
             trackingType: 'geo-fenced',
             isWithinGeofence,
-            punchInTime: punchInRecorded ? currentTime : null,
-            punchOutTime: punchOutRecorded ? currentTime : null,
+            punchInTime: punchInRecorded ? currentTimeUTC.toISOString() : null,
+            punchOutTime: punchOutRecorded ? currentTimeUTC.toISOString() : null,
         };
 
         const trackingHistory = new trackingHistoryModel(trackingData);
@@ -143,15 +111,15 @@ exports.markAttendance = async (req, res) => {
             message: 'Attendance and live location updated successfully.',
             attendanceDetails: {
                 punchInRecorded: {
-                    punchInTime: attendanceToday?.punchInTime || (punchInRecorded ? currentTime : null),
+                    punchInTime: attendanceToday?.punchInTime || (punchInRecorded ? currentTimeUTC.toISOString() : null),
                 },
                 punchOutRecorded: {
-                    punchOutTime: attendanceToday?.punchOutTime || (punchOutRecorded ? currentTime : null),
+                    punchOutTime: attendanceToday?.punchOutTime || (punchOutRecorded ? currentTimeUTC.toISOString() : null),
                 },
             }
         });
     } catch (error) {
-        console.error('Error during attendance check:', error); // Log the error for debugging
+        console.error('Error during attendance check:', error);
         return res.status(500).json({ message: 'Error during attendance check', error: error.message });
     }
 };

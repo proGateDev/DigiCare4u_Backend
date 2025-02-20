@@ -2365,86 +2365,79 @@ module.exports = {
 
 
 
+
   getMemberAttendanceById: async (req, res) => {
     try {
       const { memberId, dateRange } = req.params; // Expecting MM-YYYY format
-  
+
       // Validate input
       if (!memberId || !dateRange) {
         return res.status(400).json({ success: false, message: "Missing required parameters" });
       }
-  
+
       // Extract month and year from dateRange
       const [month, year] = dateRange.split("-").map(Number); // Convert to numbers
-  
+
       // Validate extracted values
       if (!month || !year || month < 1 || month > 12) {
         return res.status(400).json({ success: false, message: "Invalid date range format" });
       }
-  
-      // Compute the first day of the given month
-      const start = new Date(year, month - 1, 1); // First day of the month
-  
-      // Determine the end date (current date if in the same month, else last day of the month)
-      const today = new Date();
-      let end;
-  
-      if (today.getFullYear() === year && today.getMonth() + 1 === month) {
-        // If it's the current month, set end to today's date
-        end = new Date(year, month - 1, today.getDate(), 23, 59, 59, 999);
-      } else {
-        // Otherwise, set end to the last day of the given month
-        end = new Date(year, month, 0, 23, 59, 59, 999);
+
+      // Compute the first and last day of the given month in UTC
+      const start = moment.tz({ year, month: month - 1, day: 1 }, "UTC").startOf('day');
+      let end = moment.tz({ year, month: month - 1 }, "UTC").endOf('month');
+
+      const today = moment().tz("UTC").endOf('day'); // Today's end time in UTC
+
+      // If the requested month is the current month, limit the end date to today
+      if (moment().year() === year && moment().month() + 1 === month) {
+        end = today;
       }
-  
+
       console.log(`Fetching attendance for memberId: ${memberId}, From: ${start}, To: ${end}`);
-  
+
       // Fetch attendance records within the computed date range
       const attendanceRecords = await attendanceModel.find({
         memberId,
-        createdAt: { $gte: start, $lte: end },
+        createdAt: { $gte: start.toDate(), $lte: end.toDate() },
       }).sort({ createdAt: 1 });
-  
+
       // Create a map of existing attendance records with full details
       const attendanceMap = new Map(
         attendanceRecords.map((record) => [
-          record.createdAt.toISOString().split("T")[0], // Format: YYYY-MM-DD
+          moment(record.createdAt).tz("Asia/Kolkata").format("YYYY-MM-DD"), // Format: YYYY-MM-DD in IST
           {
             status: record.status || "present",
-            punchInTime: record.punchInTime || null, // Include check-in time if available
-            punchOutTime: record.punchOutTime || null, // Include check-out time if available
+            punchInTime: record.punchInTime ? moment(record.punchInTime).tz("Asia/Kolkata").format("HH:mm:ss") : null,
+            punchOutTime: record.punchOutTime ? moment(record.punchOutTime).tz("Asia/Kolkata").format("HH:mm:ss") : null,
           },
         ])
       );
-  
-      // Determine the number of days to loop through
-      const totalDays =
-        today.getFullYear() === year && today.getMonth() + 1 === month
-          ? today.getDate() // If current month, limit to today's date
-          : new Date(year, month, 0).getDate(); // Otherwise, use the full month's days
-  
-      // Generate full month data
+
+      // Generate attendance data for the full month
+      const totalDays = end.date(); // Last date of the month (or today's date if current month)
       const attendanceData = [];
-  
+
       for (let day = 1; day <= totalDays; day++) {
-        const date = new Date(year, month - 1, day).toISOString().split("T")[0]; // Format YYYY-MM-DD
-  
+        const date = moment.tz({ year, month: month - 1, day }, "Asia/Kolkata").format("YYYY-MM-DD");
+      
         if (attendanceMap.has(date)) {
           // If present, return full details
           attendanceData.push({ date, ...attendanceMap.get(date) });
         } else {
-          // If absent, only return date and status
-          attendanceData.push({ date, status: "absent" });
+          // If absent, include null values for punchInTime and punchOutTime
+          attendanceData.push({ date, status: "absent", punchInTime: null, punchOutTime: null });
         }
       }
-  
+      
+
       return res.status(200).json({ success: true, data: attendanceData });
     } catch (error) {
       console.error("Error fetching attendance:", error);
       return res.status(500).json({ success: false, message: "Internal server error" });
     }
-  },
-  
+  }
+
 
 
 

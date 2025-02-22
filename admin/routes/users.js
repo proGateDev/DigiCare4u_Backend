@@ -9,5 +9,13 @@ router.get("/list", checkUserToken, controller.getAllUsers);
 router.get("/:userId", checkUserToken, controller.getUserById);    
 
 router.get("/members/list/:userId", checkUserToken, controller.getUserMembers);    
+router.get('/member/assignments_/:startDate/:endDate/:userId/:memberId', checkUserToken,controller.getUsersMemberAssignments);
+
+router.get('/members/assignments/:assignmentId/:userId/:memberId', checkUserToken,controller.getUsersMemberAssignmentById);
+
+router.get('/members/live-location-tracking/:memberId/:selectedDate', checkUserToken,controller.fetchUserLiveLocation);
+
+router.get("/members/attendance/:memberId/:dateRange", checkUserToken, controller.getMemberAttendanceById);
+
 
 module.exports = router;

@@ -5,6 +5,7 @@ const checkUserToken = require("../../middleware/jwt");
 //==========================================
 router.post("/signup", controller.signup);
 router.post("/login", controller.login);
+router.get("/verify-email", controller.verifyUserEmail);
 
 // router.get("/", checkUserToken, controller.geLoggedInUser);
 

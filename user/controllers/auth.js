@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require("bcryptjs");
 const { checkEncryptedPassword } = require('../../util/auth');
 const channelModel = require("../../model/channels");
+const userModel = require("../models/profile");
 //==================================================
 
 
@@ -12,7 +13,7 @@ module.exports = {
     try {
       console.log("--------  started User signup ----------");
 
-      const { name, email, password, mobile,fcmToken } = req.body;
+      const { name, email, password, mobile, fcmToken } = req.body;
 
       // Validate input
       if (!name) {
@@ -83,7 +84,7 @@ module.exports = {
         { name: 'Family', description: 'Love, support, togetherness' },
         { name: 'Work', description: 'Collaboration, productivity, success' },
       ];
-      
+
       console.log('saved users id -------------------', newUser._id);
 
       const channelPromises = defaultChannels.map(channel => {
@@ -175,6 +176,74 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
+
+
+
+
+
+
+  verifyUserEmail: async (req, res) => {
+    console.log('------ verifyEmail API ------------>');
+    try {
+      const { token } = req.query
+      // Verify the token first
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const userId = decoded?.userId;
+      // const parentUserId = decoded.parentUserId;
+      // console.log(memberId);
+      // const parentUser = await userModel.findById({ _id: parentUserId });
+      // console.log('------ parentUser  ------------>', parentUser?.fcmToken);
+
+
+      // const memberId = req.body.memberId;
+      // const userId = req.body.userId; // The user who added the member
+      const member = await userModel.findById({ _id: userId });
+      console.log('------ member  ------------>', userId, member);
+
+      // if (member && !member.isApproved) {
+      if (member && member.isApproved == false) {
+        member.isApproved = true;
+        await member.save();
+
+        // const io = req.app.get('socketio');
+
+
+
+        // console.log(' chala', chala);
+        const sendNotification = async (token) => {
+          try {
+            await admin.messaging().send({
+              token: token,
+              notification: {
+                title: "Verification Complete",
+                body: `${member?.name} has successfully verified their account!`,
+              },
+            });
+            console.log("Notification sent successfully!");
+          } catch (error) {
+            console.error("Error sending notification:", error);
+          }
+        };
+
+        // sendNotification(parentUser?.fcmToken)
+        return res.status(200).send({
+          status: 200,
+          message: 'Your email has been successfully verified! You can now start using DigiCare4u.'
+        });
+      } else {
+        return res.status(400).send(
+          {
+            status: 400,
+            message: 'User already approved. You can start tracking !',
+
+          }
+        );
+      }
+    } catch (error) {
+      res.status(500).send('Error verifying member');
+    }
+  },
+
 
 
 };

@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema({
   password: String,
 
 
+  isApproved: { type: Boolean, default: false },
 
   location: {
     type: {

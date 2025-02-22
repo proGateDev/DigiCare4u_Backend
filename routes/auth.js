@@ -5,7 +5,7 @@ const checkUserToken = require('../middleware/jwt');
 
 // Route to log an activity
 router.post('/login', authController.login);
-router.post('/signup', authController.signup);
+router.post('/signup',checkUserToken, authController.signup);
 router.post('/fcm-token', authController.handleFcmToken);
 router.patch('/fcm-token', authController.handleFcmTokenUpdate);
 

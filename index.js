@@ -36,7 +36,7 @@ const coldStartSolution = () => {
   coldStartSolution();
 }
 app.get("/", (req, res) => {
-  res.send("<h1> DigiCare Server </h1>");
+  res.send("<h1> DigiCare4u Server </h1>");
 });
 //===================================================
 app.use(routes)

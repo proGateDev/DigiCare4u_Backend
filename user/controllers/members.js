@@ -83,7 +83,9 @@ module.exports = {
             channelId: member.channelId,
             location: member.location,
             // lastLocation: latestTracking ? latestTracking.location : null,
-            lastUpdated: latestTracking ? latestTracking?.timestamp : null,
+            // lastUpdated: latestTracking ? latestTracking?.timestamp : null,
+            lastUpdated: latestTracking ? new Date(latestTracking.timestamp).toLocaleString() : null,
+
             lastLocation: latestTracking ? latestTracking?.addressDetails?.locality : null,
           };
         })

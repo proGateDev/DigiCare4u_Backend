@@ -140,7 +140,7 @@ module.exports = {
       if (!user) {
         return res.status(401).json({
           status: 401,
-          message: "User is not registered with Digicare"
+          message: "User is not registered with DigiCare4u"
         });
       }
 

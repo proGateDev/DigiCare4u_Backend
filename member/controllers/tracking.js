@@ -409,7 +409,7 @@ module.exports = {
                     }
                 },
                 { $sort: { timestamp: -1 } }, // Sort by most recent first
-                { $limit: 50 }, // Limit to the latest 50 records
+                // { $limit: 50 }, // Limit to the latest 50 records
                 {
                     $project: {
                         _id: 0,

@@ -424,8 +424,8 @@ module.exports = {
             res.status(200).json({
                 message: "Locations fetched successfully",
                 count: trackingHistory.length,
-                filteredLocations: trackingHistory,
-                trackingRoute: trackingRoute // Separate field for the latest 50 records
+                liveTrackingListData: trackingHistory,
+                liveTrackingCoordinates: trackingRoute // Separate field for the latest 50 records
             });
     
         } catch (error) {

@@ -351,11 +351,11 @@ module.exports = {
             console.log('interval', interval, memberId, new Date(interval));
             const startOfDay = new Date(interval);
             startOfDay.setHours(0, 0, 0, 0); // Set time to 00:00:00
-            
+
             const endOfDay = new Date(interval);
             endOfDay.setHours(23, 59, 59, 999); // Set time to 23:59:59
-            
-            
+
+
             // Aggregation for filtered locations
             const trackingHistory = await trackingHistoryModel.aggregate([
                 {
@@ -398,7 +398,7 @@ module.exports = {
                     }
                 }
             ]);
-    
+
             // Fetch the latest 50 tracking records for trackingRoute (with both date & time)
             const trackingRoute = await trackingHistoryModel.aggregate([
                 {
@@ -417,29 +417,30 @@ module.exports = {
                         time: { $dateToString: { format: "%H:%M:%S", date: "$timestamp" } }, // Time (HH:MM:SS)
                         // lat: "$location.coordinates.1", // Assuming GeoJSON format [lng, lat]
                         // lng: "$location.coordinates.0",
-                        location: "$addressDetails.locality",
+                        location: "$addressDetails.address",
+                        // address: "$addressDetails.address",
                         coordinates: "$location.coordinates"
                     }
                 }
             ]);
-    
+
             if (!trackingHistory.length && !trackingRoute.length) {
                 return res.status(200).json({ message: "No locations found for this member" });
             }
-    
+
             res.status(200).json({
                 message: "Locations fetched successfully",
                 count: trackingHistory.length,
                 liveTrackingListData: trackingHistory,
                 liveTrackingCoordinates: trackingRoute // Separate field for the latest 50 records
             });
-    
+
         } catch (error) {
             console.error("Error fetching locations:", error);
             res.status(500).json({ message: "Error fetching locations", error: error.message });
         }
     },
-    
+
 
 
 

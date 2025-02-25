@@ -15,6 +15,7 @@ router.get("/records-for-map",checkUserToken, controller.getMemberLocationsRecor
 router.post("/live-location-tracking-insight-report",checkUserToken, controller.fetchMemberLiveLocationInsightReport); 
 // router.post("/live-location-tracking-insight-report",checkUserToken, controller.fetchMemberLiveLocationInsightReport); 
 
+router.get("/records/live",checkUserToken, controller.getMemberLiveTrackingRecords); 
 
 module.exports = router;
 

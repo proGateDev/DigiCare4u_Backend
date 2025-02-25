@@ -1,6 +1,7 @@
 const memberModel = require("../models/profile");
 const trackingHistoryModel = require('../../model/trackingHistory'); // Update with the correct path
 const getAddressFromCoordinates = require("../../service/geoCode");
+const { default: mongoose } = require("mongoose");
 
 //==================================================
 
@@ -112,30 +113,16 @@ module.exports = {
         try {
             const memberId = req.userId; // Get the member ID from the request
             const { interval } = req.query; // Get the interval from the query parameters
-            const currentDate = new Date();
-            let dateLimit;
 
-            // Determine the date limit based on the interval
-            // switch (interval) {
-            //     case '1day':
-            //         dateLimit = new Date(currentDate.setHours(0, 0, 0, 0)); // Start of today
-            //         break;
-            //     case '7days':
-            //         dateLimit = new Date(currentDate.setDate(currentDate.getDate() - 7)); // 7 days ago
-            //         break;
-            //     case '1month':
-            //         dateLimit = new Date(currentDate.setMonth(currentDate.getMonth() - 1)); // 1 month ago
-            //         break;
-            //     default:
-            //         return res.status(400).json({ message: "Invalid interval" });
-            // }
+
+
 
             // Fetch the member's tracking history sorted by timestamp
             const trackingHistory = await trackingHistoryModel
                 .find({
                     memberId,
                     timestamp: { $gte: new Date(interval) },
-                    trackingType: { $ne: 'geo-fenced' }, // Exclude records where type is 'geofenced'
+                    trackingType: { $nin: ['geo-fenced', 'scheduled'] }, // Exclude multiple tracking types
 
                 })
                 .sort({ timestamp: -1 })
@@ -352,6 +339,101 @@ module.exports = {
 
 
 
+
+
+
+
+
+    getMemberLiveTrackingRecords: async (req, res) => {
+        try {
+            const memberId = req.userId; // Get the member ID from the request
+            const { interval } = req.query; // Get the interval from the query parameters
+            console.log('interval', interval, memberId, new Date(interval));
+    
+            // Aggregation for filtered locations
+            const trackingHistory = await trackingHistoryModel.aggregate([
+                {
+                    $match: {
+                        memberId: new mongoose.Types.ObjectId(memberId), // Convert to ObjectId
+                        timestamp: { $gte: new Date(interval) },
+                        trackingType: { $nin: ['geo-fenced', 'scheduled'] }
+                    }
+                },
+                { $sort: { timestamp: -1 } }, // Sort by most recent first
+                {
+                    $group: {
+                        _id: "$addressDetails.locality", // Group by locality
+                        latestRecord: { $first: "$$ROOT" }, // Keep the most recent record per locality
+                        count: { $sum: 1 } // Count occurrences
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "assignments", // The name of the collection storing assignment details
+                        localField: "latestRecord.assignmentId",
+                        foreignField: "_id",
+                        as: "assignment"
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        locality: "$_id",
+                        timestamp: "$latestRecord.timestamp",
+                        trackingType: "$latestRecord.trackingType",
+                        count: 1,
+                        assignmentName: {
+                            $cond: {
+                                if: { $eq: ["$latestRecord.trackingType", "scheduled"] },
+                                then: { $arrayElemAt: ["$assignment.eventName", 0] },
+                                else: null
+                            }
+                        }
+                    }
+                }
+            ]);
+    
+            // Fetch the latest 50 tracking records for trackingRoute (with both date & time)
+            const trackingRoute = await trackingHistoryModel.aggregate([
+                {
+                    $match: {
+                        memberId: new mongoose.Types.ObjectId(memberId),
+                        timestamp: { $gte: new Date(interval) },
+                        trackingType: { $nin: ['geo-fenced', 'scheduled'] }
+                    }
+                },
+                { $sort: { timestamp: -1 } }, // Sort by most recent first
+                { $limit: 50 }, // Limit to the latest 50 records
+                {
+                    $project: {
+                        _id: 0,
+                        date: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } }, // Date (YYYY-MM-DD)
+                        time: { $dateToString: { format: "%H:%M:%S", date: "$timestamp" } }, // Time (HH:MM:SS)
+                        // lat: "$location.coordinates.1", // Assuming GeoJSON format [lng, lat]
+                        // lng: "$location.coordinates.0",
+                        location: "$addressDetails.locality",
+                        coordinates: "$location.coordinates"
+                    }
+                }
+            ]);
+    
+            if (!trackingHistory.length && !trackingRoute.length) {
+                return res.status(200).json({ message: "No locations found for this member" });
+            }
+    
+            res.status(200).json({
+                message: "Locations fetched successfully",
+                count: trackingHistory.length,
+                filteredLocations: trackingHistory,
+                trackingRoute: trackingRoute // Separate field for the latest 50 records
+            });
+    
+        } catch (error) {
+            console.error("Error fetching locations:", error);
+            res.status(500).json({ message: "Error fetching locations", error: error.message });
+        }
+    },
+    
 
 
 

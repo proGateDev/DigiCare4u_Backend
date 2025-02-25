@@ -74,7 +74,9 @@ module.exports = {
             .findOne({ memberId: member._id })
             .sort({ timestamp: -1 }) // Sort by updatedAt in descending order
             .select("addressDetails.locality timestamp"); // Only fetch location and updatedAt fields
-
+          let isMemberVerified = await memberModel.findOne({
+            _id: member.id,
+          })
           return {
             memberId: member.id,
             name: member.name,
@@ -83,9 +85,10 @@ module.exports = {
             channelId: member.channelId,
             location: member.location,
             // lastLocation: latestTracking ? latestTracking.location : null,
-            // lastUpdated: latestTracking ? latestTracking?.timestamp : null,
-            lastUpdated: latestTracking ? new Date(latestTracking.timestamp).toLocaleString() : null,
-
+            lastUpdated: latestTracking ? latestTracking?.timestamp : null,
+            // lastUpdated: latestTracking ? new Date(latestTracking.timestamp).toLocaleString() : null,
+            verificationStatus: isMemberVerified?.isApproved ? 'active' : "inactive",
+            d: isMemberVerified,
             lastLocation: latestTracking ? latestTracking?.addressDetails?.locality : null,
           };
         })
@@ -2422,7 +2425,7 @@ module.exports = {
 
       for (let day = 1; day <= totalDays; day++) {
         const date = moment.tz({ year, month: month - 1, day }, "Asia/Kolkata").format("YYYY-MM-DD");
-      
+
         if (attendanceMap.has(date)) {
           // If present, return full details
           attendanceData.push({ date, ...attendanceMap.get(date) });
@@ -2431,7 +2434,7 @@ module.exports = {
           attendanceData.push({ date, status: "absent", punchInTime: null, punchOutTime: null });
         }
       }
-      
+
 
       return res.status(200).json({ success: true, data: attendanceData });
     } catch (error) {

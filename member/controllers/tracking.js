@@ -349,13 +349,19 @@ module.exports = {
             const memberId = req.userId; // Get the member ID from the request
             const { interval } = req.query; // Get the interval from the query parameters
             console.log('interval', interval, memberId, new Date(interval));
-    
+            const startOfDay = new Date(interval);
+            startOfDay.setHours(0, 0, 0, 0); // Set time to 00:00:00
+            
+            const endOfDay = new Date(interval);
+            endOfDay.setHours(23, 59, 59, 999); // Set time to 23:59:59
+            
+            
             // Aggregation for filtered locations
             const trackingHistory = await trackingHistoryModel.aggregate([
                 {
                     $match: {
                         memberId: new mongoose.Types.ObjectId(memberId), // Convert to ObjectId
-                        timestamp: { $gte: new Date(interval) },
+                        timestamp: { $gte: startOfDay, $lte: endOfDay },
                         trackingType: { $nin: ['geo-fenced', 'scheduled'] }
                     }
                 },
@@ -398,7 +404,7 @@ module.exports = {
                 {
                     $match: {
                         memberId: new mongoose.Types.ObjectId(memberId),
-                        timestamp: { $gte: new Date(interval) },
+                        timestamp: { $gte: startOfDay, $lte: endOfDay },
                         trackingType: { $nin: ['geo-fenced', 'scheduled'] }
                     }
                 },

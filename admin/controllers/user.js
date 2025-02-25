@@ -10,22 +10,31 @@ const moment = require('moment-timezone');
 module.exports = {
 
 
-
   getAllUsers: async (req, res) => {
     try {
-      const data = await userModel.find({});
-      console.log("-------- data ----------", data);
-      jsonResponse = {
-        message: "user found successfully",
-        data,
-        count: data.length,
-      };
-      res.status(200).json(jsonResponse);
+      const users = await userModel.find({}, { name: 1, _id: 1, email: 1, isSubscribed: 1 });
+  
+      // Transform isSubscribed to 'active' or 'inactive'
+      const formattedUsers = users.map(user => ({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        isSubscribed: user.isSubscribed ? "active" : "inactive",
+      }));
+  
+      console.log("-------- users ----------", formattedUsers);
+  
+      res.status(200).json({
+        message: "Users found successfully",
+        data: formattedUsers,
+        count: formattedUsers.length,
+      });
     } catch (error) {
       console.error("Error fetching user data:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
+  
 
 
   getUserById: async (req, res) => {
@@ -306,7 +315,7 @@ module.exports = {
 
 
 
-  
+
   getMemberAttendanceById: async (req, res) => {
     try {
       const { memberId, dateRange } = req.params; // Expecting MM-YYYY format
@@ -361,7 +370,7 @@ module.exports = {
 
       for (let day = 1; day <= totalDays; day++) {
         const date = moment.tz({ year, month: month - 1, day }, "Asia/Kolkata").format("YYYY-MM-DD");
-      
+
         if (attendanceMap.has(date)) {
           // If present, return full details
           attendanceData.push({ date, ...attendanceMap.get(date) });
@@ -370,7 +379,7 @@ module.exports = {
           attendanceData.push({ date, status: "absent", punchInTime: null, punchOutTime: null });
         }
       }
-      
+
 
       return res.status(200).json({ success: true, data: attendanceData });
     } catch (error) {

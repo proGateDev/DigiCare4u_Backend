@@ -290,7 +290,7 @@ module.exports = {
           mobile: 1, 
           isApproved: 1, 
           createdAt: 1,
-          locationStatus: 1, // Add other fields you need
+          locationStatus: 1, 
         }
       );
   
@@ -301,16 +301,27 @@ module.exports = {
         });
       }
   
+      // Fetch the last recorded location from trackingHistory
+      const lastLocation = await trackingHistoryModel.findOne(
+        { memberId: memberId }, 
+        { addressDetails: 1, createdAt: 1 }, // Select only necessary fields
+        { sort: { timestamp: -1 } } // Get the most recent entry
+      );
+  
       res.status(200).json({
         status: 200,
         message: "Member found successfully",
-        member: memberData,
+        member: {
+          ...memberData.toObject(), // Convert Mongoose document to a plain object
+          lastLocation: lastLocation?.addressDetails?.locality || null, // Add last location if found, otherwise null
+        },
       });
     } catch (error) {
       console.error("Error fetching member data:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
+  
   
   deleteUserMemberById: async (req, res) => {
     try {

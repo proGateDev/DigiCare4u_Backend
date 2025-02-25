@@ -58,7 +58,7 @@ module.exports = {
       const userId = mongoose.Types.ObjectId(req.userId); // Convert the userId to ObjectId
 
       // Fetch all members for the user
-      const members = await memberModel.find({ parentUser: userId }, "name mobile locationStatus channelId");
+      const members = await memberModel.find({ parentUser: userId }, "name mobile email locationStatus channelId");
 
       if (!members.length) {
         return res.status(404).json({
@@ -70,6 +70,9 @@ module.exports = {
       // Fetch the latest tracking history for each member
       const membersWithLastLocation = await Promise.all(
         members.map(async (member) => {
+
+          console.log('member',member);
+          
           const latestTracking = await trackingHistoryModel
             .findOne({ memberId: member._id })
             .sort({ timestamp: -1 }) // Sort by updatedAt in descending order
@@ -81,6 +84,7 @@ module.exports = {
             memberId: member.id,
             name: member.name,
             mobile: member.mobile,
+            email: member.email,
             locationStatus: member.locationStatus,
             channelId: member.channelId,
             location: member.location,
@@ -88,7 +92,6 @@ module.exports = {
             lastUpdated: latestTracking ? latestTracking?.timestamp : null,
             // lastUpdated: latestTracking ? new Date(latestTracking.timestamp).toLocaleString() : null,
             verificationStatus: isMemberVerified?.isApproved ? 'active' : "inactive",
-            d: isMemberVerified,
             lastLocation: latestTracking ? latestTracking?.addressDetails?.locality : null,
           };
         })
@@ -274,26 +277,30 @@ module.exports = {
   getUserMemberById: async (req, res) => {
     try {
       const userId = req.userId; // Get the logged-in user's ID from the request
-      // const userId ='66f673eaa447d313a6747f9a'
       const memberId = req?.params?.memberId; // Get the memberId from the route parameters
-      // console.log(req?.body, ' ============= getUserMemberById---------------------------',userId,memberId);
-      // console.log('params', req?.params);
-
-      // console.log('--------  IDs ---------------',userId,memberId);
+  
       // Find the member by ID, ensuring that it belongs to the user
-      const memberData = await memberModel.findOne({
-        _id: memberId,
-        parentUser: userId,
-      });
-      console.log('--------  memberData ---------------', memberData);
-
+      const memberData = await memberModel.findOne(
+        { _id: memberId, parentUser: userId },
+        { 
+          _id: 1, 
+          name: 1, 
+          email: 1, 
+          phone: 1, 
+          mobile: 1, 
+          isApproved: 1, 
+          createdAt: 1,
+          locationStatus: 1, // Add other fields you need
+        }
+      );
+  
       if (!memberData) {
         return res.status(404).json({
           status: 404,
           message: "Member not found or does not belong to the current user.",
         });
       }
-
+  
       res.status(200).json({
         status: 200,
         message: "Member found successfully",
@@ -304,7 +311,7 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
-
+  
   deleteUserMemberById: async (req, res) => {
     try {
       const userId = req.userId; // Get the logged-in user's ID from the request
@@ -2441,7 +2448,8 @@ module.exports = {
       console.error("Error fetching attendance:", error);
       return res.status(500).json({ success: false, message: "Internal server error" });
     }
-  }
+  },
+
 
 
 

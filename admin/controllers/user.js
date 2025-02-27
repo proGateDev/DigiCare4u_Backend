@@ -4,6 +4,9 @@ const assignmentModel = require("../../model/assignment");
 const trackingHistoryModel = require("../../model/trackingHistory");
 const attendanceModel = require("../../member/models/attendance");
 const moment = require('moment-timezone');
+const adminModel = require('../../admin/models/profile'); // Import the User model
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 //==================================================
 
@@ -13,7 +16,7 @@ module.exports = {
   getAllUsers: async (req, res) => {
     try {
       const users = await userModel.find({}, { name: 1, _id: 1, email: 1, isSubscribed: 1 });
-  
+
       // Transform isSubscribed to 'active' or 'inactive'
       const formattedUsers = users.map(user => ({
         _id: user._id,
@@ -21,9 +24,9 @@ module.exports = {
         email: user.email,
         isSubscribed: user.isSubscribed ? "active" : "inactive",
       }));
-  
+
       console.log("-------- users ----------", formattedUsers);
-  
+
       res.status(200).json({
         message: "Users found successfully",
         data: formattedUsers,
@@ -34,7 +37,7 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
-  
+
 
 
   getUserById: async (req, res) => {
@@ -386,8 +389,63 @@ module.exports = {
       console.error("Error fetching attendance:", error);
       return res.status(500).json({ success: false, message: "Internal server error" });
     }
-  }
+  },
 
+
+
+
+
+
+
+
+
+
+  getAllRecentUsers: async (req, res) => {
+    try {
+      console.log('started ----');
+      const recentUsers = await userModel
+        .find({
+          isSubscribed: true,
+          isDeleted: false,
+          isApproved: false
+        })
+        .sort({ createdAt: -1 }) // Sorting by creation date (newest first)
+        .select('name email createdAt'); // Exclude isSubscribed
+  
+      // Map data to add accountStatus field without exposing isSubscribed
+      const modifiedUsers = recentUsers.map(user => ({
+        ...user.toObject(), // Convert Mongoose document to plain object
+        accountStatus: 'active', // Since isSubscribed is always true in the query
+        emailVerified: 'inactive'
+      }));
+  
+      console.log('modifiedUsers', modifiedUsers);
+  
+      return res.status(200).json({
+        success: 200,
+        message: "Users found successfully.",
+        count: modifiedUsers.length,
+        data: modifiedUsers,
+      });
+    } catch (error) {
+      console.error('Error fetching recent users:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Internal Server Error'
+      });
+    }
+  },
+
+
+
+
+
+
+
+
+
+  
+  
 
 
 

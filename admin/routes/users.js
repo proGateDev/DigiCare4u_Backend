@@ -18,4 +18,14 @@ router.get('/members/live-location-tracking/:memberId/:selectedDate', checkUserT
 router.get("/members/attendance/:memberId/:dateRange", checkUserToken, controller.getMemberAttendanceById);
 
 
+router.get("/recent/list", checkUserToken, controller.getAllRecentUsers);    
+
+
+
+
+
+
+
+
+
 module.exports = router;

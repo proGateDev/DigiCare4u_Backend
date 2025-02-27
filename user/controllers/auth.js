@@ -169,6 +169,7 @@ module.exports = {
         status: 200,
         message: "User authenticated successfully",
         token,
+        type:'user',
       });
 
     } catch (error) {

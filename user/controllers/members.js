@@ -181,7 +181,7 @@ module.exports = {
             const verificationToken = jwt.sign(
               {
                 email: memberData?.email,
-                // userId: newMember?._id,
+                userId: newMember?._id,
                 parentUserId: userId,
                 parentUserName: parentUser?.name,
                 memberName: newMember?.name,
@@ -230,8 +230,8 @@ module.exports = {
                         `,
             };
 
-            // await sendMail(messageData);
-            console.log('verification link ----:', verificationLink);
+            await sendMail(messageData);
+            // console.log('verification link ----:', verificationLink);
 
             // sendNotification(userId, `You have added a new member: ${memberData?.name}`);
             // sendServerDetailToClient(` --------- server se aaya mera DOST ---------------- : ${memberData?.name}`);

@@ -147,35 +147,34 @@ module.exports = {
   verifyEmail: async (req, res) => {
     console.log('------ verifyEmail API ------------>');
     try {
-      const { token } = req.query
-      // Verify the token first
+      const { token } = req.query;
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const memberId = decoded.userId;
       const parentUserId = decoded.parentUserId;
-      // console.log(memberId);
+      console.log('------ parentUser  ------------>', token,decoded);
+  
       const parentUser = await userModel.findById({ _id: parentUserId });
-      console.log('------ parentUser  ------------>', parentUser?.fcmToken);
-
-
-      // const memberId = req.body.memberId;
-      // const userId = req.body.userId; // The user who added the member
+      
       const member = await memberModel.findById(memberId);
-
-      // if (member && !member.isApproved) {
-      if (member) {
+      
+      console.log('------ member  ------------>', memberId);
+      if (!member) {
+        return res.status(404).send({
+          status: 404,
+          message: 'Member not found!',
+        });
+      }
+  
+      if (!member.isApproved) {
         member.isApproved = true;
         await member.save();
-
-        // const io = req.app.get('socketio');
-
-
+  
         const memberVerifyingMessage = {
           message: `${member?.name} has verified the account`,
           memberId: member._id,
-        }
-        onMemberVerified(memberVerifyingMessage)
-
-        // console.log(' chala', chala);
+        };
+        onMemberVerified(memberVerifyingMessage);
+  
         const sendNotification = async (token) => {
           try {
             await admin.messaging().send({
@@ -190,24 +189,29 @@ module.exports = {
             console.error("Error sending notification:", error);
           }
         };
-
-        sendNotification(parentUser?.fcmToken)
+  
+        sendNotification(parentUser?.fcmToken);
+        
         return res.status(200).send({
           status: 200,
           message: 'Your email has been successfully verified! You can now start using DigiCare4u.'
         });
-      } else {
-        return res.status(400).send(
-          {
-            status: 400,
-            message: 'Member already approved. You can start tracking !'
-          }
-        );
       }
+  
+      return res.status(200).send({
+        status: 200,
+        message: 'Member already approved. You can start tracking!',
+      });
+  
     } catch (error) {
-      res.status(500).send('Error verifying member');
+      console.error("Error in verifyEmail:", error);
+      res.status(500).send({
+        status: 500,
+        message: 'Error verifying member',
+      });
     }
   },
+  
 
 
 

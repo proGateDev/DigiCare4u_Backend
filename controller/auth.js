@@ -32,7 +32,12 @@ const handleUserLogin = async (email, password, res) => {
   }
 
   if (!user.isSubscribed) {
+    
     return sendErrorResponse(res, 401, "Your free trial has expired.");
+  }
+  if (!user.isApproved) {
+    
+    return sendErrorResponse(res, 401, "User is not verified. Please verify your email.");
   }
 
   const isPasswordValid = await checkEncryptedPassword(password, user.password);
@@ -61,6 +66,7 @@ const handleMemberLogin = async (email, password, res) => {
   if (!isPasswordValid) {
     return sendErrorResponse(res, 401, "Invalid password.");
   }
+  console.log('member.isApproved', member.isApproved);
 
   if (!member.isApproved) {
     return sendErrorResponse(res, 401, "Member is not verified. Please verify your email.");
@@ -327,7 +333,7 @@ module.exports = {
 
       let adminUserId = req.userId
       let adminUserDetails = await adminModel.findOne({ _id: adminUserId })
-      console.log("--------  started User signup ----------",adminUserId,adminUserDetails);
+      console.log("--------  started User signup ----------", adminUserId, adminUserDetails);
 
       const { name, email, password, mobile, fcmToken } = req.body;
 

@@ -62,9 +62,9 @@ module.exports = {
   getChannels: async (req, res) => {
     try {
       console.log("-------- Fetching User Channels ----------");
-
+  
       const userId = req.userId; // Assuming `userId` is extracted from middleware via JWT
-
+  
       // Validate the userId
       if (!userId) {
         return res.status(400).json({
@@ -72,24 +72,31 @@ module.exports = {
           message: "User ID is required",
         });
       }
-
-      // Fetch channels where the user or member created the channel
+  
+      // Fetch channels where the user created the channel
       const channels = await channelModel.find({
         createdBy: userId,
-        createdByModel: 'User', // Assuming we are fetching channels created by users
-      }).select('name description createdAt'); // Adjust fields based on what you need to return
-
-      // Return the fetched channels
+        createdByModel: 'User',
+      }).select('name description createdAt');
+  
+      // Modify the channel names to remove everything after "_"
+      const formattedChannels = channels.map(channel => ({
+        ...channel.toObject(),
+        name: channel.name.split('_')[0], // Extract part before "_"
+      }));
+  
+      // Return the modified channels
       res.status(200).json({
         status: 200,
         message: "Channels fetched successfully",
-        channels,
+        channels: formattedChannels,
       });
     } catch (error) {
       console.error("Error fetching channels:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
+  
 
 
   getChannelMembers: async (req, res) => {

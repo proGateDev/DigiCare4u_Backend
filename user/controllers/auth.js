@@ -143,6 +143,12 @@ module.exports = {
           message: "User is not registered with DigiCare4u"
         });
       }
+      if (!user?.isApproved) {
+        return res.status(401).json({
+          status: 401,
+          message: "User has not verified their email !"
+        });
+      }
 
       // Compare provided password with hashed password in the database
       console.log('-----> ', password, user?.password);
@@ -156,6 +162,7 @@ module.exports = {
           message: "Invalid  password"
         });
       }
+
 
       // If authenticated, generate a JWT token with 1 day expiry
       const token = jwt.sign(

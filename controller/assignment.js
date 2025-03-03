@@ -29,37 +29,63 @@ const sendFirebaseNotification = async (obj) => {
 
 
 
+// const getAddress = async (latitude, longitude) => {
+
+
+
+
+//     // console.log('latitude aaya____________ : ', latitude);
+//     const accessToken =
+//         'sk.eyJ1IjoicHJvZGV2MzY5IiwiYSI6ImNtM21vaHppbzB5azQycXF6MTJyZjJuamcifQ.ZnpKclc0DrYzGN1fA1jqNQ'; // Replace with your Mapbox token
+//     const url = `https://api.mapbox.com/search/geocode/v6/reverse?longitude=${longitude}&latitude=${latitude}&access_token=${accessToken}&limit=1`;
+
+//     try {
+//         console.log('staerted --');
+
+//         const response = await axios.get(url);
+//         // console.log('response ________________ : ',response.data.features[0].properties.full_address);
+//         // console.log('response ________________ : ', response?.data?.features[0]?.properties?.context?.locality?.name);
+
+//         // if (response.data && response.data.features.length > 0) {
+//         if (response.data) {
+
+
+//             return response.data
+//         } else {
+//             console.log('Address not found');
+//         }
+//     } catch (error) {
+//         console.error('Error fetching address:', error);
+//         console.log('Error fetching address');
+//     }
+// };
+
+
+
+
+// const axios = require('axios');
+
 const getAddress = async (latitude, longitude) => {
-
-
-
-
-    // console.log('latitude aaya____________ : ', latitude);
-    const accessToken =
-        'sk.eyJ1IjoicHJvZGV2MzY5IiwiYSI6ImNtM21vaHppbzB5azQycXF6MTJyZjJuamcifQ.ZnpKclc0DrYzGN1fA1jqNQ'; // Replace with your Mapbox token
-    const url = `https://api.mapbox.com/search/geocode/v6/reverse?longitude=${longitude}&latitude=${latitude}&access_token=${accessToken}&limit=1`;
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`;
 
     try {
-        console.log('staerted --');
+        console.log('Started fetching address...');
 
-        const response = await axios.get(url);
-        // console.log('response ________________ : ',response.data.features[0].properties.full_address);
-        // console.log('response ________________ : ', response?.data?.features[0]?.properties?.context?.locality?.name);
+        const response = await axios.get(url, {
+            headers: {
+                'User-Agent': 'DigiCare4u App' // Required by Nominatim API
+            }
+        });
 
-        // if (response.data && response.data.features.length > 0) {
         if (response.data) {
-
-
-            return response.data
+            return response.data;
         } else {
             console.log('Address not found');
         }
     } catch (error) {
         console.error('Error fetching address:', error);
-        console.log('Error fetching address');
     }
 };
-
 
 
 
@@ -89,11 +115,12 @@ module.exports = {
     assignment: async (req, res) => {
         try {
             const userId = req.userId
-            console.log(' ---- userId   -----------', userId, req.body);
+            console.log(' ---- userId   -----------', userId,);
             const { memberId, coordinates, dateTime, eventName, type } = req.body;
             // console.log(' assigning this .......', coordinates?.lat);
             let locationNameDecodedResponse = await getAddress(coordinates?.lat, coordinates?.lng)
-            let locationNameDecoded = locationNameDecodedResponse?.features[0]?.properties?.place_formatted
+            // let locationNameDecoded = locationNameDecodedResponse?.features[0]?.properties?.place_formatted
+            // console.log(' ---- locationNameDecoded   -----------',locationNameDecodedResponse?.display_name);
 
             // Check if all required fields are provided
             if (
@@ -117,7 +144,7 @@ module.exports = {
             const newAssignment = new assignmentModel({
                 memberId,
                 userId,
-                locationName: locationNameDecoded,
+                locationName: locationNameDecodedResponse?.display_name,
                 coordinates,
                 assignedAt: dateTime?.date,
                 time: dateTime?.time,
@@ -141,7 +168,7 @@ module.exports = {
 
                 title: `${parentUser?.name} Has a Task for You!`,
 
-                body: `Ready for action ? Head TO :  ${locationNameDecoded},  for your task.`,
+                body: `Ready for action ? Head TO :  ${locationNameDecodedResponse?.display_name},  for your task.`,
             })
 
 
@@ -167,7 +194,7 @@ module.exports = {
 
             // Get the location name from the average coordinates
             let locationNameDecodedResponse = await getAddress(avgCoordinates[0], avgCoordinates[1]);
-            let locationNameDecoded = locationNameDecodedResponse?.features[0]?.properties?.place_formatted;
+            let locationNameDecoded = locationNameDecodedResponse?.display_name;
 
             // Check if the members exist
             if (parentUserMembers.length === 0) {

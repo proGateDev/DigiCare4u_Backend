@@ -144,9 +144,11 @@ module.exports = {
             const newAssignment = new assignmentModel({
                 memberId,
                 userId,
-                locationName: locationNameDecodedResponse?.display_name,
-                coordinates,
-                assignedAt: dateTime?.date,
+                locationName: req?.body?.location?.locationName,
+                coordinates: {
+                    lat: req?.body?.location?.coordinates[0],
+                    lng: req?.body?.location?.coordinates[1]
+                },                assignedAt: dateTime?.date,
                 time: dateTime?.time,
                 eventName,
                 type
@@ -168,7 +170,7 @@ module.exports = {
 
                 title: `${parentUser?.name} Has a Task for You!`,
 
-                body: `Ready for action ? Head TO :  ${locationNameDecodedResponse?.display_name},  for your task.`,
+                body: `Ready for action ? Head TO :  ${req?.body?.location?.locationName},  for your task.`,
             })
 
 

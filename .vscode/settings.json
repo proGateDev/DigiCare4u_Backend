@@ -1,0 +1,8 @@
+{
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/faac2dbd-a377-4b39-a209-c3cf8bf63d68/resourceGroups/digicare4u-prd-rg/providers/Microsoft.Web/sites/digicare4u",
+    "appService.deploySubpath": "."
+}

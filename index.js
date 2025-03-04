@@ -41,7 +41,7 @@ app.get("/", (req, res) => {
 //===================================================
 app.use(routes)
 
-const server = app.listen(process.env.PORT, () => {
+const server = app.listen(process.env.PORT | 8080, () => {
   console.log(`Server started on PORT : ${process.env.PORT}`);
 });
 

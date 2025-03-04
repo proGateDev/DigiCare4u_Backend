@@ -11,6 +11,7 @@ const assignRoutes = require("./routes/assignment");
 const { contactUs } = require("./controller/contactUs");
 const channelsRoutes = require("./routes/channels");
 const locationLogRoutes = require("./routes/locationLog");
+const googleMapServiceRoutes = require("./routes/googleMapService");
 
 //=================================
 router.use("/admin", adminRoutes);
@@ -32,6 +33,7 @@ router.use('/channels', channelsRoutes);
 // app.use('/api', sessionRoutes);
 router.use('/location', locationLogRoutes);
 // app.use('/api', activityLogRoutes);
+router.use('/google-map-service', googleMapServiceRoutes);
 
 //=================================
 

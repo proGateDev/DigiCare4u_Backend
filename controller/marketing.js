@@ -21,4 +21,13 @@ module.exports = {
             res.status(500).json({ error: "Server error" });
         }
     },
+    getContactUs: async (req, res) => {
+        try {
+            const queries = await contactUsModel.find();
+            res.status(200).json(queries);
+        } catch (err) {
+            console.error("Error retrieving queries:", err);
+            res.status(500).json({ error: "Server error" });
+        }
+    },
 }
